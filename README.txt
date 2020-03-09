@@ -4,6 +4,8 @@ In order to quickly install all required packages in your python venv run the fo
 
 This will recreate a perfect replica of venv used for development
 
+THIS IS A TEST FOR COMMITS
+
 REQUIREMENT VERSION LOG
 filename : requirement.txt
 Last update date : 20/03/09
