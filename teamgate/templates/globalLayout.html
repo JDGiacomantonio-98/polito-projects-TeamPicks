@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+
+        {% if title %}
+            <title>{{ title }}</title>
+        {% else %}
+            <title>Welcome on TeamGATE!</title>
+        {% endif %}
+
+    </head>
+    <body>
+
+        {% if heading %}
+            <h2>{{ heading }}</h2>
+        {% else %}
+            <h2>The first place where all happens live!</h2>
+        {% endif %}
+
+        <nav>
+            <ul>
+
+                {% if title  %}
+                    <li><a href="{{ url_for('welcome') }}">Homepage</a></li>
+                {%  endif %}
+
+                <li><a href="{{ url_for('contact') }}">Contact us!</a></li>
+            </ul>
+        </nav>
+
+        <div>
+        {% with messages = get_flashed_messages() %}
+            {% if messages %}
+                {% for message in messages %}
+                    <div>
+                        <hr>
+                        {{ message }}
+                        <hr>
+                    </div>
+                {%  endfor %}
+            {% endif %}
+        {% endwith %}
+        </div>
+
+        {% block pagecontent %}{% endblock pagecontent %}
+    </body>
+    <footer>
+        <hr>
+        <p>
+            <small>This website is a product of <strong>TeamGATE-Group</strong> licensed under Copyright &copy 2020 legislation.</small>
+        </p>
+    </footer>
+</html>

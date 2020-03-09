@@ -1,0 +1,74 @@
+{% extends 'globalLayout.html' %}
+
+    {% block pagecontent %}
+        <div>
+            <!-- POST method even if exposes user data into POST request url, is safe because we implemented CSRF token -->
+            <form method="POST" action="#">
+                {{ form.hidden_tag() }} <!--This adds CSRF (Cross-Site Something) token || it protects the app-->
+                <fieldset>
+
+                    <legend>Registration form</legend>
+                    <div>
+                        {{ form.isPub.label }}
+                        {{ form.isPub }}
+                    </div>
+                    <div class="btn btn-primary">ciao</div>
+                    <br>
+                    <div>
+                        {{ form.firstName.label }}
+                        {{ form.firstName }}
+                    </div>
+                    <div>
+                        {{ form.lastName.label }}
+                        {{ form.lastName }}
+                    </div>
+                    <div>
+                        {{ form.username.label }}
+                        {{ form.username }}
+
+                        {% if form.username.errors %}
+                            {% for error in form.username.errors %}
+                                <div>
+                                    <span style="color: red"><small>{{ error }}</small></span>
+                                </div>
+                            {% endfor %}
+                        {%  endif %}
+                    </div>
+                    <div>
+                        {{ form.sex.label }}
+                        {{ form.sex }}
+                    </div>
+                    <div>
+                        {{ form.emailAddr.label }}
+                        {{ form.emailAddr }}
+
+                        {% if form.emailAddr.errors %}
+                            {% for error in form.emailAddr.errors %}
+                                <div>
+                                    <span style="color: red"><small>{{ error }}</small></span>
+                                </div>
+                            {% endfor %}
+                        {% endif %}
+                    </div>
+                    <div>
+                    {{ form.psw.label }}
+                    {{ form.psw }}
+                    </div>
+                    <div>
+                    {{ form.confirmPsw.label }}
+                    {{ form.confirmPsw }}
+                    </div>
+                    <div>
+                        <br>
+                        {{ form.submit }}
+                    </div>
+
+                </fieldset>
+            </form>
+        </div>
+
+        <!-- if isPub=TRUE then redirect to Pub additional information input form -->
+        <div>
+            <small>Already have an account? <a href="{{ url_for('login') }}">Sign in here!</a></small>
+        </div>
+    {%  endblock pagecontent %}

@@ -1,0 +1,41 @@
+{% extends 'globalLayout.html' %}
+
+    {% block pagecontent %}
+        <nav>
+            <ul>
+                <li>
+
+                    {%  if current_user.is_authenticated %}
+                        <a href="{{ url_for('openProfile', userInfo=current_user.username) }}">Profile</a> |
+                        <a href="{{ url_for('logout') }}">Log Out</a>
+                    {%  else %}
+                        <a href="{{ url_for('registration') }}">Join the TeamGATE</a> or
+                        <a href="{{ url_for('registration') }}">Register your local activity</a> ||
+                        <a href="{{ url_for('login') }}">Log in</a>
+                    {% endif %}
+
+                </li>
+            </ul>
+        </nav>
+        <body>
+            <p>
+                Lorem ipsum dolor sit amet, consectetur adipisicing elit. Alias dignissimos dolore illo illum minima nes
+                ciunt odit, possimus quaerat quis, quisquam, quo ratione vitae voluptatum? Aut consequatur delectus dolo
+                r eius error eveniet fugit in iste laboriosam, nam obcaecati officia placeat possimus quam quisquam quod
+                quos repellendus repudiandae similique tempore, tenetur totam.
+            </p>
+            <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Accusamus cumque cupiditate dolores, eligendi e
+                t eveniet ex explicabo facere fugiat ipsum laboriosam maiores nam necessitatibus nesciunt non perspiciat
+                is, praesentium quae qui quia quod quos repellat rerum similique temporibus ut velit voluptatum. Cupidit
+                ate in iure, iusto nemo quo vero voluptas. Asperiores consectetur cum ducimus eligendi eveniet, exercita
+                tionem inventore nostrum, nulla, quae quam repellendus ut. Ad assumenda commodi corporis culpa, cumque d
+                olores, eos exercitationem facilis illo iste itaque nam necessitatibus nobis nostrum odit perferendis pl
+                aceat quibusdam repellat repudiandae sapiente vel vero vitae voluptate? Ad aliquam asperiores autem cum
+                deserunt dolorum facere fuga fugiat hic, iusto, laborum laudantium nobis odio reiciendis repudiandae sit
+                soluta. Consequatur dignissimos doloremque eligendi incidunt inventore labore magnam nam odit perspiciat
+                is vel. Amet eveniet pariatur placeat reprehenderit sed sunt suscipit voluptate? Aperiam debitis distinc
+                tio dolor facere fuga ipsa ipsum laudantium neque obcaecati optio, quaerat qui quidem ratione, similique
+                , soluta temporibus?
+            </p>
+        </body>
+    {% endblock pagecontent %}
