@@ -1,0 +1,37 @@
+{% extends 'globalLayout.html' %}
+
+    {% block pagecontent %}
+        <div>
+            <!-- POST method even if exposes user data into POST request url, is safe because we implemented CSRF token -->
+            <form method="POST" action="#">
+                {{ form.hidden_tag() }} <!--This adds CSRF (Cross-Site Something) token || it protects the app-->
+                <fieldset>
+
+                    <legend>Reset password</legend>
+                    <div>
+                        {{ form.psw.label }}
+                        {{ form.psw }}
+                        {% if form.psw.errors %}
+                            {% for error in form.psw.errors %}
+                                <small><span style="color: red">{{ error }}</span></small>
+                            {% endfor %}
+                        {%  endif %}
+                    </div>
+                    <div>
+                        {{ form.confirmPsw.label }}
+                        {{ form.confirmPsw }}
+                        {% if form.confirmPsw.errors %}
+                            {% for error in form.confirmPsw.errors %}
+                                <small><span style="color: red">{{ error }}</span></small>
+                            {% endfor %}
+                        {%  endif %}
+                    </div>
+                    <div>
+                        {{ form.submit }}
+                    </div>
+
+                </fieldset>
+            </form>
+        </div>
+
+    {%  endblock pagecontent %}

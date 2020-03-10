@@ -2,7 +2,7 @@
     FLASK APP INIT MODULE -- First executed module
     Initialize all needed objects to make app run properly
 """
-
+import os
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_bcrypt import Bcrypt
@@ -16,12 +16,19 @@ app.config['SECRET_KEY'] = '2f2a6b20a230fda4e91252334f67d57725100c92' """ genera
 
 """ associate a local sql-lite server to the application """
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///test.db'
+app.config['MAIL_SERVER'] = 'smtp.googlemail.com'
+app.config['MAIL_PORT'] = 587
+app.config['MAIL_USE_TLS'] = True
+# The following Config constants need to be hided from plain code. This can be done setting them as env variables
+app.config['MAIL_USERNAME'] = os.environ.get('TEAMGATE_@_USER')
+app.config['MAIL_PASSWORD'] = os.environ.get('TEAMGATE_@_PSW')
 
 db = SQLAlchemy(app)
 pswBurner = Bcrypt(app)
 
 loginManager = LoginManager(app)
 loginManager.login_view = 'login'
+mail = Mail(app)
 
 """ following instruction is located here in order to avoid circular imports when app.run """
 from teamgate import routes

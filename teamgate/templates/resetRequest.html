@@ -7,7 +7,7 @@
                 {{ form.hidden_tag() }} <!--This adds CSRF (Cross-Site Something) token || it protects the app-->
                 <fieldset>
 
-                    <legend>Login form</legend>
+                    <legend>Reset password</legend>
                     <div>
                         {{ form.emailAddr.label }}
                         {{ form.emailAddr }}
@@ -16,25 +16,11 @@
                             <small><span style="color: red">{{ error }}</span></small>
                         {% endfor %}
 
+                        {{ form.submit }}
                     </div>
-                    <div>
-                        {{ form.psw.label }}
-                        {{ form.psw }}
-                    </div>
-                    <div>
-                        <br>
-                        {{ form.rememberMe.label }}
-                        {{ form.rememberMe }}
-                    </div>
-                </fieldset>
-                <div>
-                    {{ form.submit }}
-                    <small><a href="{{ url_for('send_resetRequest') }}">I forgot my password</a></small>
-                </div>
 
+                </fieldset>
             </form>
         </div>
-        <div>
-            <small>Don't you have an account yet? Create it <a href="{{ url_for('registration') }}">here!</a></small>
-        </div>
+
     {%  endblock pagecontent %}

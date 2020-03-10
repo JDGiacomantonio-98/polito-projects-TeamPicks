@@ -1,7 +1,8 @@
 # DATABASE OBJECT CLASS SPECIFICATION MODULE
 # SQLAlchemy produces Object-Oriented Databases
 
-from teamgate import db, loginManager
+from teamgate import app, db, loginManager
+from itsdangerous import TimedJSONWebSignatureSerializer as timedTokenizer
 from flask_login import UserMixin
 
 # DATABASE LEVEL FUNCTIONS #
@@ -29,6 +30,17 @@ class USER(db.Model, UserMixin):
     """ Following value stores hashed user password """
     pswHash = db.Column(db.String(60), unique=False, nullable=False)
     type = db.Column(db.String)
+
+    def create_ResetToken(self, expireInSec=900):
+        return timedTokenizer(app.config['SECRET_KEY'], expireInSec).dumps({'userID' : self.id}).decode('utf-8')
+
+    @staticmethod
+    def verify_ResetToken(resetToken):
+        try:
+            userID = timedTokenizer(app.config['SECRET_KEY']).loads(resetToken)['userID']
+        except:
+            return None
+        return User.query.get(userID)
 
     def __str__(self):
         return "USER n.{}\ntype=\t'user'\nusername=\t{}\nemail address=\t{}\nfirst Name=\t{}\nLast Name=\t{}\nLast time online=\t{}".format(self.id, self.username, self.email, self.firstName, self.lastName, self.lastSession)

@@ -1,12 +1,13 @@
 import os
 import secrets
 from PIL import Image
-from flask import render_template, url_for, flash, redirect, request
-from teamgate.forms import registrationForm, loginForm, accountDashboardForm
-from teamgate.dbModel import User
-from teamgate import app, db, pswBurner
-from flask_login import login_user, logout_user, login_required, current_user
 from random import random, randint
+from flask import render_template, url_for, flash, redirect, request
+from teamgate.forms import registrationForm, loginForm, accountDashboardForm, resetRequestForm, resetPswForm
+from teamgate.dbModel import User
+from teamgate import app, db, pswBurner, mail
+from flask_login import login_user, logout_user, login_required, current_user
+from flask_mail import Message
 
 
 @app.route('/')
@@ -121,6 +122,49 @@ def resizeTo125(imgFile):
     resizedImg.thumbnail((125, 125))
 
     return resizedImg
+
+
+def send_resetEmail(user):
+    token = user.create_ResetToken()
+    msg = Message('You received this email because we received from you a request to reset your teamGate account password',
+                  sender='teamgate.help@gmail.com',
+                  recipients=[user.email])
+    msg.body = 'Click on the following link to reset your password :\n\n{}\n\n' \
+               'If you not recognize this request please ignore and remove this ' \
+               'email and no changes will be applied.'.format(url_for('pswReset', token=token, _external=True))
+    # _external parameter allow to generate an absolute URL whose works outside app environment
+
+
+@app.route('/pswReset', methods=['GET', 'POST'])
+def send_resetRequest():
+    #if current_user.is_authenticated:
+     #   return redirect(url_for('welcome'))
+    form = resetRequestForm()
+    if form.validate_on_submit():
+        # send user an email
+        send_resetEmail(User.query.filter_by(email=form.emailAddr.data).first())
+        flash('An email has been sent to your account containing the instructions to reset your psw')
+    return render_template('resetRequest.html', title='Reset your psw', form=form)
+
+
+@app.route('/pswReset/<token>', methods=['GET', 'POST'])
+def pswReset(token):
+    if current_user.is_authenticated():
+        return redirect(url_for('welcome'))
+    user = User.verify_ResetToken(token)
+    if not user:
+        flash('The used token is expired or invalid.')
+        return redirect(url_for('send_resetRequest'))
+    else:
+        form = resetPswForm()
+        if form.validate_on_submit():
+            pswHash = pswBurner.generate_password_hash(form.psw.data).decode('utf-8')
+            user.pswHash = pswHash
+            db.session.commit()
+            login_user(user,remember=False)
+            flash("Hi {}, your password has been successfully created. Welcome on board!".format(form.username.data))
+            return redirect(url_for('openProfile', userInfo=form.username.data))
+        return render_template(url_for('resetPsw', title='Resetting your psw', form=form))
 
 
 @app.route('/contacts')
