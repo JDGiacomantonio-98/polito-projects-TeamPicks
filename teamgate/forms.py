@@ -54,6 +54,7 @@ class accountDashboardForm(FlaskForm):
             if User.query.filter_by(email=emailAddr.data).first() or Pub.query.filter_by(email=emailAddr.data).first():
                 raise ValidationError('An existing account is already linked with  this email address. Use a different one.')
 
+
 class resetRequestForm(FlaskForm):
     emailAddr = StringField('Email address:\t', validators=[DataRequired(), Email()])
     submit = SubmitField('Reset your password')
@@ -61,6 +62,7 @@ class resetRequestForm(FlaskForm):
     def validate_emailAddr(self, emailAddr):
         if not(User.query.filter_by(email=emailAddr.data).first() or Pub.query.filter_by(email=emailAddr.data).first()):
             raise ValidationError('No existing accounts are linked with this email address.')
+
 
 class resetPswForm(FlaskForm):
     psw = PasswordField('Password :\t', validators=[DataRequired(), Length(min=8)])

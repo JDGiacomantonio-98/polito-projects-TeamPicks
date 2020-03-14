@@ -32,7 +32,7 @@ class USER(db.Model, UserMixin):
     type = db.Column(db.String)
 
     def create_ResetToken(self, expireInSec=900):
-        return timedTokenizer(app.config['SECRET_KEY'], expireInSec).dumps({'userID' : self.id}).decode('utf-8')
+        return timedTokenizer(app.config['SECRET_KEY'], expireInSec).dumps({'userID': self.id}).decode('utf-8')
 
     @staticmethod
     def verify_ResetToken(resetToken):

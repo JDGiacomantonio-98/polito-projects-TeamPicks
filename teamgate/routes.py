@@ -3,11 +3,12 @@ import secrets
 from PIL import Image
 from random import random, randint
 from flask import render_template, url_for, flash, redirect, request
-from teamgate.forms import registrationForm, loginForm, accountDashboardForm, resetRequestForm, resetPswForm
-from teamgate.dbModel import User
-from teamgate import app, db, pswBurner, mail
 from flask_login import login_user, logout_user, login_required, current_user
 from flask_mail import Message
+from teamgate import app, db, pswBurner, mail
+from teamgate.forms import registrationForm, loginForm, accountDashboardForm, resetRequestForm, resetPswForm
+from teamgate.dbModel import User
+
 
 
 @app.route('/')
@@ -126,30 +127,35 @@ def resizeTo125(imgFile):
 
 def send_resetEmail(user):
     token = user.create_ResetToken()
-    msg = Message('You received this email because we received from you a request to reset your teamGate account password',
+    msg = Message('TeamGate Account -- PASSWORD RESET',
                   sender='teamgate.help@gmail.com',
                   recipients=[user.email])
-    msg.body = 'Click on the following link to reset your password :\n\n{}\n\n' \
-               'If you not recognize this request please ignore and remove this ' \
-               'email and no changes will be applied.'.format(url_for('pswReset', token=token, _external=True))
+    msg.body = 'Hi, you received this email because our server received a password reset request.' \
+               'password\n\nClick on the following link to reset your password :\n\n{}\n\n' \
+               'If you not recognize this request please ignore it and remove this ' \
+               'email from your inbox. In this way, no changes will be applied to your profile.'.format(url_for('pswReset', token=token, _external=True))
     # _external parameter allow to generate an absolute URL whose works outside app environment
+    mail.send(msg)
 
 
-@app.route('/pswReset', methods=['GET', 'POST'])
+@app.route('/reset-request', methods=['GET', 'POST'])
 def send_resetRequest():
-    #if current_user.is_authenticated:
-     #   return redirect(url_for('welcome'))
+    if current_user.is_authenticated:
+        flash('You are logged in already.')
+        return redirect(url_for('welcome'))
     form = resetRequestForm()
     if form.validate_on_submit():
         # send user an email
         send_resetEmail(User.query.filter_by(email=form.emailAddr.data).first())
-        flash('An email has been sent to your account containing the instructions to reset your psw')
+        flash('An email has been sent to your inbox containing all instructions to reset your psw!')
+        return redirect(url_for('login'))
     return render_template('resetRequest.html', title='Reset your psw', form=form)
 
 
 @app.route('/pswReset/<token>', methods=['GET', 'POST'])
 def pswReset(token):
-    if current_user.is_authenticated():
+    if current_user.is_authenticated:
+        flash('You are logged in already.')
         return redirect(url_for('welcome'))
     user = User.verify_ResetToken(token)
     if not user:
@@ -161,10 +167,10 @@ def pswReset(token):
             pswHash = pswBurner.generate_password_hash(form.psw.data).decode('utf-8')
             user.pswHash = pswHash
             db.session.commit()
-            login_user(user,remember=False)
-            flash("Hi {}, your password has been successfully created. Welcome on board!".format(form.username.data))
-            return redirect(url_for('openProfile', userInfo=form.username.data))
-        return render_template(url_for('resetPsw', title='Resetting your psw', form=form))
+            login_user(user, remember=False)
+            flash("Hi {}, your password has been successfully reset. Welcome back on board!".format(current_user.username))
+            return redirect(url_for('openProfile', userInfo=current_user.username))
+        return render_template('resetPsw.html', title='Resetting your psw', form=form)
 
 
 @app.route('/contacts')
