@@ -7,7 +7,7 @@
                 {{ form.hidden_tag() }} <!--This adds CSRF (Cross-Site Something) token || it protects the app-->
                 <fieldset>
 
-                    <legend>Login form</legend>
+                    <legend>Login</legend>
                     <div>
                         {{ form.emailAddr.label }}
                         {{ form.emailAddr }}
@@ -22,7 +22,6 @@
                         {{ form.psw }}
                     </div>
                     <div>
-                        <br>
                         {{ form.rememberMe.label }}
                         {{ form.rememberMe }}
                     </div>

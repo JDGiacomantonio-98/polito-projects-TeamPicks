@@ -1,7 +1,12 @@
 <!DOCTYPE html>
 <html lang="en">
     <head>
+        <!-- Required meta tags -->
         <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+        <!-- Bootstrap CSS -->
+        <link rel="stylesheet" type="text/css" href="/static/bootstrap-4.4.1-dist/css/bootstrap.min.css">
 
         {% if title %}
             <title>{{ title }}</title>
@@ -18,32 +23,38 @@
             <h2>The first place where all happens live!</h2>
         {% endif %}
 
-        <nav>
-            <ul>
-
-                {% if title  %}
-                    <li><a href="{{ url_for('welcome') }}">Homepage</a></li>
-                {%  endif %}
-
-                <li><a href="{{ url_for('contact') }}">Contact us!</a></li>
-            </ul>
+        <nav class="navbar navbar-light bg-light nav-fill">
+            {% block navbar %}
+                <div class="container">
+                    <a class="navbar-brand" href="{{ url_for('welcome') }}">
+                        <img src=" {{ url_for('static', filename='icons/logo.png') }}" width="40" height="40" class="d-inline-block align-top">TeamGate</a>
+                    {% if title %}
+                        <a class="nav-link active" href="{{ url_for('welcome') }}">Homepage</a>
+                    {%  endif %}
+                    <a class="nav-link active" href="{{ url_for('contact') }}">Contact us!</a>
+                </div>
+            {% endblock navbar %}
         </nav>
-
-        <div>
-        {% with messages = get_flashed_messages() %}
-            {% if messages %}
-                {% for message in messages %}
-                    <div>
-                        <hr>
-                        {{ message }}
-                        <hr>
-                    </div>
-                {%  endfor %}
-            {% endif %}
-        {% endwith %}
+        <div class="container">
+            <div>
+                {% with messages = get_flashed_messages() %}
+                    {% if messages %}
+                        {% for message in messages %}
+                            <div>
+                                {{ message }}
+                            </div>
+                        {%  endfor %}
+                    {% endif %}
+                {% endwith %}
+            </div>
+            {% block pagecontent %}{% endblock pagecontent %}
         </div>
 
-        {% block pagecontent %}{% endblock pagecontent %}
+        <!-- Optional JavaScript -->
+        <script src='/static/bootstrap-4.4.1-dist/js/bootstrap.min.js'></script>
+        <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+        <script src="/static/bootstrap-4.4.1-dist/js/jquery.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
     </body>
     <footer>
         <hr>

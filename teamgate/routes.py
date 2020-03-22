@@ -1,6 +1,7 @@
 import os
 import secrets
 from PIL import Image
+from math import ceil
 from random import random, randint
 from flask import render_template, url_for, flash, redirect, request
 from flask_login import login_user, logout_user, login_required, current_user
@@ -8,7 +9,6 @@ from flask_mail import Message
 from teamgate import app, db, pswBurner, mail
 from teamgate.forms import registrationForm, loginForm, accountDashboardForm, resetRequestForm, resetPswForm
 from teamgate.dbModel import User
-
 
 
 @app.route('/')
@@ -29,7 +29,7 @@ def registration():
             user = User(username=form.username.data, firstName=form.firstName.data, lastName=form.lastName.data,
                         sex=form.sex.data, email=form.emailAddr.data, pswHash=pswHash)
             if user.sex != 'other':
-                user.img = str('default_' + user.sex + '_' + str(round(randint(1, 10) * random())) + '.jpg')
+                user.img = str('default_' + user.sex + '_' + str(ceil(randint(1, 10) * random())) + '.jpg')
             else:
                 user.img = 'favicon.png'
             db.session.add(user)
@@ -78,7 +78,7 @@ def logout():
 @login_required
 def openProfile(userInfo):
     if ('default_' in current_user.img) or (current_user.img == 'favicon.png'):
-        imgFile = url_for('static', filename='profile_pics/ICON/' + current_user.img)
+        imgFile = url_for('static', filename='profile_pics/AVATAR/' + current_user.img)
     else:
         imgFile = url_for('static', filename='profile_pics/users/' + current_user.img)
     form = accountDashboardForm()
