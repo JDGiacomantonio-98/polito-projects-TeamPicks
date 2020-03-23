@@ -1,0 +1,40 @@
+{% extends 'globalLayout.html' %}
+
+    {% block pagecontent %}
+        <div class="shadow p-3 mb-5 bg-white rounded">
+            <!-- POST method even if exposes user data into POST request url, is safe because we implemented CSRF token -->
+            <form method="POST" action="#">
+                {{ form.hidden_tag() }} <!--This adds CSRF (Cross-Site Something) token || it protects the app-->
+                <fieldset>
+
+                    <legend>Login</legend>
+                    <div class="row">
+                        <div class="col">
+                            {{ form.emailAddr.label(class="col-form-label") }}
+                            {{ form.emailAddr(class="form-control form-control-sm") }}
+
+                            {% for error in form.emailAddr.errors %}
+                                <small><span style="color: red">{{ error }}</span></small>
+                            {% endfor %}
+                        </div>
+                        <div class="col">
+                            {{ form.psw.label(class="col-form-label") }}
+                            {{ form.psw(class="form-control form-control-sm") }}
+                        </div>
+                    </div>
+                    <div>
+                        {{ form.rememberMe.label(class="col-form-label") }}
+                        {{ form.rememberMe }}
+                    </div>
+                </fieldset>
+                <div>
+                    {{ form.submit(class="btn btn-outline-secondary") }}
+                    <small><a href="{{ url_for('send_resetRequest') }}"> I forgot my password</a></small>
+                </div>
+
+            </form>
+        </div>
+        <div>
+            <small>Don't you have an account yet? Create it <a href="{{ url_for('registration') }}">here!</a></small>
+        </div>
+    {%  endblock pagecontent %}

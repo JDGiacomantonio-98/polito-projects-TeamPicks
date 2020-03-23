@@ -13,48 +13,58 @@
         {% else %}
             <title>Welcome on TeamGATE!</title>
         {% endif %}
-
+        <link rel="icon" type="image/png" href={{ url_for('static', filename='bootstrap-4.4.1-dist/icons/child-solid.svg') }}>
     </head>
     <body>
+        <header class="pb-2">
+            {%  if current_user.is_authenticated %}
+                <nav class="navbar navbar-light bg-info nav-fill">
+                    {% block navbar %}
 
-        {% if heading %}
-            <h2>{{ heading }}</h2>
-        {% else %}
-            <h2>The first place where all happens live!</h2>
-        {% endif %}
+                        <div class="container">
+                            <a class="navbar-brand" href="{{ url_for('welcome') }}">
+                                <img src=" {{ url_for('static', filename='bootstrap-4.4.1-dist/icons/logo.png') }}" width="40" height="40" class="d-inline-block align-top">TeamGate</a>
+                            {% if title %}
+                                <a class="nav-link active text-white" href="{{ url_for('welcome') }}">Homepage</a>
+                            {%  endif %}
+                            <a class="nav-link active text-white" href="#">Become a Pub owner</a>
+                            <a class="nav-link active text-white" href="{{ url_for('contact') }}">Contact us!</a>
+                        </div>
 
-        <nav class="navbar navbar-light bg-light nav-fill">
-            {% block navbar %}
-                <div class="container">
-                    <a class="navbar-brand" href="{{ url_for('welcome') }}">
-                        <img src=" {{ url_for('static', filename='icons/logo.png') }}" width="40" height="40" class="d-inline-block align-top">TeamGate</a>
-                    {% if title %}
-                        <a class="nav-link active" href="{{ url_for('welcome') }}">Homepage</a>
-                    {%  endif %}
-                    <a class="nav-link active" href="{{ url_for('contact') }}">Contact us!</a>
-                </div>
-            {% endblock navbar %}
-        </nav>
-        <div class="container">
-            <div>
-                {% with messages = get_flashed_messages() %}
-                    {% if messages %}
-                        {% for message in messages %}
-                            <div>
-                                {{ message }}
-                            </div>
-                        {%  endfor %}
-                    {% endif %}
-                {% endwith %}
-            </div>
-            {% block pagecontent %}{% endblock pagecontent %}
-        </div>
+                    {% endblock navbar %}
+                </nav>
+            {% else %}
+                <nav class="navbar navbar-light">
+                    <div class="container">
+                        <a class="navbar-brand" href="{{ url_for('welcome') }}">
+                            <img src=" {{ url_for('static', filename='bootstrap-4.4.1-dist/icons/logo.png') }}" width="40" height="40" class="d-inline-block align-top">TeamGate</a>
+                    </div>
+                </nav>
+            {% endif %}
+        </header>
+        <main class="container">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+            <!-- with_categories=true allows the code to grab the flash msg preasigned bootstrap class -->
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ category }}">
+                            {{ message }}
+                        </div>
+                    {%  endfor %}
+                {% endif %}
+            {% endwith %}
+            {% block pagecontent %}
+                {% if heading %}
+                    <h2>{{ heading }}</h2>
+                {% endif %}
+            {% endblock pagecontent %}
+        </main>
 
         <!-- Optional JavaScript -->
-        <script src='/static/bootstrap-4.4.1-dist/js/bootstrap.min.js'></script>
         <!-- jQuery first, then Popper.js, then Bootstrap JS -->
         <script src="/static/bootstrap-4.4.1-dist/js/jquery.min.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
+        <script src='/static/bootstrap-4.4.1-dist/js/bootstrap.min.js'></script>
     </body>
     <footer>
         <hr>

@@ -1,54 +1,103 @@
 {% extends 'globalLayout.html' %}
-
-    {%  block navbar %}
+{% block navbar %}
+    {%  if current_user.is_authenticated %}
         <div class="container">
-            {%  if current_user.is_authenticated %}
-                <a class="nav-link active" href="{{ url_for('openProfile', userInfo=current_user.username) }}">Profile</a>
-                <a class="nav-link active" href="{{ url_for('logout') }}">Log Out</a>
-            {%  else %}
-                <a class="nav-link active" href="{{ url_for('registration') }}">Join the TeamGate
-                    <img src="{{ url_for('static', filename='icons/trophy.svg') }}" width="28" height="28"></a>
-                <a class="nav-link active" href="{{ url_for('registration') }}">Register your local activity
-                    <img src="{{ url_for('static', filename='icons/geo.svg') }}" width="28" height="28"></a>
-                <a class="nav-link active" href="{{ url_for('login') }}">Log in
-                    <img src="{{ url_for('static', filename='icons/chevron-right.svg') }}" width="25" height="25"></a>
-            {% endif %}
-        </div>
-    {%  endblock navbar %}
-    {% block pagecontent %}
-
-        <body>
-            <p>
-                Find out what we have for you on the Teamgate!
-            </p>
-
-            </p>
-        </body>
-            <div class="card-deck">
-                <div class="card" style="width: 18rem;">
-                  <img src="..." class="card-img-top" alt="...">
-                  <div class="card-body">
-                    <h5 class="card-title">MILAN vs. INTER</h5>
-                    <p class="card-text">Saturday h 20:30</p>
-                    <a href="#" class="btn btn-info">Look for a Pub</a>
-                  </div>
+            <div class="media">
+                <div class="media-body">
+                    <a class="nav-link active text-white" href="{{ url_for('openProfile', userInfo=current_user.username) }}">Profile</a>
                 </div>
-                <div class="card" style="width: 18rem;">
-                  <img src="..." class="card-img-top" alt="...">
-                  <div class="card-body">
-                    <h5 class="card-title">GENOA vs. JUVENTUS</h5>
-                    <p class="card-text">Saturday h 20:30</p>
-                    <a href="#" class="btn btn-info">Look for a Pub</a>
-                  </div>
-                </div>
-               <div class="card" style="width: 18rem;">
-                  <img src="..." class="card-img-top" alt="...">
-                  <div class="card-body">
-                    <h5 class="card-title">MANCHESTER vs. LIVERPOOL</h5>
-                    <p class="card-text">Saturday h 20:30</p>
-                    <a href="#" class="btn btn-info">Look for a Pub</a>
-                  </div>
-                </div>
+                <a class="align-self-center mr-3" href="{{ url_for('openProfile', userInfo=current_user.username) }}">
+                    <img src="{{ url_for('static', filename='bootstrap-4.4.1-dist/icons/user-regular.svg') }}" width="20" height="20">
+                </a>
             </div>
-
-    {% endblock pagecontent %}
+            <div class="media">
+                <div class="media-body">
+                    <a class="nav-link active text-white" href="#">Find a Pub</a>
+                </div>
+                <a class="align-self-center mr-3" href="#">
+                    <img class="align-self-center mr-3" src="{{ url_for('static', filename='bootstrap-4.4.1-dist/icons/map-marked-alt-solid.svg') }}" width="24" height="24">
+                </a>
+            </div>
+            <div class="media">
+                <div class="media-body">
+                    <a class="nav-link active text-white" href="#">Chats</a>
+                </div>
+                <a class="align-self-center mr-3" href="#">
+                    <img class="align-self-center mr-3" src="{{ url_for('static', filename='bootstrap-4.4.1-dist/icons/comments-regular.svg') }}" width="24" height="24">
+                </a>
+            </div>
+            <div class="media">
+                <div class="media-body">
+                    <a class="nav-link active text-white" href="#">Booking manager</a>
+                </div>
+                <a class="align-self-center mr-3" href="#">
+                    <img class="align-self-center mr-3" src="{{ url_for('static', filename='bootstrap-4.4.1-dist/icons/clipboard-check-solid.svg') }}" width="24" height="24">
+                </a>
+            </div>
+            <div class="media">
+                <div class="media-body">
+                    <a class="nav-link active text-white" href="{{ url_for('logout') }}">Log Out</a>
+                </div>
+                <a class="align-self-center mr-3" href="{{ url_for('logout') }}">
+                    <img class="align-self-center mr-3" src="{{ url_for('static', filename='bootstrap-4.4.1-dist/icons/sign-out-alt-solid.svg') }}" width="25" height="25">
+                </a>
+            </div>
+        </div>
+    {% endif %}
+{% endblock navbar %}
+{% block pagecontent %}
+    {%  if not current_user.is_authenticated %}
+        <div class="jumbotron">
+            <h1 class="display-4">Hei, welcome on TeamGate!</h1>
+            <p class="lead">Very brief but exciting description of the platform</p>
+            <hr class="my-4">
+            <ul class="nav nav-pills nav-fill">
+                <li class="nav-item">
+                    <a class="btn btn-outline-info" href="{{ url_for('registration') }}" role="button">Join the TeamGate
+                        <img src="{{ url_for('static', filename='bootstrap-4.4.1-dist/icons/trophy.svg') }}" width="28" height="28"></a>
+                </li>
+                <li class="nav-item">
+                    <a class="btn btn-outline-info" href="{{ url_for('registration') }}" role="button">Register your local activity
+                        <img src="{{ url_for('static', filename='bootstrap-4.4.1-dist/icons/geo.svg') }}" width="28" height="28"></a>
+                </li>
+                <li class="nav-item">
+                    <a class="btn btn-outline-info" href="{{ url_for('login') }}" role="button">Log in
+                        <img src="{{ url_for('static', filename='bootstrap-4.4.1-dist/icons/chevron-right.svg') }}" width="25" height="25"></a>
+                </li>
+            </ul>
+        </div>
+    {% endif %}
+    <div class="container">
+        <p>
+            <h3>HERE FORM TO SEARCH HOW MUCH PUBS IN YOUR CITY</h3>
+        </p>
+    </div>
+    <div class="container">
+        <div class="card-deck">
+            <div class="card shadow p-3" style="width: 18rem;">
+              <img src="{{ url_for('static', filename='match-icon/match-banner.jpg') }}" class="card-img-top" alt="...">
+              <div class="card-body">
+                <h5 class="card-title">MILAN vs. INTER</h5>
+                <p class="card-text">Saturday h 20:30</p>
+                <a href="#" class="btn btn-info">Look for a Pub</a>
+              </div>
+            </div>
+            <div class="card shadow p-3" style="width: 18rem;">
+              <img src="{{ url_for('static', filename='match-icon/match-banner.jpg') }}" class="card-img-top" alt="...">
+              <div class="card-body">
+                <h5 class="card-title">GENOA vs. JUVENTUS</h5>
+                <p class="card-text">Saturday h 20:30</p>
+                <a href="#" class="btn btn-info">Look for a Pub</a>
+              </div>
+            </div>
+           <div class="card shadow p-3" style="width: 18rem;">
+              <img src="{{ url_for('static', filename='match-icon/match-banner.jpg') }}" class="card-img-top" alt="...">
+              <div class="card-body">
+                <h5 class="card-title">MANCHESTER vs. LIVERPOOL</h5>
+                <p class="card-text">Saturday h 20:30</p>
+                <a href="#" class="btn btn-info">Look for a Pub</a>
+              </div>
+            </div>
+        </div>
+    </div>
+{% endblock pagecontent %}

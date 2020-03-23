@@ -26,8 +26,12 @@ def registration():
     else:
         if form.validate_on_submit():
             pswHash = pswBurner.generate_password_hash(form.psw.data).decode('utf-8')
-            user = User(username=form.username.data, firstName=form.firstName.data, lastName=form.lastName.data,
-                        sex=form.sex.data, email=form.emailAddr.data, pswHash=pswHash)
+            user = User(username=form.username.data,
+                        firstName=form.firstName.data,
+                        lastName=form.lastName.data,
+                        sex=form.sex.data,
+                        email=form.emailAddr.data,
+                        pswHash=pswHash)
             if user.sex != 'other':
                 user.img = str('default_' + user.sex + '_' + str(ceil(randint(1, 10) * random())) + '.jpg')
             else:
@@ -35,10 +39,10 @@ def registration():
             db.session.add(user)
             db.session.commit()
             login_user(user, remember=False)
-            flash("Hi {}, your profile has been successfully created. Welcome on board!".format(form.username.data))
+            flash("Hi {}, your profile has been successfully created. Welcome on board!".format(form.username.data), 'success')
             return redirect(url_for('openProfile', userInfo=form.username.data))
         if form.username.data:
-            flash("Something went wrong with your input, please check again.")
+            flash("Something went wrong with your input, please check again.", 'danger')
             return render_template('signUp.html', title='Registration page', form=form)
 
 
@@ -48,23 +52,23 @@ def login():
         return redirect(url_for('welcome'))
     form = loginForm()
     if request.method == 'GET':
-        return render_template('signIn.html', title='Login page', form=form)
+        return render_template('login.html', title='Login page', form=form)
     else:
         if form.validate_on_submit():
             currentUser = User.query.filter_by(email=form.emailAddr.data).first()
             if currentUser and pswBurner.check_password_hash(currentUser.pswHash, form.psw.data):
                 login_user(currentUser, remember=form.rememberMe.data)
-                flash("Hi {}, welcome back!".format(currentUser.username))
+                flash("Hi {}, welcome back!".format(currentUser.username), 'success')
                 nextPage = request.args.get('next')
                 if nextPage:
                     return redirect(nextPage)
                 else:
                     return redirect(url_for('welcome'))
             elif currentUser:
-                flash('Login error : Invalid email or password.')
-                return render_template('signIn.html', title='Login page', form=form)
+                flash('Login error : Invalid email or password.', 'danger')
+                return render_template('login.html', title='Login page', form=form)
             else:
-                flash("The provided credential are not linked to any existing account. Please try something else.")
+                flash("The provided credential are not linked to any existing account. Please try something else.", 'secondary')
                 return redirect(url_for('login'))
 
 
@@ -95,7 +99,7 @@ def openProfile(userInfo):
             current_user.img = save_profilePic(form.img.data)
             current_user.username = form.username.data
             db.session.commit()
-            flash('Your profile has been updated!')
+            flash('Your profile has been updated!', 'success')
             return redirect(url_for('openProfile', userInfo=current_user.username))
     return render_template('profilePage.html', title=current_user.firstName + " " + current_user.lastName, imgFile=imgFile, form=form)
 
@@ -141,36 +145,38 @@ def send_resetEmail(user):
 @app.route('/reset-request', methods=['GET', 'POST'])
 def send_resetRequest():
     if current_user.is_authenticated:
-        flash('You are logged in already.')
+        flash('You are logged in already.', 'info')
         return redirect(url_for('welcome'))
     form = resetRequestForm()
-    if form.validate_on_submit():
-        # send user an email
-        send_resetEmail(User.query.filter_by(email=form.emailAddr.data).first())
-        flash('An email has been sent to your inbox containing all instructions to reset your psw!')
-        return redirect(url_for('login'))
+    if request.method == 'POST':
+        if form.validate_on_submit():
+            # send user an email
+            send_resetEmail(User.query.filter_by(email=form.emailAddr.data).first())
+            flash('An email has been sent to your inbox containing all instructions to reset your psw!', 'secondary')
+            return redirect(url_for('login'))
     return render_template('resetRequest.html', title='Reset your psw', form=form)
 
 
 @app.route('/pswReset/<token>', methods=['GET', 'POST'])
 def pswReset(token):
     if current_user.is_authenticated:
-        flash('You are logged in already.')
+        flash('You are logged in already.', 'info')
         return redirect(url_for('welcome'))
     user = User.verify_ResetToken(token)
     if not user:
-        flash('The used token is expired or invalid.')
+        flash('The used token is expired or invalid.', 'danger')
         return redirect(url_for('send_resetRequest'))
     else:
         form = resetPswForm()
-        if form.validate_on_submit():
-            pswHash = pswBurner.generate_password_hash(form.psw.data).decode('utf-8')
-            user.pswHash = pswHash
-            db.session.commit()
-            login_user(user, remember=False)
-            flash("Hi {}, your password has been successfully reset. Welcome back on board!".format(current_user.username))
-            return redirect(url_for('openProfile', userInfo=current_user.username))
-        return render_template('resetPsw.html', title='Resetting your psw', form=form)
+        if request.method == 'POST':
+            if form.validate_on_submit():
+                pswHash = pswBurner.generate_password_hash(form.psw.data).decode('utf-8')
+                user.pswHash = pswHash
+                db.session.commit()
+                login_user(user, remember=False)
+                flash("Hi {}, your password has been successfully reset. Welcome back on board!".format(current_user.username), 'success')
+                return redirect(url_for('openProfile', userInfo=current_user.username))
+    return render_template('resetPsw.html', title='Resetting your psw', form=form)
 
 
 @app.route('/contacts')

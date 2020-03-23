@@ -1,45 +1,30 @@
 {% extends 'globalLayout.html' %}
 
     {% block pagecontent %}
-        <div>
+        <div class="shadow p-3 mb-5 bg-white rounded">
             <!-- POST method even if exposes user data into POST request url, is safe because we implemented CSRF token -->
             <form method="POST" action="#">
                 {{ form.hidden_tag() }} <!--This adds CSRF (Cross-Site Something) token || it protects the app-->
                 <fieldset>
-
                     <legend>Registration form</legend>
                     <div>
                         {{ form.isPub.label }}
                         {{ form.isPub }}
                     </div>
-                    <div>
-                        {{ form.firstName.label }}
-                        {{ form.firstName }}
+                    <div class="row">
+                        <div class="col">
+                            {{ form.firstName.label }}
+                            {{ form.firstName(class="form-control form-control-sm") }}
+                        </div>
+                        <div class="col">
+                            {{ form.lastName.label }}
+                            {{ form.lastName(class="form-control form-control-sm") }}
+                        </div>
                     </div>
                     <div>
-                        {{ form.lastName.label }}
-                        {{ form.lastName }}
-                    </div>
-                    <div>
-                        {{ form.username.label }}
-                        {{ form.username }}
-
-                        {% if form.username.errors %}
-                            {% for error in form.username.errors %}
-                                <div>
-                                    <span style="color: red"><small>{{ error }}</small></span>
-                                </div>
-                            {% endfor %}
-                        {%  endif %}
-                    </div>
-                    <div>
-                        {{ form.sex.label }}
-                        {{ form.sex }}
-                    </div>
-                    <div>
-                        {{ form.emailAddr.label }}
-                        {{ form.emailAddr }}
-
+                        {{ form.emailAddr.label(class="col-form-label") }}
+                        {{ form.emailAddr(class="form-control form-control-sm") }}
+                        <small class="form-text text-muted">We'll never share your email with anyone else.</small>
                         {% if form.emailAddr.errors %}
                             {% for error in form.emailAddr.errors %}
                                 <div>
@@ -48,17 +33,43 @@
                             {% endfor %}
                         {% endif %}
                     </div>
-                    <div>
-                    {{ form.psw.label }}
-                    {{ form.psw }}
-                    </div>
-                    <div>
-                    {{ form.confirmPsw.label }}
-                    {{ form.confirmPsw }}
+                     <div class="row">
+                        <div class="col">
+                            {{ form.username.label(class="col-form-label") }}
+
+                            <div class="input-group mb-2">
+                                <div class="input-group-text">@</div>
+                                {{ form.username(class="form-control") }}
+                            </div>
+                            {% if form.username.errors %}
+                                {{ form.username(class="form-control form-control-sm is-invalid") }}
+                                <div class="invalid-feedback">
+                                    {% for error in form.username.errors %}
+                                        <small><span style="color: red">{{ error }}</span></small>
+                                    {% endfor %}
+                                </div>
+                            {% else %}
+                                {{ form.emailAddr(class="form-control mx-sm-3") }}
+                            {%  endif %}
+                        </div>
+                        <div class="col">
+                            {{ form.sex.label(class="col-form-label") }}
+                            {{ form.sex(class="form-control form-control-sm") }}
+                        </div>
+                     </div>
+                    <div class="row">
+                        <div class="col">
+                            {{ form.psw.label(class="col-form-label") }}
+                            {{ form.psw(class="form-control form-control-sm") }}
+                        </div>
+                        <div class="col">
+                            {{ form.confirmPsw.label(class="col-form-label") }}
+                            {{ form.confirmPsw(class="form-control form-control-sm") }}
+                        </div>
                     </div>
                     <div>
                         <br>
-                        {{ form.submit }}
+                        {{ form.submit(class="btn btn-info") }}
                     </div>
 
                 </fieldset>
