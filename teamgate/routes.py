@@ -7,13 +7,14 @@ from flask import render_template, url_for, flash, redirect, request
 from flask_login import login_user, logout_user, login_required, current_user
 from flask_mail import Message
 from teamgate import app, db, pswBurner, mail
-from teamgate.forms import registrationForm, loginForm, accountDashboardForm, resetRequestForm, resetPswForm
+from teamgate.forms import registrationForm, loginForm, accountDashboardForm, resetRequestForm, resetPswForm, landingForm
 from teamgate.dbModel import User
 
 
-@app.route('/')
+@app.route('/', methods=['GET', 'POST'])
 def welcome():
-    return render_template('landingPage.html')
+    form = landingForm()
+    return render_template('landingPage.html', form=form)
 
 
 @app.route('/signup', methods=['GET', 'POST'])

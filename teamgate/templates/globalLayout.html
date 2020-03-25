@@ -22,8 +22,9 @@
                     {% block navbar %}
 
                         <div class="container">
-                            <a class="navbar-brand" href="{{ url_for('welcome') }}">
-                                <img src=" {{ url_for('static', filename='bootstrap-4.4.1-dist/icons/logo.png') }}" width="40" height="40" class="d-inline-block align-top">TeamGate</a>
+                            <a class="navbar-brand mb-0 h1" href="{{ url_for('welcome') }}">
+                                <img src=" {{ url_for('static', filename='bootstrap-4.4.1-dist/icons/logo.png') }}" width="30" height="30" class="d-inline-block align-top"> TeamGate
+                            </a>
                             {% if title %}
                                 <a class="nav-link active text-white" href="{{ url_for('welcome') }}">Homepage</a>
                             {%  endif %}
@@ -36,8 +37,9 @@
             {% else %}
                 <nav class="navbar navbar-light">
                     <div class="container">
-                        <a class="navbar-brand" href="{{ url_for('welcome') }}">
-                            <img src=" {{ url_for('static', filename='bootstrap-4.4.1-dist/icons/logo.png') }}" width="40" height="40" class="d-inline-block align-top">TeamGate</a>
+                        <a class="navbar-brand mb-0 h1" href="{{ url_for('welcome') }}">
+                            <img src=" {{ url_for('static', filename='bootstrap-4.4.1-dist/icons/logo.png') }}" width="30" height="30" class="d-inline-block align-top"> TeamGate
+                        </a>
                     </div>
                 </nav>
             {% endif %}
@@ -68,8 +70,9 @@
     </body>
     <footer>
         <hr>
-        <p>
+        <div class="container">
             <small>This website is a product of <strong>TeamGATE-Group</strong> licensed under Copyright &copy 2020 legislation.</small>
+        </div>
         </p>
     </footer>
 </html>

@@ -6,8 +6,13 @@ from teamgate.dbModel import User, Pub
 from flask_login import current_user
 
 
+class landingForm(FlaskForm):
+    city = StringField('My place is in :')
+
+    submit = SubmitField('Open the gate')
+
+
 class registrationForm(FlaskForm):
-    isPub = BooleanField('I own a pub or a dining activity')
     firstName = StringField('Name :\t', validators=[DataRequired()])
     lastName = StringField('Surname :\t', validators=[DataRequired()])
     sex = SelectField('Sex', validators=[DataRequired()], choices=[('male', 'male'), ('female', 'female'), ('other', 'none')])
@@ -69,3 +74,4 @@ class resetPswForm(FlaskForm):
     confirmPsw = PasswordField('Confirm your Password :\t', validators=[DataRequired(), EqualTo('psw')])
 
     submit = SubmitField('Reset your password')
+

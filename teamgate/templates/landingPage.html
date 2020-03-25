@@ -1,4 +1,5 @@
 {% extends 'globalLayout.html' %}
+
 {% block navbar %}
     {%  if current_user.is_authenticated %}
         <div class="container">
@@ -46,6 +47,7 @@
     {% endif %}
 {% endblock navbar %}
 {% block pagecontent %}
+
     {%  if not current_user.is_authenticated %}
         <div class="jumbotron">
             <h1 class="display-4">Hei, welcome on TeamGate!</h1>
@@ -67,10 +69,26 @@
             </ul>
         </div>
     {% endif %}
-    <div class="container">
-        <p>
-            <h3>HERE FORM TO SEARCH HOW MUCH PUBS IN YOUR CITY</h3>
-        </p>
+    <div class="container shadow-lg p-3 mb-5 bg-white rounded">
+        <form method="POST" action="#" class="form-inlne">
+            {{ form.hidden_tag() }} <!--This adds CSRF (Cross-Site Something) token || it protects the app-->
+            <fieldset>
+                <div class="container form-row justify-content-center pt-2">
+                    <div class="pr-3 align-center pt-1">
+                        <img src="{{ url_for('static', filename='bootstrap-4.4.1-dist/icons/street-view-solid.svg') }}" width="36" height="36">
+                    </div>
+                    <div class="col-2 lead justify-content-center pt-1">
+                        {{ form.city.label(class="col-form-label") }}
+                    </div>
+                    <div class="col-7">
+                        {{ form.city(class="form-control form-control-lg border border-secondary") }}
+                    </div>
+                    <div class="col-2">
+                        {{ form.submit(class="btn btn-outline-info mb-2 btn-lg") }}
+                    </div>
+                </div>
+            </fieldset>
+        </form>
     </div>
     <div class="container">
         <div class="card-deck">

@@ -28,13 +28,15 @@
                     </div>
                 </fieldset>
                 <div>
-                    {{ form.submit(class="btn btn-outline-secondary") }}
-                    <small><a href="{{ url_for('send_resetRequest') }}"> I forgot my password</a></small>
+                    {{ form.submit(class="btn btn-primary btn-sm") }}
+                    <small class="pl-1"><a href="{{ url_for('send_resetRequest') }}"> I forgot my password</a></small>
                 </div>
 
             </form>
         </div>
         <div>
-            <small>Don't you have an account yet? Create it <a href="{{ url_for('registration') }}">here!</a></small>
+            <small>Don't you have an account yet?<a href="{{ url_for('registration') }}"> Create it here!</a></small>
+            <br>
+            <small>Do you own a local activity or pub? <a href="{{ url_for('login') }}">Register it here!</a></small>
         </div>
     {%  endblock pagecontent %}
