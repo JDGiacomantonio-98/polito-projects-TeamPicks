@@ -1,0 +1,28 @@
+
+
+@media screen and (min-width: 320px) and (max-width: 374px) {
+	.btn-autowidth {
+		width: 100%;
+		justify-content: space-between;
+		align-items: center;
+		display: flex;
+	}
+}
+
+@media screen and (min-width: 375px) and (max-width: 424px) {
+	.btn-autowidth {
+		width: 100%;
+		justify-content: space-between;
+		align-items: center;
+		display: flex;
+	}
+}
+
+@media screen and (min-width: 425px) and (max-width: 767px) {
+	.btn-autowidth {
+		width: 100%;
+		justify-content: space-between;
+		align-items: center;
+		display: flex;
+	}
+}

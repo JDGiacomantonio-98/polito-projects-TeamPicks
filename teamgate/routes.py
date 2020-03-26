@@ -7,13 +7,17 @@ from flask import render_template, url_for, flash, redirect, request
 from flask_login import login_user, logout_user, login_required, current_user
 from flask_mail import Message
 from teamgate import app, db, pswBurner, mail
-from teamgate.forms import registrationForm, loginForm, accountDashboardForm, resetRequestForm, resetPswForm, landingForm
-from teamgate.dbModel import User
+from teamgate.forms import registrationForm, loginForm, accountDashboardForm, resetRequestForm, resetPswForm, trialForm
+from teamgate.dbModel import User, Pub
 
 
 @app.route('/', methods=['GET', 'POST'])
 def welcome():
-    form = landingForm()
+    form = trialForm()
+    if request.method == 'POST':
+        # query number of pubs
+        pubs = Pub.query.filter_by(city=form.city.data).all
+        return render_template('landingPage.html', city=form.city.data, pubs=pubs)
     return render_template('landingPage.html', form=form)
 
 

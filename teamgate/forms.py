@@ -6,22 +6,23 @@ from teamgate.dbModel import User, Pub
 from flask_login import current_user
 
 
-class landingForm(FlaskForm):
-    city = StringField('My place is in :')
+class trialForm(FlaskForm):
+    city = StringField('My place is in', validators=[DataRequired()])
 
     submit = SubmitField('Open the gate')
 
 
 class registrationForm(FlaskForm):
-    firstName = StringField('Name :\t', validators=[DataRequired()])
-    lastName = StringField('Surname :\t', validators=[DataRequired()])
+    firstName = StringField('Name :', validators=[DataRequired()], render_kw={'placeholder':'Your firstname'})
+    lastName = StringField('Surname :', validators=[DataRequired()], render_kw={'placeholder':'Your lastname'})
+    city = StringField('You live in :', validators=[DataRequired()], render_kw={'placeholder':'City you live in'})
     sex = SelectField('Sex', validators=[DataRequired()], choices=[('male', 'male'), ('female', 'female'), ('other', 'none')])
-    username = StringField('Choose an username :\t', validators=[DataRequired(), Length(min=2)])
-    emailAddr = StringField('Email address:\t', validators=[DataRequired(), Email()])
-    psw = PasswordField('Password :\t', validators=[DataRequired(), Length(min=8)])
-    confirmPsw = PasswordField('Confirm your Password :\t', validators=[DataRequired(), EqualTo('psw')])
+    username = StringField('Choose an username :', validators=[DataRequired(), Length(min=2)], render_kw={'placeholder':'choose an username'})
+    emailAddr = StringField('Email address :', validators=[DataRequired(), Email()], render_kw={'placeholder':'Active email address'})
+    psw = PasswordField('Password :', validators=[DataRequired(), Length(min=8)], render_kw={'placeholder':'Choose a strong password'})
+    confirmPsw = PasswordField('Confirm your Password :', validators=[DataRequired(), EqualTo('psw')], render_kw={'placeholder':'Confirm password'})
 
-    submit = SubmitField('Access your TeamGATE now!')
+    submit = SubmitField('Complete registration!')
 
     def validate_username(self, username):
         if User.query.filter_by(username=username.data).first():
@@ -29,13 +30,13 @@ class registrationForm(FlaskForm):
 
     def validate_emailAddr(self, emailAddr):
         if User.query.filter_by(email=emailAddr.data).first() or Pub.query.filter_by(email=emailAddr.data).first():
-            raise ValidationError('An existing account is already linked to  this email address. Use a different one.')
+            raise ValidationError('An existing account is already linked to  this email address. Please use a different one.')
 
 
 class loginForm(FlaskForm):
-    emailAddr = StringField('Email address:\t', validators=[DataRequired(), Email(), Length(min=2)])
-    psw = PasswordField('Password :\t', validators=[DataRequired(), Length(min=8)])
-    rememberMe = BooleanField('Remember Me!\t')
+    emailAddr = StringField('Email address:\t', validators=[DataRequired(), Email(), Length(min=2)], render_kw={'placeholder':'Email address or Username'})
+    psw = PasswordField('Password :\t', validators=[DataRequired(), Length(min=8)], render_kw={'placeholder':'Password'})
+    rememberMe = BooleanField('Remember Me!')
 
     submit = SubmitField('Log me in!')
 
@@ -57,7 +58,7 @@ class accountDashboardForm(FlaskForm):
     def validate_emailAddr(self, emailAddr):
         if emailAddr.data != current_user.email:
             if User.query.filter_by(email=emailAddr.data).first() or Pub.query.filter_by(email=emailAddr.data).first():
-                raise ValidationError('An existing account is already linked with  this email address. Use a different one.')
+                raise ValidationError('An existing account is already linked with  this email address. Please use a different one.')
 
 
 class resetRequestForm(FlaskForm):

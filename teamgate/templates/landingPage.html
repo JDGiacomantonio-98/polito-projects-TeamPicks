@@ -47,75 +47,111 @@
     {% endif %}
 {% endblock navbar %}
 {% block pagecontent %}
+    {% if request.method=='GET' %}
+        {%  if not current_user.is_authenticated %}
+            <div class="jumbotron">
+                <h1 class="display-4 text-center text-md-left">Hei, welcome on TeamGate!</h1>
+                <p class="lead">Very brief but exciting description of the platform</p>
+                <hr class="my-4">
+                <ul class="nav nav-pills nav-fill">
+                    <li class="nav-item py-1 py-md-0">
+                        <a class="btn btn-outline-info btn-autowidth" href="{{ url_for('registration') }}" role="button">
+                            <span>
+                                Join the TeamGate
+                            </span>
+                            <img class="" src="{{ url_for('static', filename='bootstrap-4.4.1-dist/icons/trophy.svg') }}" width="28" height="28">
+                        </a>
+                    </li>
+                    <li class="nav-item py-1 py-md-0">
+                        <a class="btn btn-outline-info btn-autowidth" href="{{ url_for('registration') }}" role="button">
+                            <span>
+                                Register your local activity
+                            </span>
+                            <img src="{{ url_for('static', filename='bootstrap-4.4.1-dist/icons/geo.svg') }}" width="28" height="28">
+                        </a>
+                    </li>
+                    <li class="nav-item py-1 py-md-0">
+                        <a class="btn btn-outline-info btn-autowidth" href="{{ url_for('login') }}" role="button">
+                            <span>
+                                Log in
+                            </span>
+                            <img src="{{ url_for('static', filename='bootstrap-4.4.1-dist/icons/chevron-right.svg') }}" width="25" height="25">
+                        </a>
+                    </li>
+                </ul>
+            </div>
+            <div class="container shadow-lg p-3 mb-5 bg-white rounded">
+                <form method="POST" action="#" >
+                    {{ form.hidden_tag() }} <!--This adds CSRF (Cross-Site Something) token || it protects the app-->
+                    <fieldset>
+                        <div class="form-row d-flex justify-content-between align-items-center pt-2">
+                            <div class="col-1 d-flex align-items-end justify-content-end">
+                                <img src="{{ url_for('static', filename='bootstrap-4.4.1-dist/icons/street-view-solid.svg') }}" width="42" height="42">
+                            </div>
+                            <div class="col-2 lead d-flex justify-content-center">
+                                {{ form.city.label(class="col-form-label") }}
+                            </div>
+                            <div class="col-7">
+                                {{ form.city(class="form-control form-control-lg border border-secondary") }}
+                            </div>
+                            <div class="col-2">
+                                {{ form.submit(class="btn btn-lg btn-outline-info") }}
+                            </div>
+                        </div>
+                    </fieldset>
+                </form>
+            </div>
+        {% endif %}
 
-    {%  if not current_user.is_authenticated %}
-        <div class="jumbotron">
-            <h1 class="display-4">Hei, welcome on TeamGate!</h1>
-            <p class="lead">Very brief but exciting description of the platform</p>
-            <hr class="my-4">
-            <ul class="nav nav-pills nav-fill">
-                <li class="nav-item">
-                    <a class="btn btn-outline-info" href="{{ url_for('registration') }}" role="button">Join the TeamGate
-                        <img src="{{ url_for('static', filename='bootstrap-4.4.1-dist/icons/trophy.svg') }}" width="28" height="28"></a>
-                </li>
-                <li class="nav-item">
-                    <a class="btn btn-outline-info" href="{{ url_for('registration') }}" role="button">Register your local activity
-                        <img src="{{ url_for('static', filename='bootstrap-4.4.1-dist/icons/geo.svg') }}" width="28" height="28"></a>
-                </li>
-                <li class="nav-item">
-                    <a class="btn btn-outline-info" href="{{ url_for('login') }}" role="button">Log in
-                        <img src="{{ url_for('static', filename='bootstrap-4.4.1-dist/icons/chevron-right.svg') }}" width="25" height="25"></a>
-                </li>
-            </ul>
-        </div>
-    {% endif %}
-    <div class="container shadow-lg p-3 mb-5 bg-white rounded">
-        <form method="POST" action="#" class="form-inlne">
-            {{ form.hidden_tag() }} <!--This adds CSRF (Cross-Site Something) token || it protects the app-->
-            <fieldset>
-                <div class="container form-row justify-content-center pt-2">
-                    <div class="pr-3 align-center pt-1">
-                        <img src="{{ url_for('static', filename='bootstrap-4.4.1-dist/icons/street-view-solid.svg') }}" width="36" height="36">
-                    </div>
-                    <div class="col-2 lead justify-content-center pt-1">
-                        {{ form.city.label(class="col-form-label") }}
-                    </div>
-                    <div class="col-7">
-                        {{ form.city(class="form-control form-control-lg border border-secondary") }}
-                    </div>
-                    <div class="col-2">
-                        {{ form.submit(class="btn btn-outline-info mb-2 btn-lg") }}
+        <div class="container">
+            <div class="card-deck">
+                <div class="card shadow p-3" style="width: 18rem;">
+                    <img src="{{ url_for('static', filename='match-icon/match-banner.jpg') }}" class="card-img-top" alt="...">
+                    <div class="card-body">
+                      <h5 class="card-title">MILAN vs. INTER</h5>
+                      <p class="card-text">Saturday h 20:30</p>
+                      <a href="#" class="btn btn-info">Look for a Pub</a>
                     </div>
                 </div>
-            </fieldset>
-        </form>
-    </div>
-    <div class="container">
-        <div class="card-deck">
-            <div class="card shadow p-3" style="width: 18rem;">
-              <img src="{{ url_for('static', filename='match-icon/match-banner.jpg') }}" class="card-img-top" alt="...">
-              <div class="card-body">
-                <h5 class="card-title">MILAN vs. INTER</h5>
-                <p class="card-text">Saturday h 20:30</p>
-                <a href="#" class="btn btn-info">Look for a Pub</a>
-              </div>
-            </div>
-            <div class="card shadow p-3" style="width: 18rem;">
-              <img src="{{ url_for('static', filename='match-icon/match-banner.jpg') }}" class="card-img-top" alt="...">
-              <div class="card-body">
-                <h5 class="card-title">GENOA vs. JUVENTUS</h5>
-                <p class="card-text">Saturday h 20:30</p>
-                <a href="#" class="btn btn-info">Look for a Pub</a>
-              </div>
-            </div>
-           <div class="card shadow p-3" style="width: 18rem;">
-              <img src="{{ url_for('static', filename='match-icon/match-banner.jpg') }}" class="card-img-top" alt="...">
-              <div class="card-body">
-                <h5 class="card-title">MANCHESTER vs. LIVERPOOL</h5>
-                <p class="card-text">Saturday h 20:30</p>
-                <a href="#" class="btn btn-info">Look for a Pub</a>
-              </div>
+                <div class="card shadow p-3" style="width: 18rem;">
+                    <img src="{{ url_for('static', filename='match-icon/match-banner.jpg') }}" class="card-img-top" alt="...">
+                    <div class="card-body">
+                        <h5 class="card-title">GENOA vs. JUVENTUS</h5>
+                        <p class="card-text">Saturday h 20:30</p>
+                        <a href="#" class="btn btn-info">Look for a Pub</a>
+                    </div>
+                </div>
+               <div class="card shadow p-3" style="width: 18rem;">
+                  <img src="{{ url_for('static', filename='match-icon/match-banner.jpg') }}" class="card-img-top" alt="...">
+                  <div class="card-body">
+                      <h5 class="card-title">MANCHESTER vs. LIVERPOOL</h5>
+                      <p class="card-text">Saturday h 20:30</p>
+                      <a href="#" class="btn btn-info">Look for a Pub</a>
+                  </div>
+                </div>
             </div>
         </div>
-    </div>
+    {% else %}
+        <div class="container shadow-lg p-3 mb-5 bg-white rounded">
+            <p class="display-4">In {{ city }} already more than {NUM.OF PUBS} local activities work with us!</p>
+        </div>
+        <div class="row">
+            <div class="col-lg-6">
+                <a class="btn btn-outline-info btn-lg btn-block btn-autowidth" href="{{ url_for('registration') }}" role="button">
+                    <span>
+                        Join the TeamGate
+                    </span>
+                    <img src="{{ url_for('static', filename='bootstrap-4.4.1-dist/icons/trophy.svg') }}" width="28" height="28">
+                </a>
+            </div>
+            <div class="col-lg-6">
+                <a class="btn btn-outline-info btn-lg btn-autowidth btn-block" href="{{ url_for('registration') }}" role="button">
+                    <span>
+                        Register your local activity
+                    </span>
+                    <img src="{{ url_for('static', filename='bootstrap-4.4.1-dist/icons/geo.svg') }}" width="28" height="28">
+                </a>
+            </div>
+        </div>
+    {% endif %}
 {% endblock pagecontent %}

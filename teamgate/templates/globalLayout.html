@@ -6,7 +6,9 @@
         <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 
         <!-- Bootstrap CSS -->
-        <link rel="stylesheet" type="text/css" href="/static/bootstrap-4.4.1-dist/css/bootstrap.min.css">
+        <link rel="stylesheet" type="text/css" href="/static/bootstrap-4.4.1-dist/bootstrap.min.css">
+        <!-- custom CSS -->
+        <link rel="stylesheet" type="text/css" href="/static/css/style.css">
 
         {% if title %}
             <title>{{ title }}</title>
@@ -23,7 +25,7 @@
 
                         <div class="container">
                             <a class="navbar-brand mb-0 h1" href="{{ url_for('welcome') }}">
-                                <img src=" {{ url_for('static', filename='bootstrap-4.4.1-dist/icons/logo.png') }}" width="30" height="30" class="d-inline-block align-top"> TeamGate
+                                <img src=" {{ url_for('static', filename='bootstrap-4.4.1-dist/icons/logo.pdf') }}" width="30" height="30" class="d-inline-block align-top"> TeamGate
                             </a>
                             {% if title %}
                                 <a class="nav-link active text-white" href="{{ url_for('welcome') }}">Homepage</a>
@@ -38,7 +40,7 @@
                 <nav class="navbar navbar-light">
                     <div class="container">
                         <a class="navbar-brand mb-0 h1" href="{{ url_for('welcome') }}">
-                            <img src=" {{ url_for('static', filename='bootstrap-4.4.1-dist/icons/logo.png') }}" width="30" height="30" class="d-inline-block align-top"> TeamGate
+                            <link src=" {{ url_for('static', filename='bootstrap-4.4.1-dist/icons/logo.pdf') }}" width="30" height="30" class="d-inline-block align-top"> TeamGate
                         </a>
                     </div>
                 </nav>

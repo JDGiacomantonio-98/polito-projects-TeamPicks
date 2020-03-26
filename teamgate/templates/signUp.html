@@ -1,67 +1,65 @@
 {% extends 'globalLayout.html' %}
 
     {% block pagecontent %}
-        <div class="shadow p-3 mb-5 bg-white rounded">
+        <div class="shadow p-3 mb-4 bg-white rounded">
             <!-- POST method even if exposes user data into POST request url, is safe because we implemented CSRF token -->
             <form method="POST" action="#">
                 {{ form.hidden_tag() }} <!--This adds CSRF (Cross-Site Something) token || it protects the app-->
                 <fieldset>
                     <legend>Registration form</legend>
-                    <div class="row">
-                        <div class="col">
-                            {{ form.firstName.label }}
+                    <div class="form-row">
+                        <div class="col-5 mt-1">
                             {{ form.firstName(class="form-control form-control-sm") }}
                         </div>
-                        <div class="col">
-                            {{ form.lastName.label }}
+                        <div class="col-5 mt-1">
                             {{ form.lastName(class="form-control form-control-sm") }}
                         </div>
+                        <div class="col-2 mt-1">
+                            {{ form.sex(class="form-control form-control-sm") }}
+                        </div>
                     </div>
-                    <div>
-                        {{ form.emailAddr.label(class="col-form-label") }}
+                    <div class="form-row">
+                        <div class="col-5 mt-3">
 
-                        {% if form.emailAddr.errors %}
-                            {{ form.emailAddr(class="form-control form-control-sm is-invalid") }}
-                            <div class="invalid-feedback">
-                                {% for error in form.emailAddr.errors %}
-                                    <div>
-                                        <span style="color: red"><small>{{ error }}</small></span>
-                                    </div>
-                                {% endfor %}
+                            {% if form.emailAddr.errors %}
+                                {{ form.emailAddr(class="form-control form-control-sm is-invalid") }}
+                                <div class="invalid-feedback">
+                                    {% for error in form.emailAddr.errors %}
+                                        <div>
+                                            <span style="color: red"><small>{{ error }}</small></span>
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                            {% else %}
+                                {{ form.emailAddr(class="form-control form-control-sm") }}
+                                <small class="form-text text-muted pl-1">We'll never share your email with anyone else.</small>
+                            {% endif %}
                             </div>
-                        {% else %}
-                            {{ form.emailAddr(class="form-control form-control-sm") }}
-                            <small class="form-text text-muted">We'll never share your email with anyone else.</small>
-                        {% endif %}
-                    </div>
-                     <div class="row">
-                         <div class="col">
-                            {{ form.username.label(class="col-form-label") }}
-                             <div class="input-group input-group-sm mb-2">
+                        <div class="col-5 mt-3">
+                            <div class="input-group input-group-sm mb-2">
                                 <div class="input-group-prepend">
                                     <span class="input-group-text">I am @</span>
                                 </div>
-                                 {% if form.username.errors %}
-                                     {{ form.username(class="form-control form-control-sm is-invalid") }}
-                                     <div class="invalid-feedback">
-                                         {% for error in form.username.errors %}
-                                             <div>
-                                                 <span style="color: red"><small>{{ error }}</small></span>
-                                             </div>
-                                         {% endfor %}
-                                     </div>
-                                 {% else %}
-                                     {{ form.username(class="form-control form-control-sm") }}
-                                 {%  endif %}
-                             </div>
+                                {% if form.username.errors %}
+                                    {{ form.username(class="form-control form-control-sm is-invalid") }}
+                                    <div class="invalid-feedback">
+                                        {% for error in form.username.errors %}
+                                            <div>
+                                                <span style="color: red"><small>{{ error }}</small></span>
+                                            </div>
+                                        {% endfor %}
+                                    </div>
+                                {% else %}
+                                    {{ form.username(class="form-control form-control-sm") }}
+                                {%  endif %}
+                            </div>
                         </div>
-                        <div class="col">
-                            {{ form.sex.label(class="col-form-label") }}
-                            {{ form.sex(class="form-control form-control-sm") }}
+                        <div class="col-2 mt-3">
+                            {{ form.city(class="form-control form-control-sm") }}
                         </div>
-                     </div>
-                    <div class="row">
-                        <div class="col">
+                    </div>
+                    <div class="form-row">
+                        <div class="col-5">
                             {{ form.psw.label(class="col-form-label") }}
                             {% if form.psw.errors %}
                                 {{ form.psw(class="form-control form-control-sm is-invalid") }}
@@ -74,8 +72,7 @@
                                 {{ form.psw(class="form-control form-control-sm") }}
                             {%  endif %}
                         </div>
-                        <div class="col">
-                            {{ form.confirmPsw.label(class="col-form-label") }}
+                        <div class="col-5 d-flex align-items-end">
                             {% if form.confirmPsw.errors %}
                                 {{ form.confirmPsw(class="form-control form-control-sm is-invalid") }}
                                 <div class="invalid-feedback">
@@ -87,18 +84,20 @@
                                 {{ form.confirmPsw(class="form-control form-control-sm  ") }}
                             {%  endif %}
                         </div>
+                        <div class="col-2 d-flex align-items-end">
+                            {{ form.submit(class="btn btn-info btn-sm") }}
+                        </div>
                     </div>
-                    <div>
-                        <br>
-                        {{ form.submit(class="btn btn-info") }}
+                    <div class="form-check pt-3">
+                        <input class="form-check-input" type="checkbox" value="" id="defaultCheck1">
+                        <label class="form-check-label" for="defaultCheck1">
+                            <small>I accept all <a href="#">Terms and Condition</a> agreement</small>
+                        </label>
                     </div>
-
                 </fieldset>
             </form>
         </div>
-
-        <!-- if isPub=TRUE then redirect to Pub additional information input form -->
-        <div>
+        <div class="pl-3">
             <small>Already have an account? <a href="{{ url_for('login') }}">Sign in here!</a></small>
             <br>
             <small>Do you own a local activity or pub? <a href="{{ url_for('login') }}">Register it here!</a></small>
