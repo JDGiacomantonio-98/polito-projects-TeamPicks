@@ -1,79 +1,73 @@
 {% extends 'globalLayout.html' %}
 
     {% block pagecontent %}
-
-        <h2 class="shadow p-3 mb-5 bg-white rounded">{{ current_user.username }} Profile</h2>
-        <img class="border border-dark" src="{{ imgFile }}" alt="{{ imgFile }}">
-        <p><small>{{ current_user.email }}</small></p>
-
-        {%  if 'function requested on profile page' %}
-            <div>
-                <!-- ADD FUNCTION SPECIFIC HTML CODE -->
+        <div class="row">
+            <div class="col-6">
+                <h2 class="shadow p-3 mb-5 bg-white rounded">{{ current_user.username }} Profile</h2>
+                <img class="border border-dark" src="{{ imgFile }}" alt="{{ imgFile }}">
+                <p><small>{{ current_user.email }}</small></p>
             </div>
-        {%  elif 'other function requested on profile page' %}
-            <div>
+            <div class="col-6">
+                <div class="shadow p-3 mb-5 bg-white rounded">
+                    <form method="POST" action="#" enctype="multipart/form-data">
+                        {{ form.hidden_tag() }} <!--This adds CSRF (Cross-Site Something) token || it protects the app-->
+                        <fieldset>
+                            <legend> DASHBOARD -- Change your profile info here ! </legend>
+                            <div>
+                                {{ form.firstName.label }}
+                                {{ form.firstName }}
+                            </div>
+                            <div>
+                                {{ form.lastName.label }}
+                                {{ form.lastName }}
+                            </div>
+                            <div>
+                                {{ form.username.label }}
+                                {{ form.username }}
 
-            </div>
-        <!-- other { % elif conditions % } -->
-        {%  endif %}
+                                {% if form.username.errors %}
+                                    {% for error in form.username.errors %}
+                                        <div>
+                                            <span style="color: red"><small>{{ error }}</small></span>
+                                        </div>
+                                    {% endfor %}
+                                {% endif %}
 
-        <div class="shadow p-3 mb-5 bg-white rounded">
-            <form method="POST" action="#" enctype="multipart/form-data">
-                {{ form.hidden_tag() }} <!--This adds CSRF (Cross-Site Something) token || it protects the app-->
-                <fieldset>
-                    <legend> DASHBOARD -- Change your profile info here ! </legend>
-                    <div>
-                        {{ form.firstName.label }}
-                        {{ form.firstName }}
-                    </div>
-                    <div>
-                        {{ form.lastName.label }}
-                        {{ form.lastName }}
-                    </div>
-                    <div>
-                        {{ form.username.label }}
-                        {{ form.username }}
+                            </div>
+                            <div>
+                                {{ form.emailAddr.label }}
+                                {{ form.emailAddr }}
 
-                        {% if form.username.errors %}
-                            {% for error in form.username.errors %}
-                                <div>
-                                    <span style="color: red"><small>{{ error }}</small></span>
-                                </div>
-                            {% endfor %}
-                        {% endif %}
+                                {% if form.emailAddr.errors %}
+                                    {% for error in form.emailAddr.errors %}
+                                        <div>
+                                            <span style="color: red"><small>{{ error }}</small></span>
+                                        </div>
+                                    {% endfor %}
+                                {% endif %}
 
-                    </div>
-                    <div>
-                        {{ form.emailAddr.label }}
-                        {{ form.emailAddr }}
+                            </div>
+                            <div>
+                                {{ form.img.label }}
+                                {{ form.img }}
 
-                        {% if form.emailAddr.errors %}
-                            {% for error in form.emailAddr.errors %}
-                                <div>
-                                    <span style="color: red"><small>{{ error }}</small></span>
-                                </div>
-                            {% endfor %}
-                        {% endif %}
+                                {% if form.img.errors %}
+                                    {% for error in form.img.errors %}
+                                        <div>
+                                            <span style="color: red"><small>{{ error }}</small></span>
+                                        </div>
+                                    {% endfor %}
+                                {% endif %}
 
-                    </div>
-                    <div>
-                        {{ form.img.label }}
-                        {{ form.img }}
-
-                        {% if form.img.errors %}
-                            {% for error in form.img.errors %}
-                                <div>
-                                    <span style="color: red"><small>{{ error }}</small></span>
-                                </div>
-                            {% endfor %}
-                        {% endif %}
-
-                    </div>
-                </fieldset>
-                <div>
-                    <br>{{ form.submit }}
+                            </div>
+                        </fieldset>
+                        <div>
+                            <br>{{ form.submit }}
+                        </div>
+                    </form>
                 </div>
-            </form>
+            </div>
         </div>
+
 
     {% endblock pagecontent %}

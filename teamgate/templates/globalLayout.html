@@ -6,7 +6,7 @@
         <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 
         <!-- Bootstrap CSS -->
-        <link rel="stylesheet" type="text/css" href="/static/bootstrap-4.4.1-dist/bootstrap.min.css">
+        <link rel="stylesheet" type="text/css" href="/static/css/bootstrap-4.4.1-dist/bootstrap.min.css">
         <!-- custom CSS -->
         <link rel="stylesheet" type="text/css" href="/static/css/style.css">
 
@@ -15,40 +15,76 @@
         {% else %}
             <title>Welcome on TeamGATE!</title>
         {% endif %}
-        <link rel="icon" type="image/png" href={{ url_for('static', filename='bootstrap-4.4.1-dist/icons/child-solid.svg') }}>
+        <link rel="icon" type="image/png" href={{ url_for('static', filename='/app-icons/child-solid.svg') }}>
     </head>
     <body>
         <header class="pb-2">
-            {%  if current_user.is_authenticated %}
-                <nav class="navbar navbar-light bg-info nav-fill">
-                    {% block navbar %}
-
-                        <div class="container">
-                            <a class="navbar-brand mb-0 h1" href="{{ url_for('welcome') }}">
-                                <img src=" {{ url_for('static', filename='bootstrap-4.4.1-dist/icons/logo.pdf') }}" width="30" height="30" class="d-inline-block align-top"> TeamGate
-                            </a>
-                            {% if title %}
-                                <a class="nav-link active text-white" href="{{ url_for('welcome') }}">Homepage</a>
-                            {%  endif %}
-                            <a class="nav-link active text-white" href="#">Become a Pub owner</a>
-                            <a class="nav-link active text-white" href="{{ url_for('contact') }}">Contact us!</a>
-                        </div>
-
-                    {% endblock navbar %}
-                </nav>
-            {% else %}
-                <nav class="navbar navbar-light">
-                    <div class="container">
-                        <a class="navbar-brand mb-0 h1" href="{{ url_for('welcome') }}">
-                            <link src=" {{ url_for('static', filename='bootstrap-4.4.1-dist/icons/logo.pdf') }}" width="30" height="30" class="d-inline-block align-top"> TeamGate
-                        </a>
-                    </div>
-                </nav>
-            {% endif %}
+            <nav class="navbar navbar-light">
+                <div class="container">
+                    <a class="navbar-brand mb-0 h1" href="{{ url_for('welcome') }}">
+                        <img src=" {{ url_for('static', filename='/app-icons/logo-min.png') }}" width="30" height="30" class="d-inline-block align-top">
+                        TeamGate
+                    </a>
+                    {% if current_user.is_authenticated %}
+                        {% block navbar %}
+                            <div class="media">
+                                <div class="media-body">
+                                    <a class="nav-link active text-dark" href="{{ url_for('openProfile', userInfo=current_user.username) }}">
+                                        Profile
+                                    </a>
+                                </div>
+                                <a class="align-self-center mr-3" href="{{ url_for('openProfile', userInfo=current_user.username) }}">
+                                    <img src="{{ url_for('static', filename='/app-icons/user-regular.svg') }}" width="20" height="20">
+                                </a>
+                            </div>
+                            <div class="media">
+                                <div class="media-body">
+                                    <a class="nav-link active text-dark" href="{{ url_for('findPub') }}">
+                                        Find a Pub
+                                    </a>
+                                </div>
+                                <a class="align-self-center mr-3" href="#">
+                                    <img class="align-self-center mr-3" src="{{ url_for('static', filename='/app-icons/map-marked-alt-solid.svg') }}" width="24" height="24">
+                                </a>
+                            </div>
+                            <div class="media">
+                                <div class="media-body">
+                                    <a class="nav-link active text-dark" href="#">
+                                        Chats
+                                    </a>
+                                </div>
+                                <a class="align-self-center mr-3" href="#">
+                                    <img class="align-self-center mr-3" src="{{ url_for('static', filename='/app-icons/comments-regular.svg') }}" width="24" height="24">
+                                </a>
+                            </div>
+                            <div class="media">
+                                <div class="media-body">
+                                    <a class="nav-link active text-dark" href="#">
+                                        Booking manager
+                                    </a>
+                                </div>
+                                <a class="align-self-center mr-3" href="#">
+                                    <img class="align-self-center mr-3" src="{{ url_for('static', filename='/app-icons/clipboard-check-solid.svg') }}" width="24" height="24">
+                                </a>
+                            </div>
+                            <div class="media">
+                                <div class="media-body">
+                                    <a class="nav-link active text-dark" href="{{ url_for('logout') }}">
+                                        Log Out
+                                    </a>
+                                </div>
+                                <a class="align-self-center mr-3" href="{{ url_for('logout') }}">
+                                    <img class="align-self-center mr-3" src="{{ url_for('static', filename='/app-icons/sign-out-alt-solid.svg') }}" width="25" height="25">
+                                </a>
+                            </div>
+                        {% endblock navbar %}
+                    {% endif %}
+                </div>
+            </nav>
         </header>
         <main class="container">
             {% with messages = get_flashed_messages(with_categories=true) %}
-            <!-- with_categories=true allows the code to grab the flash msg preasigned bootstrap class -->
+            <!-- with_categories=true allows the code to grab the flash msg pre-assigned bootstrap class -->
                 {% if messages %}
                     {% for category, message in messages %}
                         <div class="alert alert-{{ category }}">
@@ -66,9 +102,9 @@
 
         <!-- Optional JavaScript -->
         <!-- jQuery first, then Popper.js, then Bootstrap JS -->
-        <script src="/static/bootstrap-4.4.1-dist/js/jquery.min.js"></script>
+        <script src="/static/js/jquery.min.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
-        <script src='/static/bootstrap-4.4.1-dist/js/bootstrap.min.js'></script>
+        <script src='/static/js/bootstrap-4.4.1-dist/bootstrap.min.js'></script>
     </body>
     <footer>
         <hr>

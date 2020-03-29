@@ -1,0 +1,71 @@
+{% extends 'globalLayout.html' %}
+
+{% block pagecontent %}
+    <div class="pricing-header px-3 py-3 pb-md-4 mx-auto text-center">
+      <h1 class="display-4">Pricing</h1>
+      <p class="lead"><b>Put something here!</b> Lorem ipsum dolor sit amet, consectetur adipisicing elit. Ea, pariatur?</p>
+    </div>
+    <div class="container">
+      <div class="card-deck mb-3 text-center">
+        <div class="card mb-4 shadow-sm">
+          <div class="card-header">
+            <h4 class="my-0 font-weight-normal">Free</h4>
+          </div>
+          <div class="card-body">
+            <h1 class="card-title pricing-card-title" style="font-size: 35px">$0 <small class="text-muted">/ mo</small></h1>
+            <ul class="list-group m-3 mb-4 text-md-left">
+              <li>Register your pub</li>
+              <li>Manage reservations via website</li>
+              <li>other feedbacks?</li>
+            </ul>
+          </div>
+            <div class="card-footer">
+                <button type="button" class="btn btn-lg btn-block btn-outline-primary" onclick="window.location.href='{{ url_for('registration', userType='partner', accType='free') }}'">
+                    Register
+                </button>
+            </div>
+        </div>
+        <div class="card mb-4 shadow-lg">
+          <div class="card-header">
+            <h4 class="my-0 font-weight-normal " style="font-size: 35px">Basic</h4>
+          </div>
+          <div class="card-body">
+            <h1 class="card-title pricing-card-title" style="font-size: 35px">$ 30 <small class="text-muted">/ mo</small></h1>
+            <ul class="list-group m-3 mb-4 text-md-left">
+              <li>Register your pub</li>
+              <li>Manage reservations via website</li>
+              <li>Get infos about most anticipated matches of your typical customers</li>
+              <li>15$ credits for adv on website</li>
+              <li>other feedbacks?</li>
+            </ul>
+          </div>
+          <div class="card-footer">
+            <button type="button" class="btn btn-lg btn-block btn-primary" onclick="window.location.href='{{ url_for('registration', userType='partner', accType='basic') }}'">
+                Register
+            </button>
+          </div>
+        </div>
+        <div class="card mb-4 shadow-sm">
+          <div class="card-header">
+            <h4 class="my-0 font-weight-normal">Premium</h4>
+          </div>
+          <div class="card-body">
+            <h1 class="card-title pricing-card-title" style="font-size: 35px">$ 100 <small class="text-muted">/ mo</small></h1>
+            <ul class="list-group m-3 mb-4 text-md-left">
+              <li>Register your pub</li>
+              <li>All free and basic functions</li>
+              <li>Get access to active groups list in your town and invite them to your place!</li>
+              <li>Add TeamGate Decision Support System to your business toolkit</li>
+              <li>30$ credits for adv on the website</li>
+              <li>other feedbacks?</li>
+            </ul>
+          </div>
+            <div class="card-footer">
+            <button type="button" class="btn btn-lg btn-block btn-primary" onclick="window.location.href='{{ url_for('registration', userType='partner', accType='premium') }}'">
+                Register
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+{% endblock %}

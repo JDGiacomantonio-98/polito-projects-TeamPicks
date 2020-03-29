@@ -1,0 +1,13 @@
+Hi {{ user.username }}, you received this email because our server received a password reset request.
+
+Click on the following link to reset your password :
+
+{{ url_for('pswReset', token=token, _external=True) }}
+
+If you not recognize this request please ignore it and remove this email from your inbox.
+In this way, no changes will be applied to your profile.
+
+See ya!
+The TeamGate staff
+
+Note: replies to this email address are not monitored.

@@ -1,49 +1,67 @@
 # DATABASE OBJECT CLASS SPECIFICATION MODULE
 # SQLAlchemy produces Object-Oriented Databases
-
+from flask import session
 from teamgate import app, db, loginManager
 from itsdangerous import TimedJSONWebSignatureSerializer as timedTokenizer
 from flask_login import UserMixin
 
 # DATABASE LEVEL FUNCTIONS #
 
+# this function has to be adapted to our purposes because we have not an only db.Model type but two
+# I m think of overriding some flask-login source functions
+
 
 @loginManager.user_loader
-def loadUser(userID):
-    return User.query.get(userID)
+def loadUser(user_id):
+
+    if session.get('dbModelType') == 'user':
+        return User.query.get(user_id)
+    else:
+        return Pub.query.get(user_id)
 
 # DATABASE OBJECT STRUCTURE #
 
 
 class USER(db.Model, UserMixin):
-    """A {} named userInfo would better suit the role of specific user infos container """
+    # {} named userInfo would better suit the role of specific user infos container
     __abstract__ = True
 
     id = db.Column(db.Integer, primary_key=True)
+    # for Pubs username will be identify their businessName
     username = db.Column(db.String(15), unique=True, nullable=False)
     city = db.Column(db.String, nullable=True)
     email = db.Column(db.String, unique=True, nullable=False)
+    confirmed = db.Column(db.Boolean, nullable=False, default=False)
 
-    """ nullable=True is only a temporary solution """
-    lastSession = db.Column(db.DateTime, nullable=True)
-
-    """ Following value stores hashed user password """
+    # Following value stores hashed user password
     pswHash = db.Column(db.String(60), unique=False, nullable=False)
-    type = db.Column(db.String)
 
-    def create_ResetToken(self, expireInSec=900):
-        return timedTokenizer(app.config['SECRET_KEY'], expireInSec).dumps({'userID': self.id}).decode('utf-8')
+    def createToken(self, expireInSec=900):
+        return timedTokenizer(app.config['SECRET_KEY'], expireInSec).dumps({'user-id': self.id}).decode('utf-8')
+
+    def confirmAccount(self, token):
+        try:
+            userID = timedTokenizer(app.config['SECRET_KEY']).loads(token)
+        except:
+            return False
+        if userID.get('user-id') != self.id:
+            self.confirmed = False
+            return False
+        else:
+            self.confirmed = True
+            db.session.commit()
+            return True
 
     @staticmethod
-    def verify_ResetToken(resetToken):
+    def verifyToken_pswReset(resetToken):
         try:
-            userID = timedTokenizer(app.config['SECRET_KEY']).loads(resetToken)['userID']
+            userID = timedTokenizer(app.config['SECRET_KEY']).loads(resetToken)['user-id']
         except:
             return None
-        return User.query.get(userID)
-
-    def __str__(self):
-        return "USER n.{}\ntype=\t'user'\nusername=\t{}\nemail address=\t{}\nfirst Name=\t{}\nLast Name=\t{}\nLast time online=\t{}".format(self.id, self.username, self.email, self.firstName, self.lastName, self.lastSession)
+        if userID.get('user-id') != userID:
+            return None
+        else:
+            return User.query.get(userID)
 
 
 class User(USER):
@@ -58,19 +76,28 @@ class User(USER):
     sports = db.Column(db.Integer, nullable=True)
     groups = db.Column(db.Integer, nullable=True)
 
+    """ nullable=True is only a temporary solution """
+    lastSession = db.Column(db.DateTime, nullable=True)
+
+    def fingerPrint(self):
+        for attr, value in self.__dict__.items():
+            print(attr, value)
 
 class Pub(USER):
-    __tablename__ = 'pubs'
+    __tablename__ = 'local-partners'
 
     ownerFirstName = db.Column(db.String, nullable=False)
     ownerLastName = db.Column(db.String, nullable=False)
-    address = db.Column(db.String, nullable=False)
-    name = db.Column(db.String, nullable=False)
-    bookable = db.Column(db.Boolean, nullable=False)
+    businessAddress = db.Column(db.String, nullable=False)
+    isBookable = db.Column(db.Boolean, nullable=False)
     seatsMax = db.Column(db.Integer, nullable=False)
-    seatsBooked = db.Column(db.Integer, nullable=False)
-    subsType = db.Column(db.Binary, nullable=False)
-    subsExpirationDate = db.Column(db.DateTime, nullable=False)
+    seatsBooked = db.Column(db.Integer, nullable=False, default=0)
+    businessRating = db.Column(db.Integer, nullable=False, default=0)
+    # in future the following column should store only hex codes to name different acc-subscriptions
+    subsType = db.Column(db.String, nullable=False, default='free-acc')
+    # following value should be not nullable
+    subsExpirationDate = db.Column(db.DateTime, nullable=True)
+    businessDescription = db.Column(db.Text, nullable=True, default='let your customer know what you do best.')
 
 
 class Group(db.Model):

@@ -1,27 +1,30 @@
 {% extends 'globalLayout.html' %}
 
     {% block pagecontent %}
-        <div class="shadow p-3 mb-5 bg-white rounded">
+        <div class="shadow p-3 m-0 rounded" style="width: 60%">
             <!-- POST method even if exposes user data into POST request url, is safe because we implemented CSRF token -->
-            <form method="POST" action="#" class="form-inline">
+            <form method="POST" action="#">
                 {{ form.hidden_tag() }} <!--This adds CSRF (Cross-Site Something) token || it protects the app-->
                 <fieldset>
                     <legend>Reset password</legend>
-                    <div class="form-group">
+                    <div>
                         {{ form.emailAddr.label }}
-
-                        {% if form.emailAddr.errors %}
-                            {{ form.emailAddr(class="form-control form-control-sm is-invalid") }}
-                            <div class="invalid-feedback">
-                                {% for error in form.emailAddr.errors %}
-                                    <small><span style="color: red">{{ error }}</span></small>
-                                {% endfor %}
-                            </div>
-                        {% else %}
-                            {{ form.emailAddr(class="form-control mx-sm-3") }}
-                        {%  endif %}
-                        {{ form.submit(class="btn btn-outline-danger") }}
                     </div>
+                        <div class="col-6 col-md-12 justify-content-start justify-content-md-start">
+                            {% if form.emailAddr.errors %}
+                                {{ form.emailAddr(class="form-control form-control-sm is-invalid") }}
+                                <div class="invalid-feedback">
+                                    {% for error in form.emailAddr.errors %}
+                                        <small><span style="color: red">{{ error }}</span></small>
+                                    {% endfor %}
+                                </div>
+                            {% else %}
+                                {{ form.emailAddr(class="form-control mx-sm-3") }}
+                            {%  endif %}
+                        </div>
+                        <div class="col-6 col-md-12 d-flex justify-content-md-start align-items-center">
+                            {{ form.submit(class="btn btn-outline-danger") }}
+                        </div>
                 </fieldset>
             </form>
         </div>

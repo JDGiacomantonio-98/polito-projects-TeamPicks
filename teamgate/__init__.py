@@ -29,8 +29,11 @@ db = SQLAlchemy(app)
 pswBurner = Bcrypt(app)
 
 loginManager = LoginManager(app)
+loginManager.session_protection = 'strong'
 loginManager.login_view = 'login'
+loginManager.login_message_category = 'info'
+
 mail = Mail(app)
 
-""" following instruction is located here in order to avoid circular imports when app.run """
+# following instruction is located here in order to avoid circular imports when app.run
 from teamgate import routes
