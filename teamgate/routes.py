@@ -26,7 +26,7 @@ def welcome():
 
 @app.route('/pricing')
 def showPricing():
-    return render_template('pricing.html')
+    return render_template('pricing.html', title='Pricing')
 
 
 @app.route('/<userType>/<accType>/signup', methods=['GET', 'POST'])
@@ -37,7 +37,7 @@ def registration(userType, accType):
         form = registrationForm_user()
     else:
         form = registrationForm_pub()
-        form.subsType.data = accType
+        form.subsType.data = accType   # used to auto-fill account type
     if request.method == 'GET':
         return render_template('signUp.html', title='Registration page', form=form, userType=userType)
     else:
@@ -76,7 +76,8 @@ def registration(userType, accType):
                     newItem.isBookable = True
             db.session.add(newItem)
             db.session.commit()
-            sendToken_email(newItem, '/email-copy/confirm-registration', newItem.createToken(), 'Account Confirmation')
+            newItem.send_ConfirmationEmail()
+            session.clear()
             flash("Hi {}, your profile has been successfully created but is not yet active.".format(form.username.data),
                   'success')
             flash('A confirmation email has been sent to you. Open your inbox!', 'warning')
@@ -86,32 +87,10 @@ def registration(userType, accType):
             return render_template('signUp.html', title='Registration page', form=form, userType=userType)
 
 
-@app.route('/confirm-account/<token>')
-@login_required
-def confirmAccount(token):
-    if current_user.confirmed:
-        flash('You account has already been activated.', 'secondary')
-        return redirect(url_for('welcome'))
-    if current_user.confirmAccount(token):
-        flash('Account confirmed successfully. Great, you are good to go now!', 'success')
-    else:
-        flash('The confirmation link is invalid or has expired.', 'danger')
-    return redirect(url_for('welcome'))
-
-@login_required
-@app.route('/delete-account')
-def deleteAccount():
-    if current_user:
-        db.session.remove(current_user)
-        flash('Your account has been successfully removed. We are sad about that :C '
-              'Tranne se sei un meccanico, se sei un meccanico SPERIAMO CHE NON TORNI PIU SATANA')
-        return redirect(url_for('welcome'))
-
-
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if current_user.is_authenticated:
-        return redirect(url_for('welcome'))
+        return render_template('homePage.html')
     form = loginForm()
     if request.method == 'GET':
         return render_template('login.html', title='Login page', form=form)
@@ -130,6 +109,7 @@ def login():
                 endPoint = 'pub'
             session['dbModelType'] = endPoint
             if query and pswBurner.check_password_hash(query.pswHash, form.psw.data):
+                session.permanent = True
                 login_user(query, remember=form.rememberMe.data)
                 flash("Hi {}, welcome back!".format(query.username), 'success')
                 nextPage = request.args.get('next')
@@ -149,32 +129,63 @@ def login():
 @app.route('/logout')
 def logout():
     logout_user()
+    flash('You are now log out from the Gate. We hope to see you soon again!','secondary')
     return redirect(url_for('welcome'))
+
+
+@app.route('/confirm-account/<token>')
+@login_required
+def confirmAccount(token):
+    if current_user.confirmed:
+        flash('You account has already been activated.', 'secondary')
+        return redirect(url_for('welcome'))
+    if current_user.confirmAccount(token):
+        flash('Account confirmed successfully. Great, you are good to go now!', 'success')
+    else:
+        flash('The confirmation link is invalid or has expired.', 'danger')
+    return redirect(url_for('welcome'))
+
+
+@login_required
+@app.route('/delete-account')
+def deleteAccount():
+    if current_user:
+        db.session.delete(current_user)
+        db.session.commit()
+        flash('Your account has been successfully removed. We are sad about that :C', 'secondary')
+        return redirect(url_for('welcome'))
 
 
 @app.route('/profile/<userInfo>/dashboard', methods=['GET', 'POST'])
 @login_required
-def openProfile(userInfo):
-    if ('default_' in current_user.img) or (current_user.img == 'favicon.png'):
-        imgFile = url_for('static', filename='profile_pics/AVATAR/' + current_user.img)
-    else:
-        imgFile = url_for('static', filename='profile_pics/users/' + current_user.img)
+def showProfile(userInfo):
     form = accountDashboardForm()
+    if 'user' == session.get('dbModelType'):
+        if ('default_' in current_user.img) or (current_user.img == 'favicon.png'):
+            imgFile = url_for('static', filename='profile_pics/AVATAR/' + current_user.img)
+        else:
+            imgFile = url_for('static', filename='profile_pics/users/' + current_user.img)
     if request.method == 'GET':
-        form.firstName.data = current_user.firstName
-        form.lastName.data = current_user.lastName
-        form.username.data = current_user.username
-        form.emailAddr.data = current_user.email
+        if 'user' == session.get('dbModelType'):
+            form.firstName.data = current_user.firstName
+            form.lastName.data = current_user.lastName
+            form.username.data = current_user.username
+            form.emailAddr.data = current_user.email
+        else:
+            return render_template('pricing.html')
     else:
         if form.validate_on_submit():
-            current_user.firstName = form.firstName.data
-            current_user.lastName = form.lastName.data
-            current_user.email = form.emailAddr.data
-            current_user.img = save_profilePic(form.img.data)
-            current_user.username = form.username.data
-            db.session.commit()
-            flash('Your profile has been updated!', 'success')
-            return redirect(url_for('openProfile', userInfo=current_user.username))
+            if form.submit.data:
+                current_user.firstName = form.firstName.data
+                current_user.lastName = form.lastName.data
+                if current_user.email != form.emailAddr.data:
+                    current_user.confirmed = False
+                    current_user.email = form.emailAddr.data
+                    current_user.send_ConfirmationEmail()
+                current_user.img = save_profilePic(form.img.data)
+                current_user.username = form.username.data
+                db.session.commit()
+            return redirect(url_for('showProfile', userInfo=current_user.username))
     return render_template('profilePage.html', title=current_user.firstName + " " + current_user.lastName, imgFile=imgFile, form=form)
 
 
@@ -198,18 +209,29 @@ def save_profilePic(imgFile):
 
 def resizeTo125(imgFile):
     resizedImg = Image.open(imgFile)
-    resizedImg.thumbnail((125, 125))
+    resizedImg.thumbnail((200, 200))
 
     return resizedImg
 
 
-def sendToken_email(user, templatePath, token, mailTitle):
+def sendEmail(user, templatePath, mailTitle, token=None):
     msg = Message('TeamGate Account -- ' + mailTitle.upper(),
                   sender='teamgate.help@gmail.com',
                   recipients=[user.email])
-    msg.body = render_template(templatePath + '.txt', token=token, user=user)
+    if token:
+        msg.body = render_template(templatePath + '.txt', token=token, user=user)
+    else:
+        msg.body = render_template(templatePath + '.txt', user=user)
     # _external parameter allow to generate an absolute URL whose works outside app environment
     mail.send(msg)
+
+
+@app.route('/<callerRoute>/acc-confirmation')
+@login_required
+def sendConfirmation(callerRoute):
+    current_user.send_ConfirmationEmail()
+    if callerRoute == 'profile':
+        return redirect(url_for('showProfile', userInfo=current_user.username))
 
 
 @app.route('/reset-request', methods=['GET', 'POST'])
@@ -222,8 +244,8 @@ def send_resetRequest():
         if form.validate_on_submit():
             # send user an email
             user = User.query.filter_by(email=form.emailAddr.data).first()
-            sendToken_email(user, 'email-copy/reset-psw', user.createToken(), 'psw reset')
-            flash('An email has been sent to your inbox containing all instructions to reset your psw!', 'secondary')
+            sendEmail(user, 'email-copy/reset-psw', 'psw reset', token=user.createToken())
+            flash('An email has been sent to your inbox containing all instructions to reset your password!', 'warning')
             return redirect(url_for('login'))
     return render_template('resetRequest.html', title='Reset your psw', form=form)
 
@@ -246,7 +268,7 @@ def pswReset(token):
                 db.session.commit()
                 login_user(user, remember=False)
                 flash("Hi {}, your password has been successfully reset. Welcome back on board!".format(current_user.username), 'success')
-                return redirect(url_for('openProfile', userInfo=current_user.username))
+                return redirect(url_for('showProfile', userInfo=current_user.username))
     return render_template('resetPsw.html', title='Resetting your psw', form=form)
 
 
@@ -258,6 +280,26 @@ def contact():
 @app.route('/find-a-pub')
 def findPub():
     return render_template('findPub.html')
+
+
+@app.errorhandler(403)
+def error_403(error):
+    return render_template('errors/403.html'), 403
+
+
+@app.errorhandler(404)
+def error_404(error):
+    return render_template('errors/404.html'), 404
+
+
+@app.errorhandler(500)
+def error_500(error):
+    return render_template('errors/500.html'), 500
+
+
+@app.route('/<callerPage>/work-in-progress')
+def show_wip(callerPage):
+    return render_template('errors/wip.html')
 
 
 @app.route('/HTMLHelp')

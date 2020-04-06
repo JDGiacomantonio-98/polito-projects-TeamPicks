@@ -3,17 +3,25 @@
 {% block pagecontent %}
     {% if request.method=='GET' %}
         {%  if not current_user.is_authenticated%}
-            <div class="jumbotron">
-                <h1 class="display-4 text-center text-md-left">Hei, welcome on TeamGate!</h1>
-                <p class="lead">Your best aggregator for matches and pubs.</p>
-                <hr class="my-4">
+            <div class="jumbotron mt-3">
+                <div class="row">
+                    <div class="col-9">
+                        <h1 class="display-4 text-center text-md-left">Hei, welcome on TeamGate!</h1>
+                        <p class="lead">Your best aggregator for matches and pubs.</p>
+                    </div>
+                    <div class="col-2">
+                        <img src="{{ url_for('static', filename='app-icons/logo-min.png') }}" style="width: 120px; height: 120px">
+                    </div>
+
+                </div>
+                <hr class="my-3">
                 <ul class="nav nav-pills nav-fill">
                     <li class="nav-item py-1 py-md-0">
                         <a class="btn btn-outline-info btn-autowidth" href="{{ url_for('registration', userType='user', accType='free') }}" role="button">
                             <span>
                                 Join the TeamGate
                             </span>
-                            <img class="" src="{{ url_for('static', filename='/app-icons/trophy.svg') }}" width="28" height="28">
+                            <i class="fas fa-users"  data-fa-transform="grow-2 right-4" style="color: black"></i>
                         </a>
                     </li>
                     <li class="nav-item py-1 py-md-0">
@@ -21,7 +29,10 @@
                             <span>
                                 Register your local activity
                             </span>
-                            <img src="{{ url_for('static', filename='/app-icons/geo.svg') }}" width="28" height="28">
+                            <span class="fa-1x">
+                                <i class="fas fa-plus" data-fa-transform="up-13 right-6" style="color: #000; width: 11px; height: 11px"></i>
+                                <i class="fas fa-location-arrow" style="color: #000;"></i>
+                            </span>
                         </a>
                     </li>
                     <li class="nav-item py-1 py-md-0">
@@ -29,7 +40,7 @@
                             <span>
                                 Log in
                             </span>
-                            <img src="{{ url_for('static', filename='/app-icons/chevron-right.svg') }}" width="25" height="25">
+                            <i class="fas fa-fingerprint" style="width: 18px; height: 18px"></i>
                         </a>
                     </li>
                 </ul>
@@ -47,9 +58,10 @@
                     {{ form.hidden_tag() }} <!--This adds CSRF (Cross-Site Something) token || it protects the app-->
                     <fieldset>
                         <div class="form-row d-flex justify-content-between align-items-center pt-2">
-                            <div class="col-1 d-flex align-items-end justify-content-end">
-                                <img src="{{ url_for('static', filename='/app-icons/street-view-solid.svg') }}" width="42" height="42">
-                            </div>
+                            <span class="fa-1x col-1 d-flex align-items-end justify-content-end">
+                                <i class="fas fa-database" data-fa-transform="grow-2 right-15" style="color: grey; width: 40px; height: 40px"></i>
+                                <i class="fas fa-search" data-fa-transform="up-1 shrink-2 right-8" style="color: cadetblue; width: 42px; height: 42px"></i>
+                            </span>
                             <div class="col-2 lead d-flex justify-content-center">
                                 {{ form.city.label(class="col-form-label") }}
                             </div>
@@ -94,24 +106,27 @@
             </div>
         </div>
     {% else %}
-        <div class="container shadow-lg p-3 mb-5 bg-white rounded">
+        <div class="container shadow-lg p-3 mb-5 mt-3 bg-white rounded">
             <p class="display-4">In {{ city }} already more than {{ pubs }} local activities work with us!</p>
         </div>
         <div class="row">
             <div class="col-lg-6">
-                <a class="btn btn-outline-info btn-lg btn-block btn-autowidth" href="{{ url_for('registration', type='user') }}" role="button">
+                <a class="btn btn-outline-info btn-lg btn-block btn-autowidth" href="{{ url_for('registration', userType='user', accType='free') }}" role="button">
                     <span>
                         Join the TeamGate
                     </span>
-                    <img src="{{ url_for('static', filename='/app-icons/trophy.svg') }}" width="28" height="28">
+                    <i class="fas fa-users"  data-fa-transform="grow-2 right-4" style="color: black"></i>
                 </a>
             </div>
             <div class="col-lg-6">
-                <a class="btn btn-outline-info btn-lg btn-autowidth btn-block" href="{{ render_template('pricing.html') }}" role="button">
+                <a class="btn btn-outline-info btn-lg btn-autowidth btn-block" href="{{ url_for('showPricing') }}" role="button">
                     <span>
                         Register your local activity
                     </span>
-                    <img src="{{ url_for('static', filename='/app-icons/geo.svg') }}" width="28" height="28">
+                     <span class="fa-1x">
+                         <i class="fas fa-plus" data-fa-transform="up-13 right-6" style="color: #000; width: 11px; height: 11px"></i>
+                         <i class="fas fa-location-arrow" style="color: #000;"></i>
+                     </span>
                 </a>
             </div>
         </div>

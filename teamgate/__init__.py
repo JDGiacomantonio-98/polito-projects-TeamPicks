@@ -1,7 +1,6 @@
-"""
-    FLASK APP INIT MODULE -- First executed module
-    Initialize all needed objects to make app run properly
-"""
+#    FLASK APP INIT MODULE -- First executed module
+#    Initialize all needed objects to make app run properly
+
 import os
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy

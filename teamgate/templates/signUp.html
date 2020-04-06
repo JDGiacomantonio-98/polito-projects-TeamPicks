@@ -1,7 +1,7 @@
 {% extends 'globalLayout.html' %}
 
 {% block pagecontent %}
-    <div class="shadow p-3 mb-4 bg-white rounded">
+    <div class="shadow p-3 mb-4 mt-3 bg-white rounded">
         <!-- POST method even if exposes user data into POST request url, is safe because we implemented CSRF token -->
         <form method="POST" action="#">
             {{ form.hidden_tag() }} <!--This adds CSRF (Cross-Site Something) token || it protects the app-->

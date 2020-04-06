@@ -1,7 +1,8 @@
 # DATABASE OBJECT CLASS SPECIFICATION MODULE
 # SQLAlchemy produces Object-Oriented Databases
-from flask import session
-from teamgate import app, db, loginManager
+from flask import session, render_template, flash
+from flask_mail import Message
+from teamgate import app, db, loginManager, mail
 from itsdangerous import TimedJSONWebSignatureSerializer as timedTokenizer
 from flask_login import UserMixin
 
@@ -58,10 +59,16 @@ class USER(db.Model, UserMixin):
             userID = timedTokenizer(app.config['SECRET_KEY']).loads(resetToken)['user-id']
         except:
             return None
-        if userID.get('user-id') != userID:
-            return None
-        else:
-            return User.query.get(userID)
+        return User.query.get(userID)
+
+    def send_ConfirmationEmail(self):
+        msg = Message('TeamGate Account -- ' + 'ACCOUNT CONFIRMATION',
+                      sender='teamgate.help@gmail.com',
+                      recipients=[self.email])
+        msg.body = render_template('/email-copy/confirm-registration' + '.txt', token=self.createToken(), user=self)
+        # _external parameter allow to generate an absolute URL whose works outside app environment
+        mail.send(msg)
+        flash('A confirmation email has been sent to you. Open your inbox!', 'warning')
 
 
 class User(USER):

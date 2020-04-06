@@ -1,73 +1,131 @@
 {% extends 'globalLayout.html' %}
 
-    {% block pagecontent %}
-        <div class="row">
-            <div class="col-6">
-                <h2 class="shadow p-3 mb-5 bg-white rounded">{{ current_user.username }} Profile</h2>
-                <img class="border border-dark" src="{{ imgFile }}" alt="{{ imgFile }}">
-                <p><small>{{ current_user.email }}</small></p>
-            </div>
-            <div class="col-6">
-                <div class="shadow p-3 mb-5 bg-white rounded">
-                    <form method="POST" action="#" enctype="multipart/form-data">
-                        {{ form.hidden_tag() }} <!--This adds CSRF (Cross-Site Something) token || it protects the app-->
-                        <fieldset>
-                            <legend> DASHBOARD -- Change your profile info here ! </legend>
-                            <div>
-                                {{ form.firstName.label }}
-                                {{ form.firstName }}
+{% block pagecontent %}
+
+    <div class="row">
+        <div class="col-6 shadow p-3 mb-5 bg-white rounded">
+            <div class="row">
+                <div class="col-3">
+                    <img class="img-profile" src="{{ imgFile }}" alt="{{ imgFile }}">
+                </div>
+                <div class="col-9">
+                    <div class="form-row">
+                        {% if current_user.confirmed %}
+                            <div class="col-12">
+                                {{ current_user.username }} Profile | <small>Verified account</small>
+                                <i class="far fa-check-circle"  data-fa-transform="right-2" style="color: forestgreen"></i>
                             </div>
-                            <div>
-                                {{ form.lastName.label }}
-                                {{ form.lastName }}
+                        {% else %}
+                            <div class="col-12">
+                                {{ current_user.username }} Profile | <small>Email confirmation required</small>
+                                <i class="fas fa-exclamation-circle" data-fa-transform="up-2 right-4" style="color: darkorange; width: 16px;height: 16px"></i>
                             </div>
-                            <div>
-                                {{ form.username.label }}
-                                {{ form.username }}
-
-                                {% if form.username.errors %}
-                                    {% for error in form.username.errors %}
-                                        <div>
-                                            <span style="color: red"><small>{{ error }}</small></span>
-                                        </div>
-                                    {% endfor %}
-                                {% endif %}
-
-                            </div>
-                            <div>
-                                {{ form.emailAddr.label }}
-                                {{ form.emailAddr }}
-
-                                {% if form.emailAddr.errors %}
-                                    {% for error in form.emailAddr.errors %}
-                                        <div>
-                                            <span style="color: red"><small>{{ error }}</small></span>
-                                        </div>
-                                    {% endfor %}
-                                {% endif %}
-
-                            </div>
-                            <div>
-                                {{ form.img.label }}
-                                {{ form.img }}
-
-                                {% if form.img.errors %}
-                                    {% for error in form.img.errors %}
-                                        <div>
-                                            <span style="color: red"><small>{{ error }}</small></span>
-                                        </div>
-                                    {% endfor %}
-                                {% endif %}
-
-                            </div>
-                        </fieldset>
-                        <div>
-                            <br>{{ form.submit }}
-                        </div>
-                    </form>
+                        {% endif %}
+                    </div>
                 </div>
             </div>
+            <small>{{ current_user.email }}</small>
+            {% if not current_user.confirmed %}
+                <div class="form-row">
+                    <div class="col-12">
+                        <div>
+                            <a href="{{ url_for('sendConfirmation', callerRoute='profile') }}">
+                                <i class="far fa-envelope" data-fa-transform="down-2" style="color: yellowgreen;height: 20px; width: 20px"></i>
+                                <small>send me confirmation email again</small>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
         </div>
+        <div class="col-6">
+            <div class="shadow p-3 mb-5 bg-white rounded">
+                <form method="POST" action="#" enctype="multipart/form-data">
+                    {{ form.hidden_tag() }} <!--This adds CSRF (Cross-Site Something) token || it protects the app-->
+                    <fieldset>
+                        <legend> DASHBOARD -- Change your profile info here ! </legend>
+                        <div>
+                            {{ form.firstName.label }}
+                            {{ form.firstName }}
+                        </div>
+                        <div>
+                            {{ form.lastName.label }}
+                            {{ form.lastName }}
+                        </div>
+                        <div>
+                            {{ form.username.label }}
+                            {{ form.username }}
 
+                            {% if form.username.errors %}
+                                {% for error in form.username.errors %}
+                                    <div>
+                                        <span style="color: red"><small>{{ error }}</small></span>
+                                    </div>
+                                {% endfor %}
+                            {% endif %}
 
-    {% endblock pagecontent %}
+                        </div>
+                        <div>
+                            {{ form.emailAddr.label }}
+                            {{ form.emailAddr }}
+
+                            {% if form.emailAddr.errors %}
+                                {% for error in form.emailAddr.errors %}
+                                    <div>
+                                        <span style="color: red"><small>{{ error }}</small></span>
+                                    </div>
+                                {% endfor %}
+                            {% endif %}
+
+                        </div>
+                        <div>
+                            {{ form.img.label }}
+                            {{ form.img }}
+
+                            {% if form.img.errors %}
+                                {% for error in form.img.errors %}
+                                    <div>
+                                        <span style="color: red"><small>{{ error }}</small></span>
+                                    </div>
+                                {% endfor %}
+                            {% endif %}
+
+                        </div>
+                    </fieldset>
+                    <div>
+                        <br>{{ form.submit }}
+                        <br>{{ form.delete }}
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Remove account modal -->
+
+    <div class="modal fade" id="staticBackdrop" data-backdrop="static" tabindex="-1" role="dialog" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="exampleModalLabel">Modal title</h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <div class="modal-body">
+              <p>
+                  Are you sure you want to continue with this action?<br>This action cannot be redeemed.
+              </p>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">
+                Cancel
+            </button>
+              <button type="button" class="btn btn-primary" onclick="window.location.href='{{ url_for('deleteAccount') }}'">
+                  Confirm account deletion
+              </button>
+          </div>
+        </div>
+      </div>
+    </div>
+{% endblock pagecontent %}

@@ -30,3 +30,10 @@
 .card-footer {
     border-top: 0 !important;
 }
+
+.img-profile {
+	border-color: black;
+	border-radius: 5000px;
+	height: 130px;
+	width: 130px;
+}

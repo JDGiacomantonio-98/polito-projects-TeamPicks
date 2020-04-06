@@ -7,64 +7,66 @@
 
         <!-- Bootstrap CSS -->
         <link rel="stylesheet" type="text/css" href="/static/css/bootstrap-4.4.1-dist/bootstrap.min.css">
+        <!-- Font-Awesome CSS -->
+        <link rel="stylesheet" type="text/css" href="/static/css/fontawesome-web/all.min.css">
         <!-- custom CSS -->
-        <link rel="stylesheet" type="text/css" href="/static/css/style.css">
+        <link rel="stylesheet" type="text/css" href="/static/css/custom-stylesheet.css">
 
         {% if title %}
             <title>{{ title }}</title>
         {% else %}
-            <title>Welcome on TeamGATE!</title>
+            <title>Welcome!</title>
         {% endif %}
         <link rel="icon" type="image/png" href={{ url_for('static', filename='/app-icons/child-solid.svg') }}>
     </head>
     <body>
-        <header class="pb-2">
-            <nav class="navbar navbar-light">
-                <div class="container">
-                    <a class="navbar-brand mb-0 h1" href="{{ url_for('welcome') }}">
-                        <img src=" {{ url_for('static', filename='/app-icons/logo-min.png') }}" width="30" height="30" class="d-inline-block align-top">
-                        TeamGate
-                    </a>
-                    {% if current_user.is_authenticated %}
-                        {% block navbar %}
+        <header class="pb-3">
+            {% if current_user.is_authenticated %}
+                {% block navbar %}
+                    <nav class="navbar navbar-light pb-1">
+                        <div class="container">
+                            <a class="navbar-brand mb-0 h1" href="{{ url_for('welcome') }}">
+                                <img src=" {{ url_for('static', filename='/app-icons/logo-min.png') }}" width="30" height="30" class="d-inline-block align-top" alt="Website Logo">
+                                TeamGate
+                            </a>
                             <div class="media">
                                 <div class="media-body">
-                                    <a class="nav-link active text-dark" href="{{ url_for('openProfile', userInfo=current_user.username) }}">
+                                    <a class="nav-link active text-dark" href="{{ url_for('showProfile', userInfo=current_user.username) }}">
                                         Profile
                                     </a>
                                 </div>
-                                <a class="align-self-center mr-3" href="{{ url_for('openProfile', userInfo=current_user.username) }}">
-                                    <img src="{{ url_for('static', filename='/app-icons/user-regular.svg') }}" width="20" height="20">
+                                <a class="align-self-center mr-3" href="{{ url_for('showProfile', userInfo=current_user.username) }}">
+                                    <i class="far fa-user-circle" style="color: #05afb9; width: 25px;height: 25px"></i>
                                 </a>
                             </div>
                             <div class="media">
                                 <div class="media-body">
                                     <a class="nav-link active text-dark" href="{{ url_for('findPub') }}">
-                                        Find a Pub
+                                        Find Pubs
                                     </a>
                                 </div>
-                                <a class="align-self-center mr-3" href="#">
-                                    <img class="align-self-center mr-3" src="{{ url_for('static', filename='/app-icons/map-marked-alt-solid.svg') }}" width="24" height="24">
+                                <a class="align-self-center mr-3" href="{{ url_for('findPub') }}">
+                                    <i class="fas fa-map-marked-alt" style="color: black; width: 25px; height: 30px" ></i>
                                 </a>
                             </div>
                             <div class="media">
                                 <div class="media-body">
-                                    <a class="nav-link active text-dark" href="#">
+                                    <a class="nav-link active text-dark" href="{{ url_for('show_wip', callerPage='chat') }}">
                                         Chats
                                     </a>
                                 </div>
-                                <a class="align-self-center mr-3" href="#">
-                                    <img class="align-self-center mr-3" src="{{ url_for('static', filename='/app-icons/comments-regular.svg') }}" width="24" height="24">
+                                <a class="align-self-center mr-3" href="{{ url_for('show_wip', callerPage='chat') }}">
+                                    <i class="far fa-comments" style="color: black; width: 25px; height: 30px"></i>
                                 </a>
                             </div>
                             <div class="media">
                                 <div class="media-body">
-                                    <a class="nav-link active text-dark" href="#">
+                                    <a class="nav-link active text-dark" href="{{ url_for('show_wip', callerPage='booking-manager') }}">
                                         Booking manager
                                     </a>
                                 </div>
-                                <a class="align-self-center mr-3" href="#">
-                                    <img class="align-self-center mr-3" src="{{ url_for('static', filename='/app-icons/clipboard-check-solid.svg') }}" width="24" height="24">
+                                <a class="align-self-center mr-3" href="{{ url_for('show_wip', callerPage='booking-manager') }}">
+                                    <i class="fas fa-calendar-check" style="color: black; width: 20px; height: 20px"></i>
                                 </a>
                             </div>
                             <div class="media">
@@ -74,13 +76,23 @@
                                     </a>
                                 </div>
                                 <a class="align-self-center mr-3" href="{{ url_for('logout') }}">
-                                    <img class="align-self-center mr-3" src="{{ url_for('static', filename='/app-icons/sign-out-alt-solid.svg') }}" width="25" height="25">
+                                    <i class="fas fa-power-off" style="color: red; width: 20px; height: 20px"></i>
                                 </a>
                             </div>
-                        {% endblock navbar %}
-                    {% endif %}
-                </div>
-            </nav>
+                        </div>
+                    </nav>
+                    <hr class="m-0" style="border:1px solid darkgrey">
+                {% endblock navbar %}
+            {% elif title %}
+                <nav class="navbar navbar-light">
+                    <div class="container">
+                        <a class="navbar-brand mb-0 h1" href="{{ url_for('welcome') }}">
+                            <img src=" {{ url_for('static', filename='/app-icons/logo-min.png') }}" width="30" height="30" class="d-inline-block align-top" alt="Website Logo">
+                            TeamGate
+                        </a>
+                    </div>
+                </nav>
+            {% endif %}
         </header>
         <main class="container">
             {% with messages = get_flashed_messages(with_categories=true) %}
@@ -105,12 +117,12 @@
         <script src="/static/js/jquery.min.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
         <script src='/static/js/bootstrap-4.4.1-dist/bootstrap.min.js'></script>
+        <script src='/static/js/fontawesome-web/all.min.js'></script>
     </body>
     <footer>
         <hr>
-        <div class="container">
+        <div class="container lead">
             <small>This website is a product of <strong>TeamGATE-Group</strong> licensed under Copyright &copy 2020 legislation.</small>
         </div>
-        </p>
     </footer>
 </html>
