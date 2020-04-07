@@ -22,67 +22,78 @@
     <body>
         <header class="pb-3">
             {% if current_user.is_authenticated %}
-                {% block navbar %}
-                    <nav class="navbar navbar-light pb-1">
+                {% if current_user.confirmed %}
+                    {% block navbar %}
+                        <nav class="navbar navbar-light pb-1">
+                            <div class="container">
+                                <a class="navbar-brand mb-0 h1" href="{{ url_for('welcome') }}">
+                                    <img src=" {{ url_for('static', filename='/app-icons/logo-min.png') }}" width="30" height="30" class="d-inline-block align-top" alt="Website Logo">
+                                    TeamGate
+                                </a>
+                                <div class="media">
+                                    <div class="media-body">
+                                        <a class="nav-link active text-dark" href="{{ url_for('showProfile', userInfo=current_user.username) }}">
+                                            Profile
+                                        </a>
+                                    </div>
+                                    <a class="align-self-center mr-3" href="{{ url_for('showProfile', userInfo=current_user.username) }}">
+                                        <i class="far fa-user-circle" style="color: #05afb9; width: 25px;height: 25px"></i>
+                                    </a>
+                                </div>
+                                <div class="media">
+                                    <div class="media-body">
+                                        <a class="nav-link active text-dark" href="{{ url_for('findPub') }}">
+                                            Find Pubs
+                                        </a>
+                                    </div>
+                                    <a class="align-self-center mr-3" href="{{ url_for('findPub') }}">
+                                        <i class="fas fa-map-marked-alt" style="color: black; width: 25px; height: 30px" ></i>
+                                    </a>
+                                </div>
+                                <div class="media">
+                                    <div class="media-body">
+                                        <a class="nav-link active text-dark" href="{{ url_for('show_wip', callerPage='chat') }}">
+                                            Chats
+                                        </a>
+                                    </div>
+                                    <a class="align-self-center mr-3" href="{{ url_for('show_wip', callerPage='chat') }}">
+                                        <i class="far fa-comments" style="color: black; width: 25px; height: 30px"></i>
+                                    </a>
+                                </div>
+                                <div class="media">
+                                    <div class="media-body">
+                                        <a class="nav-link active text-dark" href="{{ url_for('show_wip', callerPage='booking-manager') }}">
+                                            Booking manager
+                                        </a>
+                                    </div>
+                                    <a class="align-self-center mr-3" href="{{ url_for('show_wip', callerPage='booking-manager') }}">
+                                        <i class="fas fa-calendar-check" style="color: black; width: 20px; height: 20px"></i>
+                                    </a>
+                                </div>
+                                <div class="media">
+                                    <div class="media-body">
+                                        <a class="nav-link active text-dark" href="{{ url_for('logout') }}">
+                                            Log Out
+                                        </a>
+                                    </div>
+                                    <a class="align-self-center mr-3" href="{{ url_for('logout') }}">
+                                        <i class="fas fa-power-off" style="color: red; width: 20px; height: 20px"></i>
+                                    </a>
+                                </div>
+                            </div>
+                        </nav>
+                        <hr class="m-0" style="border:1px solid darkgrey">
+                    {% endblock navbar %}
+                {% else %}
+                    <nav class="navbar navbar-light">
                         <div class="container">
-                            <a class="navbar-brand mb-0 h1" href="{{ url_for('welcome') }}">
+                            <a class="navbar-brand mb-0 h1" href="{{ url_for('login') }}">
                                 <img src=" {{ url_for('static', filename='/app-icons/logo-min.png') }}" width="30" height="30" class="d-inline-block align-top" alt="Website Logo">
                                 TeamGate
                             </a>
-                            <div class="media">
-                                <div class="media-body">
-                                    <a class="nav-link active text-dark" href="{{ url_for('showProfile', userInfo=current_user.username) }}">
-                                        Profile
-                                    </a>
-                                </div>
-                                <a class="align-self-center mr-3" href="{{ url_for('showProfile', userInfo=current_user.username) }}">
-                                    <i class="far fa-user-circle" style="color: #05afb9; width: 25px;height: 25px"></i>
-                                </a>
-                            </div>
-                            <div class="media">
-                                <div class="media-body">
-                                    <a class="nav-link active text-dark" href="{{ url_for('findPub') }}">
-                                        Find Pubs
-                                    </a>
-                                </div>
-                                <a class="align-self-center mr-3" href="{{ url_for('findPub') }}">
-                                    <i class="fas fa-map-marked-alt" style="color: black; width: 25px; height: 30px" ></i>
-                                </a>
-                            </div>
-                            <div class="media">
-                                <div class="media-body">
-                                    <a class="nav-link active text-dark" href="{{ url_for('show_wip', callerPage='chat') }}">
-                                        Chats
-                                    </a>
-                                </div>
-                                <a class="align-self-center mr-3" href="{{ url_for('show_wip', callerPage='chat') }}">
-                                    <i class="far fa-comments" style="color: black; width: 25px; height: 30px"></i>
-                                </a>
-                            </div>
-                            <div class="media">
-                                <div class="media-body">
-                                    <a class="nav-link active text-dark" href="{{ url_for('show_wip', callerPage='booking-manager') }}">
-                                        Booking manager
-                                    </a>
-                                </div>
-                                <a class="align-self-center mr-3" href="{{ url_for('show_wip', callerPage='booking-manager') }}">
-                                    <i class="fas fa-calendar-check" style="color: black; width: 20px; height: 20px"></i>
-                                </a>
-                            </div>
-                            <div class="media">
-                                <div class="media-body">
-                                    <a class="nav-link active text-dark" href="{{ url_for('logout') }}">
-                                        Log Out
-                                    </a>
-                                </div>
-                                <a class="align-self-center mr-3" href="{{ url_for('logout') }}">
-                                    <i class="fas fa-power-off" style="color: red; width: 20px; height: 20px"></i>
-                                </a>
-                            </div>
                         </div>
                     </nav>
-                    <hr class="m-0" style="border:1px solid darkgrey">
-                {% endblock navbar %}
+                {% endif %}
             {% elif title %}
                 <nav class="navbar navbar-light">
                     <div class="container">
@@ -94,7 +105,7 @@
                 </nav>
             {% endif %}
         </header>
-        <main class="container">
+        <div class="container">
             {% with messages = get_flashed_messages(with_categories=true) %}
             <!-- with_categories=true allows the code to grab the flash msg pre-assigned bootstrap class -->
                 {% if messages %}
@@ -105,6 +116,8 @@
                     {%  endfor %}
                 {% endif %}
             {% endwith %}
+        </div>
+        <main class="">
             {% block pagecontent %}
                 {% if heading %}
                     <h2>{{ heading }}</h2>

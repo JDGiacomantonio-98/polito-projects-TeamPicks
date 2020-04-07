@@ -1,60 +1,60 @@
 {% extends 'globalLayout.html' %}
 
 {% block pagecontent %}
-    <div class="row mb-3 shadow rounded" style="width: 850px">
-        <div class="col-9">
-            search a friend
-        </div>
-    </div>
-    <div class="row">
-        <div class="col-12 col-md-3 p-1">
-            <div class="card mb-4 shadow shadow rounded" style="height: 600px">
-              <div class="card-header">
-                <h4 class="my-0 font-weight-normal">News Feed</h4>
-              </div>
-              <div class="card-body">
-                <ul class="list-group mx-4 mt-3 mb-4 text-left" style="list-style-type: square">
-                  <li>News 1</li>
-                  <li>News n</li>
-                </ul>
-              </div>
-                <div class="card-footer d-flex justify-content-center">
-                    <button type="button" class="btn btn-lg btn-outline-primary" onclick="window.location.href='{{ url_for('registration', userType='partner', accType='free') }}'">
-                        More news
-                    </button>
-                </div>
+    <div class="container">
+        <div class="row mb-3 shadow rounded" style="width: 850px">
+            <div class="col-9">
+                search a friend
             </div>
         </div>
-        <div class="col-12 col-md-6 p-1">
-            <div class="card mb-4 shadow-sm rounded" style="height: 600px">
-              <div class="card-header">
-                <h4 class="my-0 font-weight-normal">Active Groups</h4>
-              </div>
-              <div class="card-body d-flex justify-content-center">
-                <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3005.5585215818014!2d16.872345815428655!3d41.12233187928933!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x1347e86790dd7269%3A0xedbb6fad510d099c!2sVia%20Matteo%20Renato%20Imbriani%2C%2070121%20Bari%20BA!5e0!3m2!1sen!2sit!4v1586018850097!5m2!1sen!2sit" width="400" height="300" frameborder="0" style="border:0;" allowfullscreen="" aria-hidden="false" tabindex="0"></iframe>
-              </div>
-                <div class="card-footer d-flex justify-content-center">
-                    <button type="button" class="btn btn-lg btn-outline-primary" onclick="window.location.href='{{ url_for('registration', userType='partner', accType='free') }}'">
-                        Create your group
-                    </button>
+        <div class="row">
+            <div class="col-12 col-md-3 p-1">
+                <div class="card mb-4 shadow shadow rounded" style="height: 600px">
+                  <div class="card-header">
+                    <h4 class="my-0 font-weight-normal">News Feed</h4>
+                  </div>
+                  <div class="card-body">
+                    <ul class="list-group mx-4 mt-3 mb-4 text-left" style="list-style-type: square">
+                      <li>News 1</li>
+                      <li>News n</li>
+                    </ul>
+                  </div>
+                    <div class="card-footer d-flex justify-content-center">
+                        <button type="button" class="btn btn-lg btn-outline-primary" onclick="window.location.href='{{ url_for('registration', userType='partner', accType='free') }}'">
+                            More news
+                        </button>
+                    </div>
                 </div>
             </div>
-        </div>
-        <div class="col-12 col-md-3 p-1">
-            <div class="card mb-4 shadow rounded" style="height: 600px">
-              <div class="card-header">
-                <h4 class="my-0 font-weight-normal">Hot Pubs</h4>
-              </div>
-              <div class="card-body">
-              </div>
-                <div class="card-footer d-flex justify-content-center">
-                    <button type="button" class="btn btn-lg btn-outline-primary" onclick="window.location.href='{{ url_for('registration', userType='partner', accType='free') }}'">
-                        Find pub
-                    </button>
+            <div class="col-12 col-md-6 p-1">
+                <div class="card mb-4 shadow-sm rounded" style="height: 600px">
+                  <div class="card-header">
+                    <h4 class="my-0 font-weight-normal">Active Groups</h4>
+                  </div>
+                  <div class="card-body d-flex justify-content-center">
+                    <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3005.5585215818014!2d16.872345815428655!3d41.12233187928933!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x1347e86790dd7269%3A0xedbb6fad510d099c!2sVia%20Matteo%20Renato%20Imbriani%2C%2070121%20Bari%20BA!5e0!3m2!1sen!2sit!4v1586018850097!5m2!1sen!2sit" width="400" height="300" frameborder="0" style="border:0;" allowfullscreen="" aria-hidden="false" tabindex="0"></iframe>
+                  </div>
+                    <div class="card-footer d-flex justify-content-center">
+                        <button type="button" class="btn btn-lg btn-outline-primary" onclick="window.location.href='{{ url_for('registration', userType='partner', accType='free') }}'">
+                            Create your group
+                        </button>
+                    </div>
                 </div>
             </div>
+            <div class="col-12 col-md-3 p-1">
+                <div class="card mb-4 shadow rounded" style="height: 600px">
+                  <div class="card-header">
+                    <h4 class="my-0 font-weight-normal">Hot Pubs</h4>
+                  </div>
+                  <div class="card-body">
+                  </div>
+                    <div class="card-footer d-flex justify-content-center">
+                        <button type="button" class="btn btn-lg btn-outline-primary" onclick="window.location.href='{{ url_for('registration', userType='partner', accType='free') }}'">
+                            Find pub
+                        </button>
+                    </div>
+                </div>
+            </div>
+            </div>
         </div>
-        </div>
-    </div>
-
 {% endblock %}

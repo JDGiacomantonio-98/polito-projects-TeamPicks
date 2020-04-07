@@ -6,6 +6,8 @@ from wtforms.validators import DataRequired, Length, EqualTo, Email, ValidationE
 from teamgate.dbModel import User, Pub
 from flask_login import current_user
 
+# it should be understood if the validate_field form method can already return the query result if not empty (!!)
+
 
 class registrationForm_user(FlaskForm):
     firstName = StringField('Name :', validators=[DataRequired()], render_kw={'placeholder':'Your firstname'})
@@ -62,7 +64,7 @@ class accountDashboardForm(FlaskForm):
     submit = SubmitField('Update profile')
     delete = SubmitField('Delete account', render_kw={'type': 'button',
                                                       'data-toggle': 'modal',
-                                                      'data-target': '#staticBackdrop',
+                                                      'data-target': '#delete-account-backdrop',
                                                       })
 
     def validate_username(self, username):
@@ -75,7 +77,6 @@ class accountDashboardForm(FlaskForm):
                     flash('Your profile has been updated!', 'success')
         else:
             flash('There are some problem with your input. Please make correction.', 'danger')
-
 
     def validate_emailAddr(self, emailAddr):
         if current_user.email != self.emailAddr.data:

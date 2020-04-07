@@ -1,6 +1,7 @@
 {% extends 'globalLayout.html' %}
 
-    {% block pagecontent %}
+{% block pagecontent %}
+    <div class="container">
         <div class="d-flex justify-content-center">
             <div class="shadow p-3 mb-3 mt-3 bg-white rounded" style="width: 555px">
             <!-- POST method even if exposes user data into POST request url, is safe because we implemented CSRF token -->
@@ -27,6 +28,7 @@
                         </div>
                     </fieldset>
                 </form>
+            </div>
         </div>
-
-    {%  endblock pagecontent %}
+    </div>
+{%  endblock pagecontent %}

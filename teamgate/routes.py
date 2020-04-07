@@ -3,7 +3,7 @@ import secrets
 from PIL import Image
 from math import ceil
 from random import random, randint
-from flask import render_template, url_for, flash, redirect, request, session
+from flask import render_template, url_for, flash, redirect, request, session, abort
 from flask_login import login_user, logout_user, login_required, current_user
 from flask_mail import Message
 from teamgate import app, db, pswBurner, mail
@@ -18,7 +18,7 @@ def welcome():
         # query number of pubs
         pubs = Pub.query.filter_by(city=form.city.data).count()
         return render_template('landingPage.html', city=form.city.data, pubs=pubs)
-    elif current_user.is_authenticated:
+    elif current_user.is_authenticated and current_user.confirmed:
         return render_template('homePage.html')
     else:
         return render_template('landingPage.html', form=form)
@@ -31,7 +31,7 @@ def showPricing():
 
 @app.route('/<userType>/<accType>/signup', methods=['GET', 'POST'])
 def registration(userType, accType):
-    if current_user.is_authenticated:
+    if current_user.is_authenticated and current_user.confirmed:
         return render_template('homePage.html')
     if userType == 'user':
         form = registrationForm_user()
@@ -89,7 +89,7 @@ def registration(userType, accType):
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
-    if current_user.is_authenticated:
+    if current_user.is_authenticated and current_user.confirmed:
         return render_template('homePage.html')
     form = loginForm()
     if request.method == 'GET':
@@ -111,12 +111,16 @@ def login():
             if query and pswBurner.check_password_hash(query.pswHash, form.psw.data):
                 session.permanent = True
                 login_user(query, remember=form.rememberMe.data)
-                flash("Hi {}, welcome back!".format(query.username), 'success')
-                nextPage = request.args.get('next')
-                if nextPage:
-                    return redirect(nextPage)
+                if current_user.confirmed:
+                    flash("Hi {}, welcome back!".format(query.username), 'success')
+                    nextPage = request.args.get('next')
+                    if nextPage:
+                        return redirect(nextPage)
+                    else:
+                        return redirect(url_for('welcome'))
                 else:
-                    return redirect(url_for('welcome'))
+                    current_user.send_ConfirmationEmail()
+                    flash("Your account still require activation. Please check your email inbox.", 'warning')
             elif query:
                 flash('Login error : Invalid email or password.', 'danger')
                 return render_template('login.html', title='Login page', form=form)
@@ -129,13 +133,13 @@ def login():
 @app.route('/logout')
 def logout():
     logout_user()
-    flash('You are now log out from the Gate. We hope to see you soon again!','secondary')
+    flash('You are now log out from the Gate. We hope to see you soon again!', 'secondary')
     return redirect(url_for('welcome'))
 
 
 @app.route('/confirm-account/<token>')
-@login_required
 def confirmAccount(token):
+    # if user comes from email confirmation link there is no current user to check
     if current_user.confirmed:
         flash('You account has already been activated.', 'secondary')
         return redirect(url_for('welcome'))
@@ -147,13 +151,15 @@ def confirmAccount(token):
 
 
 @login_required
-@app.route('/delete-account')
-def deleteAccount():
-    if current_user:
+@app.route('/<ID>/delete-account')
+def deleteAccount(ID):
+    # deletion should be authorized only by code and not by manual writing the URL
+    if int(ID) == current_user.id and session['del']:
         db.session.delete(current_user)
         db.session.commit()
         flash('Your account has been successfully removed. We are sad about that :C', 'secondary')
         return redirect(url_for('welcome'))
+    abort(403)
 
 
 @app.route('/profile/<userInfo>/dashboard', methods=['GET', 'POST'])
@@ -166,6 +172,8 @@ def showProfile(userInfo):
         else:
             imgFile = url_for('static', filename='profile_pics/users/' + current_user.img)
     if request.method == 'GET':
+        if not current_user.confirmed:
+            flash('Your profile has been temporally deactivated until you reconfirm it.', 'secondary')
         if 'user' == session.get('dbModelType'):
             form.firstName.data = current_user.firstName
             form.lastName.data = current_user.lastName
@@ -181,10 +189,15 @@ def showProfile(userInfo):
                 if current_user.email != form.emailAddr.data:
                     current_user.confirmed = False
                     current_user.email = form.emailAddr.data
-                    current_user.send_ConfirmationEmail()
+                    current_user.send_ConfirmationEmail(flash_msg=True)
                 current_user.img = save_profilePic(form.img.data)
                 current_user.username = form.username.data
                 db.session.commit()
+            if form.delete.data:
+                session['del'] = True
+            else:
+                session['del'] = False
+            session.permanent = True
             return redirect(url_for('showProfile', userInfo=current_user.username))
     return render_template('profilePage.html', title=current_user.firstName + " " + current_user.lastName, imgFile=imgFile, form=form)
 
@@ -236,17 +249,23 @@ def sendConfirmation(callerRoute):
 
 @app.route('/reset-request', methods=['GET', 'POST'])
 def send_resetRequest():
-    if current_user.is_authenticated:
+    if current_user.is_authenticated and current_user.confirmed:
         flash('You are logged in already.', 'info')
         return redirect(url_for('welcome'))
     form = resetRequestForm()
     if request.method == 'POST':
         if form.validate_on_submit():
             # send user an email
-            user = User.query.filter_by(email=form.emailAddr.data).first()
-            sendEmail(user, 'email-copy/reset-psw', 'psw reset', token=user.createToken())
-            flash('An email has been sent to your inbox containing all instructions to reset your password!', 'warning')
-            return redirect(url_for('login'))
+            query = User.query.filter_by(email=form.emailAddr.data).first()
+            if not query:
+                query = Pub.query.filter_by(email=form.emailAddr.data).first()
+            if query.confirmed:
+                sendEmail(query, 'email-copy/reset-psw', 'psw reset', token=query.createToken())
+                flash('An email has been sent to your inbox containing all instructions to reset your password!', 'warning')
+                return redirect(url_for('login'))
+            else:
+                flash("Your account still require activation. Please check your email inbox.", 'warning')
+                return redirect(url_for('login'))
     return render_template('resetRequest.html', title='Reset your psw', form=form)
 
 
@@ -284,17 +303,17 @@ def findPub():
 
 @app.errorhandler(403)
 def error_403(error):
-    return render_template('errors/403.html'), 403
+    return render_template('errors/403.html', title='error: 403 - you cannot do that!'), 403
 
 
 @app.errorhandler(404)
 def error_404(error):
-    return render_template('errors/404.html'), 404
+    return render_template('errors/404.html', title='error: 404 - page not found'), 404
 
 
 @app.errorhandler(500)
 def error_500(error):
-    return render_template('errors/500.html'), 500
+    return render_template('errors/500.html', title='error: 500 - what happened?'), 500
 
 
 @app.route('/<callerPage>/work-in-progress')

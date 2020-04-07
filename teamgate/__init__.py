@@ -2,11 +2,13 @@
 #    Initialize all needed objects to make app run properly
 
 import os
+from datetime import timedelta
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_bcrypt import Bcrypt
 from flask_login import LoginManager
 from flask_mail import Mail
+from flask_migrate import Migrate, MigrateCommand
 
 app = Flask(__name__)
 
@@ -23,6 +25,8 @@ app.config['MAIL_USE_SSL'] = False
 app.config['MAIL_USERNAME'] = os.environ.get('TEAMGATE[__@USER__]')
 app.config['MAIL_PASSWORD'] = os.environ.get('TEAMGATE[__@PSW__]')
 app.config['MAIL_DEFAULT_SENDER'] = os.environ.get('TEAMGATE[__@USER__]')
+
+app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(minutes=20)
 
 db = SQLAlchemy(app)
 pswBurner = Bcrypt(app)

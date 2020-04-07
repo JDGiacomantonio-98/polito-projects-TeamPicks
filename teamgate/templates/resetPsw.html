@@ -1,46 +1,48 @@
 {% extends 'globalLayout.html' %}
 
 {% block pagecontent %}
-    <div class="d-flex justify-content-center">
-        <div class="shadow p-3 mb-3 mt-3 bg-white rounded" style="width: 500px">
-        <!-- POST method even if exposes user data into POST request url, is safe because we implemented CSRF token -->
-            <form method="POST" action="#">
-                {{ form.hidden_tag() }} <!--This adds CSRF (Cross-Site Something) token || it protects the app-->
-                <fieldset>
-                    <legend>Safely reset your password here!</legend>
-                    <div class="row mt-1">
-                        <div class="col-6 pr-0">
-                            {% if form.psw.errors %}
-                                {{ form.psw(class="form-control form-control-sm is-invalid") }}
-                                <div class="invalid-feedback">
-                                    {% for error in form.psw.errors %}
-                                        <small><span style="color: red">{{ error }}</span></small>
-                                    {% endfor %}
-                                </div>
-                            {% else %}
-                                {{ form.psw(class="form-control form-control-sm") }}
-                            {%  endif %}
+    <div class="container">
+         <div class="d-flex justify-content-center">
+            <div class="shadow p-3 mb-3 mt-3 bg-white rounded" style="width: 500px">
+            <!-- POST method even if exposes user data into POST request url, is safe because we implemented CSRF token -->
+                <form method="POST" action="#">
+                    {{ form.hidden_tag() }} <!--This adds CSRF (Cross-Site Something) token || it protects the app-->
+                    <fieldset>
+                        <legend>Safely reset your password here!</legend>
+                        <div class="row mt-1">
+                            <div class="col-6 pr-0">
+                                {% if form.psw.errors %}
+                                    {{ form.psw(class="form-control form-control-sm is-invalid") }}
+                                    <div class="invalid-feedback">
+                                        {% for error in form.psw.errors %}
+                                            <small><span style="color: red">{{ error }}</span></small>
+                                        {% endfor %}
+                                    </div>
+                                {% else %}
+                                    {{ form.psw(class="form-control form-control-sm") }}
+                                {%  endif %}
+                            </div>
+                            <div class="col-6 pl-1">
+                                {% if form.confirmPsw.errors %}
+                                    {{ form.psw(class="form-control form-control-sm is-invalid") }}
+                                    <div class="invalid-feedback">
+                                        {% for error in form.confirmPsw.errors %}
+                                            <small><span style="color: red">{{ error }}</span></small>
+                                        {% endfor %}
+                                    </div>
+                                {% else %}
+                                    {{ form.confirmPsw(class="form-control form-control-sm") }}
+                                {%  endif %}
+                            </div>
                         </div>
-                        <div class="col-6 pl-1">
-                            {% if form.confirmPsw.errors %}
-                                {{ form.psw(class="form-control form-control-sm is-invalid") }}
-                                <div class="invalid-feedback">
-                                    {% for error in form.confirmPsw.errors %}
-                                        <small><span style="color: red">{{ error }}</span></small>
-                                    {% endfor %}
-                                </div>
-                            {% else %}
-                                {{ form.confirmPsw(class="form-control form-control-sm") }}
-                            {%  endif %}
+                        <div class="row d-flex align-right">
+                            <div class="col-6 mt-2">
+                                {{ form.submit(class="btn btn-sm btn-success") }}
+                            </div>
                         </div>
-                    </div>
-                    <div class="row d-flex align-right">
-                        <div class="col-6 mt-2">
-                            {{ form.submit(class="btn btn-sm btn-success") }}
-                        </div>
-                    </div>
-                </fieldset>
-            </form>
+                    </fieldset>
+                </form>
+            </div>
         </div>
     </div>
 {%  endblock pagecontent %}

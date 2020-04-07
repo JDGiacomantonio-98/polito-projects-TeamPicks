@@ -47,6 +47,7 @@ class USER(db.Model, UserMixin):
             return False
         if userID.get('user-id') != self.id:
             self.confirmed = False
+            db.session.commit()
             return False
         else:
             self.confirmed = True
@@ -61,14 +62,15 @@ class USER(db.Model, UserMixin):
             return None
         return User.query.get(userID)
 
-    def send_ConfirmationEmail(self):
+    def send_ConfirmationEmail(self, flash_msg=False):
         msg = Message('TeamGate Account -- ' + 'ACCOUNT CONFIRMATION',
                       sender='teamgate.help@gmail.com',
                       recipients=[self.email])
         msg.body = render_template('/email-copy/confirm-registration' + '.txt', token=self.createToken(), user=self)
         # _external parameter allow to generate an absolute URL whose works outside app environment
         mail.send(msg)
-        flash('A confirmation email has been sent to you. Open your inbox!', 'warning')
+        if flash_msg:
+            flash('A confirmation email has been sent to you. Open your inbox!', 'warning')
 
 
 class User(USER):
@@ -89,6 +91,7 @@ class User(USER):
     def fingerPrint(self):
         for attr, value in self.__dict__.items():
             print(attr, value)
+
 
 class Pub(USER):
     __tablename__ = 'local-partners'

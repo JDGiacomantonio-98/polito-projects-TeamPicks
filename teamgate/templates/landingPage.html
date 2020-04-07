@@ -1,136 +1,138 @@
 {% extends 'globalLayout.html' %}
 
 {% block pagecontent %}
-    {% if request.method=='GET' %}
-        {%  if not current_user.is_authenticated%}
-            <div class="jumbotron mt-3">
-                <div class="row">
-                    <div class="col-9">
-                        <h1 class="display-4 text-center text-md-left">Hei, welcome on TeamGate!</h1>
-                        <p class="lead">Your best aggregator for matches and pubs.</p>
-                    </div>
-                    <div class="col-2">
-                        <img src="{{ url_for('static', filename='app-icons/logo-min.png') }}" style="width: 120px; height: 120px">
-                    </div>
-
-                </div>
-                <hr class="my-3">
-                <ul class="nav nav-pills nav-fill">
-                    <li class="nav-item py-1 py-md-0">
-                        <a class="btn btn-outline-info btn-autowidth" href="{{ url_for('registration', userType='user', accType='free') }}" role="button">
-                            <span>
-                                Join the TeamGate
-                            </span>
-                            <i class="fas fa-users"  data-fa-transform="grow-2 right-4" style="color: black"></i>
-                        </a>
-                    </li>
-                    <li class="nav-item py-1 py-md-0">
-                        <a class="btn btn-outline-info btn-autowidth" href="{{ url_for('showPricing') }}" role="button">
-                            <span>
-                                Register your local activity
-                            </span>
-                            <span class="fa-1x">
-                                <i class="fas fa-plus" data-fa-transform="up-13 right-6" style="color: #000; width: 11px; height: 11px"></i>
-                                <i class="fas fa-location-arrow" style="color: #000;"></i>
-                            </span>
-                        </a>
-                    </li>
-                    <li class="nav-item py-1 py-md-0">
-                        <a class="btn btn-outline-info btn-autowidth" href="{{ url_for('login') }}" role="button">
-                            <span>
-                                Log in
-                            </span>
-                            <i class="fas fa-fingerprint" style="width: 18px; height: 18px"></i>
-                        </a>
-                    </li>
-                </ul>
-            </div>
-            <div>
-                <p class="lead">
-                    <b><strong style="font-size:40px">Search for sports fans</strong></b> filtering by sport, team and city.<br>
-                    <b><strong style="font-size:37px">Build new communities</strong></b> by sharing your passions with sports fans like you.<br>
-                    <b><strong style="font-size:36px">Find a place</strong></b> to watch sport
-                    live streams together!
-                </p>
-            </div>
-            <div class="container shadow-lg p-3 mb-5 bg-white rounded">
-                <form method="POST" action="#" >
-                    {{ form.hidden_tag() }} <!--This adds CSRF (Cross-Site Something) token || it protects the app-->
-                    <fieldset>
-                        <div class="form-row d-flex justify-content-between align-items-center pt-2">
-                            <span class="fa-1x col-1 d-flex align-items-end justify-content-end">
-                                <i class="fas fa-database" data-fa-transform="grow-2 right-15" style="color: grey; width: 40px; height: 40px"></i>
-                                <i class="fas fa-search" data-fa-transform="up-1 shrink-2 right-8" style="color: cadetblue; width: 42px; height: 42px"></i>
-                            </span>
-                            <div class="col-2 lead d-flex justify-content-center">
-                                {{ form.city.label(class="col-form-label") }}
-                            </div>
-                            <div class="col-7">
-                                {{ form.city(class="form-control form-control-lg border border-secondary") }}
-                            </div>
-                            <div class="col-2">
-                                {{ form.submit(class="btn btn-lg btn-outline-info") }}
-                            </div>
+    <div class="container">
+        {% if request.method=='GET' %}
+            {% if not current_user.is_authenticated %}
+                <div class="jumbotron mt-3">
+                    <div class="row">
+                        <div class="col-9">
+                            <h1 class="display-4 text-center text-md-left">Hei, welcome on TeamGate!</h1>
+                            <p class="lead">Your best aggregator for matches and pubs.</p>
                         </div>
-                    </fieldset>
-                </form>
-            </div>
-        {% endif %}
-        <div class="col-12">
-            <div class="container">
-            <div class="card-deck">
-                <div class="card shadow p-3" style="width: 18rem;">
-                    <img src="{{ url_for('static', filename='match-icon/match-banner.jpg') }}" class="card-img-top" alt="...">
-                    <div class="card-body">
-                      <h5 class="card-title">MILAN vs. INTER</h5>
-                      <p class="card-text">Saturday h 20:30</p>
-                      <a href="#" class="btn btn-info">Look for a Pub</a>
+                        <div class="col-2">
+                            <img src="{{ url_for('static', filename='app-icons/logo-min.png') }}" style="width: 120px; height: 120px">
+                        </div>
+    
+                    </div>
+                    <hr class="my-3">
+                    <ul class="nav nav-pills nav-fill">
+                        <li class="nav-item py-1 py-md-0">
+                            <a class="btn btn-outline-info btn-autowidth" href="{{ url_for('registration', userType='user', accType='free') }}" role="button">
+                                <span>
+                                    Join the TeamGate
+                                </span>
+                                <i class="fas fa-users"  data-fa-transform="grow-2 right-4" style="color: black"></i>
+                            </a>
+                        </li>
+                        <li class="nav-item py-1 py-md-0">
+                            <a class="btn btn-outline-info btn-autowidth" href="{{ url_for('showPricing') }}" role="button">
+                                <span>
+                                    Register your local activity
+                                </span>
+                                <span class="fa-1x">
+                                    <i class="fas fa-plus" data-fa-transform="up-13 right-6" style="color: #000; width: 11px; height: 11px"></i>
+                                    <i class="fas fa-location-arrow" style="color: #000;"></i>
+                                </span>
+                            </a>
+                        </li>
+                        <li class="nav-item py-1 py-md-0">
+                            <a class="btn btn-outline-info btn-autowidth" href="{{ url_for('login') }}" role="button">
+                                <span>
+                                    Log in
+                                </span>
+                                <i class="fas fa-fingerprint" style="width: 18px; height: 18px"></i>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+                <div>
+                    <p class="lead">
+                        <b><strong style="font-size:40px">Search for sports fans</strong></b> filtering by sport, team and city.<br>
+                        <b><strong style="font-size:37px">Build new communities</strong></b> by sharing your passions with sports fans like you.<br>
+                        <b><strong style="font-size:36px">Find a place</strong></b> to watch sport
+                        live streams together!
+                    </p>
+                </div>
+                <div class="container shadow-lg p-3 mb-5 bg-white rounded">
+                    <form method="POST" action="#" >
+                        {{ form.hidden_tag() }} <!--This adds CSRF (Cross-Site Something) token || it protects the app-->
+                        <fieldset>
+                            <div class="form-row d-flex justify-content-between align-items-center pt-2">
+                                <span class="fa-1x col-1 d-flex align-items-end justify-content-end">
+                                    <i class="fas fa-database" data-fa-transform="grow-2 right-15" style="color: grey; width: 40px; height: 40px"></i>
+                                    <i class="fas fa-search" data-fa-transform="up-1 shrink-2 right-8" style="color: cadetblue; width: 42px; height: 42px"></i>
+                                </span>
+                                <div class="col-2 lead d-flex justify-content-center">
+                                    {{ form.city.label(class="col-form-label") }}
+                                </div>
+                                <div class="col-7">
+                                    {{ form.city(class="form-control form-control-lg border border-secondary") }}
+                                </div>
+                                <div class="col-2">
+                                    {{ form.submit(class="btn btn-lg btn-outline-info") }}
+                                </div>
+                            </div>
+                        </fieldset>
+                    </form>
+                </div>
+            {% endif %}
+            <div class="col-12">
+                <div class="container">
+                <div class="card-deck">
+                    <div class="card shadow p-3" style="width: 18rem;">
+                        <img src="{{ url_for('static', filename='match-icon/match-banner.jpg') }}" class="card-img-top" alt="...">
+                        <div class="card-body">
+                          <h5 class="card-title">MILAN vs. INTER</h5>
+                          <p class="card-text">Saturday h 20:30</p>
+                          <a href="#" class="btn btn-info">Look for a Pub</a>
+                        </div>
+                    </div>
+                    <div class="card shadow p-3" style="width: 18rem;">
+                        <img src="{{ url_for('static', filename='match-icon/match-banner.jpg') }}" class="card-img-top" alt="...">
+                        <div class="card-body">
+                            <h5 class="card-title">GENOA vs. JUVENTUS</h5>
+                            <p class="card-text">Saturday h 20:30</p>
+                            <a href="#" class="btn btn-info">Look for a Pub</a>
+                        </div>
+                    </div>
+                   <div class="card shadow p-3" style="width: 18rem;">
+                      <img src="{{ url_for('static', filename='match-icon/match-banner.jpg') }}" class="card-img-top" alt="...">
+                      <div class="card-body">
+                          <h5 class="card-title">MANCHESTER vs. LIVERPOOL</h5>
+                          <p class="card-text">Saturday h 20:30</p>
+                          <a href="#" class="btn btn-info">Look for a Pub</a>
+                      </div>
                     </div>
                 </div>
-                <div class="card shadow p-3" style="width: 18rem;">
-                    <img src="{{ url_for('static', filename='match-icon/match-banner.jpg') }}" class="card-img-top" alt="...">
-                    <div class="card-body">
-                        <h5 class="card-title">GENOA vs. JUVENTUS</h5>
-                        <p class="card-text">Saturday h 20:30</p>
-                        <a href="#" class="btn btn-info">Look for a Pub</a>
-                    </div>
+            </div>
+        {% else %}
+            <div class="container shadow-lg p-3 mb-5 mt-3 bg-white rounded">
+                <p class="display-4">In {{ city }} already more than {{ pubs }} local activities work with us!</p>
+            </div>
+            <div class="row">
+                <div class="col-lg-6">
+                    <a class="btn btn-outline-info btn-lg btn-block btn-autowidth" href="{{ url_for('registration', userType='user', accType='free') }}" role="button">
+                        <span>
+                            Join the TeamGate
+                        </span>
+                        <i class="fas fa-users"  data-fa-transform="grow-2 right-4" style="color: black"></i>
+                    </a>
                 </div>
-               <div class="card shadow p-3" style="width: 18rem;">
-                  <img src="{{ url_for('static', filename='match-icon/match-banner.jpg') }}" class="card-img-top" alt="...">
-                  <div class="card-body">
-                      <h5 class="card-title">MANCHESTER vs. LIVERPOOL</h5>
-                      <p class="card-text">Saturday h 20:30</p>
-                      <a href="#" class="btn btn-info">Look for a Pub</a>
-                  </div>
+                <div class="col-lg-6">
+                    <a class="btn btn-outline-info btn-lg btn-autowidth btn-block" href="{{ url_for('showPricing') }}" role="button">
+                        <span>
+                            Register your local activity
+                        </span>
+                         <span class="fa-1x">
+                             <i class="fas fa-plus" data-fa-transform="up-13 right-6" style="color: #000; width: 11px; height: 11px"></i>
+                             <i class="fas fa-location-arrow" style="color: #000;"></i>
+                         </span>
+                    </a>
                 </div>
             </div>
-        </div>
-    {% else %}
-        <div class="container shadow-lg p-3 mb-5 mt-3 bg-white rounded">
-            <p class="display-4">In {{ city }} already more than {{ pubs }} local activities work with us!</p>
-        </div>
-        <div class="row">
-            <div class="col-lg-6">
-                <a class="btn btn-outline-info btn-lg btn-block btn-autowidth" href="{{ url_for('registration', userType='user', accType='free') }}" role="button">
-                    <span>
-                        Join the TeamGate
-                    </span>
-                    <i class="fas fa-users"  data-fa-transform="grow-2 right-4" style="color: black"></i>
-                </a>
             </div>
-            <div class="col-lg-6">
-                <a class="btn btn-outline-info btn-lg btn-autowidth btn-block" href="{{ url_for('showPricing') }}" role="button">
-                    <span>
-                        Register your local activity
-                    </span>
-                     <span class="fa-1x">
-                         <i class="fas fa-plus" data-fa-transform="up-13 right-6" style="color: #000; width: 11px; height: 11px"></i>
-                         <i class="fas fa-location-arrow" style="color: #000;"></i>
-                     </span>
-                </a>
-            </div>
-        </div>
-        </div>
 
-    {% endif %}
+        {% endif %}
+    </div>
 {% endblock pagecontent %}
