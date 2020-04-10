@@ -31,7 +31,7 @@
                                     {{ form.rememberMe }}
                                 </div>
                                 <div>
-                                    <small class="pl-2"><a href="{{ url_for('send_resetRequest') }}">I forgot my password</a></small>
+                                    <small class="pl-2"><a href="{{ url_for('main.send_resetRequest') }}">I forgot my password</a></small>
                                 </div>
                             </div>
                         </div>
@@ -39,10 +39,10 @@
                 </form>
             </div>
             <div class="pl-1">
-                <small>Don't you have an account yet? <a href="{{ url_for('registration', userType='user', accType='free' ) }}">Create it here!</a></small>
+                <small>Don't you have an account yet? <a href="{{ url_for('users.registration', userType='user', accType='free' ) }}">Create it here!</a></small>
             </div>
             <div class="pl-1">
-                <small>Do you own a local activity or pub? <a href="{{ url_for('showPricing') }}">Register it here!</a></small>
+                <small>Do you own a local activity or pub? <a href="{{ url_for('main.showPricing') }}">Register it here!</a></small>
             </div>
         </div>
     </div>

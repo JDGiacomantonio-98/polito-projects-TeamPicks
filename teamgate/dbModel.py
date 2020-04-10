@@ -1,8 +1,8 @@
 # DATABASE OBJECT CLASS SPECIFICATION MODULE
 # SQLAlchemy produces Object-Oriented Databases
-from flask import session, render_template, flash
+from flask import session, render_template, flash, current_app
 from flask_mail import Message
-from teamgate import app, db, loginManager, mail
+from teamgate import db, loginManager, mail
 from itsdangerous import TimedJSONWebSignatureSerializer as timedTokenizer
 from flask_login import UserMixin
 
@@ -38,11 +38,11 @@ class USER(db.Model, UserMixin):
     pswHash = db.Column(db.String(60), unique=False, nullable=False)
 
     def createToken(self, expireInSec=900):
-        return timedTokenizer(app.config['SECRET_KEY'], expireInSec).dumps({'user-id': self.id}).decode('utf-8')
+        return timedTokenizer(current_app.config['SECRET_KEY'], expireInSec).dumps({'user-id': self.id}).decode('utf-8')
 
     def confirmAccount(self, token):
         try:
-            userID = timedTokenizer(app.config['SECRET_KEY']).loads(token)
+            userID = timedTokenizer(current_app.config['SECRET_KEY']).loads(token)
         except:
             return False
         if userID.get('user-id') != self.id:
@@ -57,7 +57,7 @@ class USER(db.Model, UserMixin):
     @staticmethod
     def verifyToken_pswReset(resetToken):
         try:
-            userID = timedTokenizer(app.config['SECRET_KEY']).loads(resetToken)['user-id']
+            userID = timedTokenizer(current_app.config['SECRET_KEY']).loads(resetToken)['user-id']
         except:
             return None
         return User.query.get(userID)

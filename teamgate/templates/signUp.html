@@ -175,10 +175,10 @@
             </form>
         </div>
         <div class="pl-3">
-            <small>Already have an account? <a href="{{ url_for('login') }}">Log in here!</a></small>
+            <small>Already have an account? <a href="{{ url_for('users.login') }}">Log in here!</a></small>
             {% if userType == 'user' %}
                 <br>
-                <small>Do you own a local activity or pub? <a href="{{ url_for('showPricing') }}">Register it here!</a></small>
+                <small>Do you own a local activity or pub? <a href="{{ url_for('main.showPricing') }}">Register it here!</a></small>
             {% endif %}
         </div>
     </div>

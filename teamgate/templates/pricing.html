@@ -19,7 +19,7 @@
             </ul>
           </div>
             <div class="card-footer">
-                <button type="button" class="btn btn-lg btn-block btn-outline-primary" onclick="window.location.href='{{ url_for('registration', userType='partner', accType='free') }}'">
+                <button type="button" class="btn btn-lg btn-block btn-outline-primary" onclick="window.location.href='{{ url_for('users.registration', userType='partner', accType='free') }}'">
                     Register
                 </button>
             </div>
@@ -38,7 +38,7 @@
             </ul>
           </div>
           <div class="card-footer">
-            <button type="button" class="btn btn-lg btn-block btn-primary" onclick="window.location.href='{{ url_for('registration', userType='partner', accType='basic') }}'">
+            <button type="button" class="btn btn-lg btn-block btn-primary" onclick="window.location.href='{{ url_for('users.registration', userType='partner', accType='basic') }}'">
                 Register
             </button>
           </div>
@@ -58,7 +58,7 @@
             </ul>
           </div>
             <div class="card-footer">
-            <button type="button" class="btn btn-lg btn-block btn-primary" onclick="window.location.href='{{ url_for('registration', userType='partner', accType='premium') }}'">
+            <button type="button" class="btn btn-lg btn-block btn-primary" onclick="window.location.href='{{ url_for('users.registration', userType='partner', accType='premium') }}'">
                 Register
             </button>
           </div>

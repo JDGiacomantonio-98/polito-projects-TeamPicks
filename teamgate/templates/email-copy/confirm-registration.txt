@@ -2,7 +2,7 @@ Dear {{ user.username }},
 
 To confirm your account please click on the following link:
 
-{{ url_for('confirmAccount', token=token, _external=True) }}
+{{ url_for('main.confirmAccount', token=token, _external=True) }}
 
 Kindly,
 The TeamGate Staff

@@ -6,7 +6,7 @@ from wtforms.validators import DataRequired, Length, EqualTo, Email, ValidationE
 from teamgate.dbModel import User, Pub
 from flask_login import current_user
 
-# it should be understood if the validate_field form method can already return the query result if not empty (!!)
+# it should be checked if the validate_field form method can already return the query result if not empty (!!)
 
 
 class registrationForm_user(FlaskForm):
@@ -94,21 +94,6 @@ class loginForm(FlaskForm):
     rememberMe = BooleanField('Remember Me!')
 
     submit = SubmitField('Log me in!')
-
-
-class trialForm(FlaskForm):
-    city = StringField('My place is in', validators=[DataRequired()])
-
-    submit = SubmitField('Open the gate')
-
-
-class resetRequestForm(FlaskForm):
-    emailAddr = StringField('Email address:\t', validators=[DataRequired(), Email()], render_kw={'placeholder': 'Email address'})
-    submit = SubmitField('Send request')
-
-    def validate_emailAddr(self, emailAddr):
-        if not(User.query.filter_by(email=emailAddr.data).first() or Pub.query.filter_by(email=emailAddr.data).first()):
-            raise ValidationError('No existing accounts are linked with this email address.')
 
 
 class resetPswForm(FlaskForm):

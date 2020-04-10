@@ -1,41 +1,39 @@
 #    FLASK APP INIT MODULE -- First executed module
 #    Initialize all needed objects to make app run properly
 
-import os
-from datetime import timedelta
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_bcrypt import Bcrypt
 from flask_login import LoginManager
 from flask_mail import Mail
+from teamgate.config import Config
 
-app = Flask(__name__)
 
-# needed to protect application from modifying cookies and cross site forgery request attacks
-# generated randomly by secret.token_hex(20)
-app.config['SECRET_KEY'] = os.environ.get('TEAMGATE[__SECRETKEY__]')
-# associate a local sql-lite server to the application
-app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('TEAMGATE[__DATABASE_URI__]')
-app.config['MAIL_SERVER'] = 'smtp.googlemail.com'
-app.config['MAIL_PORT'] = 587
-app.config['MAIL_USE_TLS'] = True
-app.config['MAIL_USE_SSL'] = False
-# The following Config constants need to be hided from plain code. This can be done setting them as env variables
-app.config['MAIL_USERNAME'] = os.environ.get('TEAMGATE[__@USER__]')
-app.config['MAIL_PASSWORD'] = os.environ.get('TEAMGATE[__@PSW__]')
-app.config['MAIL_DEFAULT_SENDER'] = os.environ.get('TEAMGATE[__@USER__]')
-
-app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(minutes=20)
-
-db = SQLAlchemy(app)
-pswBurner = Bcrypt(app)
-
-loginManager = LoginManager(app)
+db = SQLAlchemy()
+pswBurner = Bcrypt()
+loginManager = LoginManager()
 loginManager.session_protection = 'strong'
-loginManager.login_view = 'login'
+loginManager.login_view = 'users.login'
 loginManager.login_message_category = 'info'
 
-mail = Mail(app)
+mail = Mail()
 
-# following instruction is located here in order to avoid circular imports when app.run
-from teamgate import routes
+
+def create_app(CONFIG=Config):
+    from teamgate.main.routes import main
+    from teamgate.errors.handlers import errors
+    from teamgate.users_glb.routes import users
+
+    app = Flask(__name__)
+    app.config.from_object(Config)
+
+    db.init_app(app)
+    pswBurner.init_app(app)
+    loginManager.init_app(app)
+    mail.init_app(app)
+
+    app.register_blueprint(main)
+    app.register_blueprint(errors)
+    app.register_blueprint(users)
+
+    return app
