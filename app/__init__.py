@@ -6,11 +6,13 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_bcrypt import Bcrypt
 from flask_login import LoginManager
 from flask_mail import Mail
-from teamgate.config import Config
+from app.config import Config
+from config import config
 
 
 db = SQLAlchemy()
 pswBurner = Bcrypt()
+
 loginManager = LoginManager()
 loginManager.session_protection = 'strong'
 loginManager.login_view = 'users.login'
@@ -19,13 +21,13 @@ loginManager.login_message_category = 'info'
 mail = Mail()
 
 
-def create_app(CONFIG=Config):
-    from teamgate.main.routes import main
-    from teamgate.errors.handlers import errors
-    from teamgate.users_glb.routes import users
+def create_app(CONFIG_KEY):
+    from app.main.routes import main
+    from app.errors.handlers import errors
+    from app.users_glb.routes import users
 
     app = Flask(__name__)
-    app.config.from_object(Config)
+    app.config.from_object(config[CONFIG_KEY])
 
     db.init_app(app)
     pswBurner.init_app(app)

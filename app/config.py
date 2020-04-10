@@ -1,5 +1,4 @@
 import os
-from datetime import timedelta
 
 
 class Config:
@@ -15,3 +14,24 @@ class Config:
     MAIL_USERNAME = os.environ.get('TEAMGATE[__@USER__]')
     MAIL_PASSWORD = os.environ.get('TEAMGATE[__@PSW__]')
     MAIL_DEFAULT_SENDER = os.environ.get('TEAMGATE[__@USER__]')
+
+
+class DevConfig(Config):
+    DEBUG = True
+
+
+class TestConfig(Config):
+    TESTING = True
+
+
+class ProdConfig(Config):
+    DEBUG = False
+
+
+config = {
+    'DEV': DevConfig,
+    'TEST': TestConfig,
+    'PROD': ProdConfig,
+
+    'DEFAULT': DevConfig
+}

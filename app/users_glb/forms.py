@@ -3,7 +3,7 @@ from flask_wtf import FlaskForm, RecaptchaField
 from flask_wtf.file import FileField, FileAllowed
 from wtforms import StringField, PasswordField, BooleanField, SubmitField, SelectField, IntegerField, TextAreaField
 from wtforms.validators import DataRequired, Length, EqualTo, Email, ValidationError
-from teamgate.dbModel import User, Pub
+from app.dbModel import User, Pub
 from flask_login import current_user
 
 # it should be checked if the validate_field form method can already return the query result if not empty (!!)

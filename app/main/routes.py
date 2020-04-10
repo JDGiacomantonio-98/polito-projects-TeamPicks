@@ -1,8 +1,8 @@
 from flask import render_template, url_for, flash, redirect, request, Blueprint, current_app
 from flask_login import login_required, current_user
-from teamgate.main.forms import trialForm, resetRequestForm
-from teamgate.main.methods import sendEmail
-from teamgate.dbModel import User, Pub
+from app.main.forms import trialForm, resetRequestForm
+from app.main.methods import sendEmail
+from app.dbModel import User, Pub
 
 main = Blueprint('main', __name__)
 

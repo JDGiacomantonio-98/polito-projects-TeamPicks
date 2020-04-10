@@ -2,10 +2,10 @@ from math import ceil
 from random import random, randint
 from flask import render_template, url_for, flash, redirect, request, session, abort, Blueprint
 from flask_login import login_user, logout_user, login_required, current_user
-from teamgate import db, pswBurner
-from teamgate.users_glb.forms import registrationForm_user, registrationForm_pub, loginForm, accountDashboardForm, resetPswForm
-from teamgate.users_glb.methods import save_profilePic
-from teamgate.dbModel import User, Pub
+from app import db, pswBurner
+from app.users_glb.forms import registrationForm_user, registrationForm_pub, loginForm, accountDashboardForm, resetPswForm
+from app.users_glb.methods import save_profilePic
+from app.dbModel import User, Pub
 
 users = Blueprint('users', __name__)
 

@@ -1,6 +1,6 @@
 from flask import render_template
 from flask_mail import Message
-from teamgate import mail
+from app import mail
 
 
 def sendEmail(user, templatePath, mailTitle, token=None):

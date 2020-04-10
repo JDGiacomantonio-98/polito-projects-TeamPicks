@@ -1,7 +1,7 @@
 from flask_wtf import FlaskForm
 from wtforms import StringField, SubmitField
 from wtforms.validators import DataRequired, Email, ValidationError
-from teamgate.dbModel import Pub, User
+from app.dbModel import Pub, User
 
 
 class trialForm(FlaskForm):

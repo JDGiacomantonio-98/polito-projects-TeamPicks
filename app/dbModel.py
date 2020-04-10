@@ -2,7 +2,7 @@
 # SQLAlchemy produces Object-Oriented Databases
 from flask import session, render_template, flash, current_app
 from flask_mail import Message
-from teamgate import db, loginManager, mail
+from app import db, loginManager, mail
 from itsdangerous import TimedJSONWebSignatureSerializer as timedTokenizer
 from flask_login import UserMixin
 
