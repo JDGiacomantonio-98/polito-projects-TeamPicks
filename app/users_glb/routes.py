@@ -1,13 +1,13 @@
 from math import ceil
 from random import random, randint
-from flask import render_template, url_for, flash, redirect, request, session, abort, Blueprint
+from flask import render_template, url_for, flash, redirect, request, session, abort
 from flask_login import login_user, logout_user, login_required, current_user
 from app import db, pswBurner
+from app.dbModel import User, Pub
+from app.users_glb import users
 from app.users_glb.forms import registrationForm_user, registrationForm_pub, loginForm, accountDashboardForm, resetPswForm
 from app.users_glb.methods import save_profilePic
-from app.dbModel import User, Pub
 
-users = Blueprint('users', __name__)
 
 # following routes are user-specific no need for 'app' instance
 
@@ -154,7 +154,7 @@ def showProfile(userInfo):
                 session['del'] = True
             else:
                 session['del'] = False
-            return redirect(url_for('main.showProfile', userInfo=current_user.username))
+            return redirect(url_for('users.showProfile', userInfo=current_user.username))
     return render_template('profilePage.html', title=current_user.firstName + " " + current_user.lastName, imgFile=imgFile, form=form)
 
 

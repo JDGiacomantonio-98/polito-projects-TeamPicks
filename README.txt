@@ -1,17 +1,16 @@
-In order to quickly install all required packages in your python venv run the following command on it :
+Use the following command in your terminal to re-create an exact working replica of python3.x venv used during development :
 
+(venv) $ python -m venv venv
 (venv) $ pip install -r requirements.txt
 
-This will recreate a perfect replica of venv used for development
-
-In order to quickly create a log named 'requirements.txt' of all currently used modules, run the following command on your terminal :
+In order to quickly create and update a package-log file named 'requirements.txt' of all currently used modules, run the following command in your terminal :
 
 (venv) $ pip freeze >requirements.txt
 
 ++++++++++++++++++++++++++++++++++++++++++++++++++++|
 REQUIREMENT VERSION LOG
 filename : requirements.txt
-Last update date : 20/03/10
+Last update date : 20/04/16                          |
 ++++++++++++++++++++++++++++++++++++++++++++++++++++|
 
  ---- COMMIT LOG FROM PREVIOUS GITHUB FOLDER ------

@@ -11,11 +11,11 @@ def save_profilePic(imgFile):
         while hexCode in current_user.img:
             hexCode = secrets.token_hex(6)
         if ('default_' not in current_user.img) and (current_user.img != 'favicon.png'):
-            sourcePath = os.path.join(current_app.root_path, 'static/profile_pics/users_glb', current_user.img)
+            sourcePath = os.path.join(current_app.root_path, 'static/profile_pics/usersg', current_user.img)
             os.remove(sourcePath)
         fileName, fileExt = os.path.splitext(imgFile.filename)
         fileName = hexCode + fileExt.lower()
-        targetPath = os.path.join(current_app.root_path, 'static/profile_pics/users_glb', fileName)
+        targetPath = os.path.join(current_app.root_path, 'static/profile_pics/users', fileName)
         imgFile = resizeTo125(imgFile)
         imgFile.save(targetPath)
     else:

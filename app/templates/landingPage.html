@@ -4,6 +4,7 @@
     <div class="container">
         {% if request.method=='GET' %}
             {% if not current_user.is_authenticated %}
+                <p>the local date is now set to {{ moment(time).format('LLL') }} and since you charged this page has been passed : {{ moment(time).fromNow(refresh=True) }}</p>
                 <div class="jumbotron mt-3">
                     <div class="row">
                         <div class="col-9">

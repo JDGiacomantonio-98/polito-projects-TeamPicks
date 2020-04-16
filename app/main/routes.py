@@ -1,10 +1,10 @@
-from flask import render_template, url_for, flash, redirect, request, Blueprint, current_app
+from flask import render_template, url_for, flash, redirect, request
 from flask_login import login_required, current_user
 from app.main.forms import trialForm, resetRequestForm
 from app.main.methods import sendEmail
 from app.dbModel import User, Pub
-
-main = Blueprint('main', __name__)
+from app.main import main
+from datetime import datetime
 
 
 @main.route('/', methods=['GET', 'POST'])
@@ -17,7 +17,7 @@ def index():
     elif current_user.is_authenticated and current_user.confirmed:
         return render_template('homePage.html')
     else:
-        return render_template('landingPage.html', form=form)
+        return render_template('landingPage.html', form=form, time=datetime.utcnow())
 
 
 @main.route('/pricing')
