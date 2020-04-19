@@ -111,6 +111,8 @@ class Pub(USER):
 
 
 class Group(db.Model):
+    __tablename__='groups'
+
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(15), unique=True, nullable=False)
     administrator = db.Column(db.String(15), unique=True, nullable=False)

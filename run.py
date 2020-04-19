@@ -1,6 +1,5 @@
 # runs the Flask application instance created by __init__.py
 import os
-from os import environ
 from app import create_app
 
 # here a menu can be added in order to create different instances of app working with different Configs

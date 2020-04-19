@@ -10,7 +10,7 @@ In order to quickly create and update a package-log file named 'requirements.txt
 ++++++++++++++++++++++++++++++++++++++++++++++++++++|
 REQUIREMENT VERSION LOG
 filename : requirements.txt
-Last update date : 20/04/16                          |
+Last update date : 20/04/16
 ++++++++++++++++++++++++++++++++++++++++++++++++++++|
 
  ---- COMMIT LOG FROM PREVIOUS GITHUB FOLDER ------

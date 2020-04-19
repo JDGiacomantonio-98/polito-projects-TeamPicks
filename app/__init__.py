@@ -3,6 +3,7 @@
 
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
+from flask_migrate import Migrate
 from flask_bcrypt import Bcrypt
 from flask_login import LoginManager
 from flask_mail import Mail
@@ -11,6 +12,7 @@ from config import config
 
 
 db = SQLAlchemy()
+migration = Migrate()
 pswBurner = Bcrypt()
 
 login_handler = LoginManager()
@@ -27,6 +29,7 @@ def create_app(CONFIG_KEY='def'):
     app.config.from_object(config[CONFIG_KEY])
 
     db.init_app(app)
+    migration.init_app(app, db)
     pswBurner.init_app(app)
     login_handler.init_app(app)
     mail.init_app(app)
