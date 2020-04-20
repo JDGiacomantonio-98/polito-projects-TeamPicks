@@ -5,6 +5,6 @@ To confirm your account please click on the following link:
 {{ url_for('main.confirmAccount', token=token, _external=True) }}
 
 Kindly,
-The TeamGate Staff
+The TeamPicks Staff
 
 Note: replies to this email address are not monitored.

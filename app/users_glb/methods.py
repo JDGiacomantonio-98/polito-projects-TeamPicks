@@ -12,7 +12,10 @@ def save_profilePic(imgFile):
             hexCode = secrets.token_hex(6)
         if ('default_' not in current_user.img) and (current_user.img != 'favicon.png'):
             sourcePath = os.path.join(current_app.root_path, 'static/profile_pics/usersg', current_user.img)
-            os.remove(sourcePath)
+            try:
+                os.remove(sourcePath)
+            except FileNotFoundError:
+                pass
         fileName, fileExt = os.path.splitext(imgFile.filename)
         fileName = hexCode + fileExt.lower()
         targetPath = os.path.join(current_app.root_path, 'static/profile_pics/users', fileName)
