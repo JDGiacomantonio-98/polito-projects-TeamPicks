@@ -7,6 +7,12 @@ In order to quickly create and update a package-log file named 'requirements.txt
 
 (venv) $ pip freeze >requirements.txt
 
+In order to quickly create new db files able to work correctly with all config profiles, run the following command :
+
+(venv) $ flask build [config_key]
+
+if not specificied, build command will assign 'def' default value to <config_key>
+
 ++++++++++++++++++++++++++++++++++++++++++++++++++++|
 REQUIREMENT VERSION LOG
 filename : requirements.txt
