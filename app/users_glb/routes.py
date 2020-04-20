@@ -3,6 +3,7 @@ from random import random, randint
 from flask import render_template, url_for, flash, redirect, request, session, abort
 from flask_login import login_user, logout_user, login_required, current_user
 from app import db, pswBurner
+from app.main.methods import send_ConfirmationEmail
 from app.dbModel import User, Pub
 from app.users_glb import users
 from app.users_glb.forms import registrationForm_user, registrationForm_pub, loginForm, accountDashboardForm, resetPswForm
@@ -59,7 +60,7 @@ def registration(userType, accType):
                     newItem.isBookable = True
             db.session.add(newItem)
             db.session.commit()
-            newItem.send_ConfirmationEmail()
+            send_ConfirmationEmail(recipient=newItem)
             session.clear()
             flash("Hi {}, your profile has been successfully created but is not yet active.".format(form.username.data),
                   'success')
@@ -101,7 +102,7 @@ def login():
                     else:
                         return redirect(url_for('main.index'))
                 else:
-                    current_user.send_ConfirmationEmail()
+                    send_ConfirmationEmail(recipient=current_user)
                     flash("Your account still require activation. Please check your email inbox.", 'warning')
             elif query:
                 flash('Login error : Invalid email or password.', 'danger')
@@ -146,7 +147,7 @@ def showProfile(userInfo):
                 if current_user.email != form.emailAddr.data:
                     current_user.confirmed = False
                     current_user.email = form.emailAddr.data
-                    current_user.send_ConfirmationEmail(flash_msg=True)
+                    send_ConfirmationEmail(recipient=current_user, flash_msg=True)
                 current_user.img = save_profilePic(form.img.data)
                 current_user.username = form.username.data
                 db.session.commit()

@@ -10,7 +10,7 @@ class Config(object):
     # needed to protect application from modifying cookies and cross site forgery request attacks
     # generated randomly by secret.token_hex(20)
     SECRET_KEY = os.environ.get('TEAMPICKS[__SECRETKEY__]')
-    PERMANENT_SESSION_LIFETIME = datetime.timedelta(minutes=25)
+    PERMANENT_SESSION_LIFETIME = datetime.timedelta(minutes=20)
     # associate a local sql-lite server to the application
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     MAIL_SERVER = 'smtp.googlemail.com'
@@ -24,6 +24,7 @@ class Config(object):
 
 class DevConfig(Config):
     DEBUG = True
+    SQLALCHEMY_TRACK_MODIFICATIONS = True
     SQLALCHEMY_DATABASE_URI = 'sqlite:///' + os.path.join(basedir, 'DEV.db')
 
 

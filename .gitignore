@@ -1,5 +1,6 @@
 .idea/*
 __pycache__/
 venv/
+static/profile_pics/users/
 .env
 *.db

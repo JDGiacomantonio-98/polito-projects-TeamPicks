@@ -1,6 +1,7 @@
 from flask import render_template
 from app.errors import errors
 
+
 @errors.app_errorhandler(403)
 def error_403(error):
     return render_template('errors/403.html', title='error: 403 - you cannot do that!'), 403

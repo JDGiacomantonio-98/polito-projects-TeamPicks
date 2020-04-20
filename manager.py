@@ -1,4 +1,5 @@
 import os
+from sqlalchemy.exc import OperationalError
 
 
 def select_Config():
@@ -30,6 +31,7 @@ def select_Config():
     return c
 
 
+#   i could think of creating an database unittest based on this func
 def db_exist(app):
     if app.debug:
         if 'DEV.db' not in os.listdir('.'):
@@ -41,3 +43,5 @@ def db_exist(app):
             return False
         else:
             return True
+    else:
+        return True

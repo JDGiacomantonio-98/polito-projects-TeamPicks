@@ -1,7 +1,7 @@
 from flask import render_template, url_for, flash, redirect, request
-from flask_login import login_required, current_user
+from flask_login import login_user, login_required, current_user
 from app.main.forms import trialForm, resetRequestForm
-from app.main.methods import sendEmail
+from app.main.methods import sendEmail, send_ConfirmationEmail
 from app.dbModel import User, Pub
 from app.main import main
 from datetime import datetime
@@ -42,12 +42,14 @@ def show_wip(callerPage):
 
 @main.route('/confirm-account/<token>')
 def confirmAccount(token):
-    # if user comes from email confirmation link there is no current user to check
-    if current_user.confirmed:
+     #if user comes from email confirmation link there is no current user to check
+    if (not current_user.is_anonymous) and current_user.confirmed:
         flash('You account has already been activated.', 'secondary')
         return redirect(url_for('main.index'))
-    if current_user.confirmAccount(token):
+    user = User.confirmAccount(token)
+    if user:
         flash('Account confirmed successfully. Great, you are good to go now!', 'success')
+        login_user(user, remember=False)
     else:
         flash('The confirmation link is invalid or has expired.', 'danger')
     return redirect(url_for('main.index'))
@@ -78,11 +80,6 @@ def send_resetRequest():
 @main.route('/<callerRoute>/acc-confirmation')
 @login_required
 def sendConfirmation(callerRoute):
-    current_user.send_ConfirmationEmail()
+    send_ConfirmationEmail(recipient=current_user)
     if callerRoute == 'profile':
         return redirect(url_for('users.showProfile', userInfo=current_user.username))
-
-
-@main.route('/HTMLHelp')
-def openVocabulary():
-    return render_template('html-vocabulary.html')

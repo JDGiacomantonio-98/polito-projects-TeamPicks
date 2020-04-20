@@ -1,8 +1,7 @@
 # DATABASE OBJECT CLASS SPECIFICATION MODULE
 # SQLAlchemy produces Object-Oriented Databases
-from flask import session, render_template, flash, current_app
-from flask_mail import Message
-from app import db, login_handler, mail
+from flask import session, current_app
+from app import db, login_handler
 from itsdangerous import TimedJSONWebSignatureSerializer as timedTokenizer
 from flask_login import UserMixin
 
@@ -37,22 +36,24 @@ class USER(db.Model, UserMixin):
     # Following value stores hashed user password
     pswHash = db.Column(db.String(60), unique=False, nullable=False)
 
-    def createToken(self, expireInSec=900):
+    def createToken(self, expireInSec=(8*60)):
         return timedTokenizer(current_app.config['SECRET_KEY'], expireInSec).dumps({'user-id': self.id}).decode('utf-8')
 
-    def confirmAccount(self, token):
+    @staticmethod
+    def confirmAccount(token):
         try:
-            userID = timedTokenizer(current_app.config['SECRET_KEY']).loads(token)
+            userID = timedTokenizer(current_app.config['SECRET_KEY']).loads(token)['user-id']
+            user = User.query.get(userID)
         except:
-            return False
-        if userID.get('user-id') != self.id:
-            self.confirmed = False
+            return None
+        if userID != user.id:
+            user.confirmed = False
             db.session.commit()
-            return False
+            return None
         else:
-            self.confirmed = True
+            user.confirmed = True
             db.session.commit()
-            return True
+            return user
 
     @staticmethod
     def verifyToken_pswReset(resetToken):
@@ -61,16 +62,6 @@ class USER(db.Model, UserMixin):
         except:
             return None
         return User.query.get(userID)
-
-    def send_ConfirmationEmail(self, flash_msg=False):
-        msg = Message('TeamGate Account -- ' + 'ACCOUNT CONFIRMATION',
-                      sender='teamgate.help@gmail.com',
-                      recipients=[self.email])
-        msg.body = render_template('/email-copy/confirm-registration' + '.txt', token=self.createToken(), user=self)
-        # _external parameter allow to generate an absolute URL whose works outside app environment
-        mail.send(msg)
-        if flash_msg:
-            flash('A confirmation email has been sent to you. Open your inbox!', 'warning')
 
 
 class User(USER):
