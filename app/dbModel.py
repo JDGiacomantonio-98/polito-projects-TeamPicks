@@ -72,6 +72,7 @@ class User(USER):
     age = db.Column(db.Integer, unique=False, nullable=True)
     sex = db.Column(db.String)
     img = db.Column(db.String)
+    about_me = db.Column(db.Text)
     """Following columns should store list object"""
     sports = db.Column(db.Integer, nullable=True)
     groups = db.Column(db.Integer, nullable=True)

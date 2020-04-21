@@ -10,9 +10,8 @@ from flask_bcrypt import Bcrypt
 from flask_login import LoginManager
 from flask_mail import Mail
 from flask_moment import Moment
-from config import config
 from manager import db_exist
-
+from config import set_Config
 
 db = SQLAlchemy()
 migration = Migrate()
@@ -32,7 +31,7 @@ clock = Moment()
 @with_appcontext
 def db_build(config_key):
     config_key = str(config_key).lower()
-    current_app.config.from_object(config[config_key])
+    current_app.config.from_object(set_Config())
     if not db_exist(current_app):
         print("\nSUCCESS : application ready to run.")
         if config_key == 'def':
@@ -53,11 +52,11 @@ def db_reset(config_key):
                       'Press [D] to confirm this action : '))
         if c.lower() != 'd':
             pass
-        current_app.config.from_object(config[config_key])
+        current_app.config.from_object(set_Config())
         db.drop_all()
         print("\nSUCCESS : all data have been dropped.")
     else:
-        current_app.config.from_object(config[config_key])
+        current_app.config.from_object(set_Config())
         if db_exist(current_app):
             db.drop_all()
             print("\nSUCCESS : all data have been dropped.")
@@ -66,34 +65,32 @@ def db_reset(config_key):
                   "\t  The command ended with no action.")
 
 
-def create_app(CONFIG_KEY='def'):
-    if CONFIG_KEY != 's':
-        app = Flask(__name__)
+def create_app():
+    app = Flask(__name__)
+    try:
+        app.config.from_object(set_Config())
+        print("\n===========================\n"
+              "RUNNING CONFIG: {}\n{}\n".format(app.config['ENV'], app.config))
+    except:
+        print('\nThe application factory has been closed.')
+        return None
+    db.init_app(app)
+    migration.init_app(app, db)
+    pswBurner.init_app(app)
+    login_handler.init_app(app)
+    mail.init_app(app)
+    clock.init_app(app)
 
-        app.config.from_object(config[CONFIG_KEY])
+    from app.main import main
+    app.register_blueprint(main)
 
-        if CONFIG_KEY == ('d' or 'def'):
-            print(app.config)
+    from app.errors import errors
+    app.register_blueprint(errors)
 
-        db.init_app(app)
-        migration.init_app(app, db)
-        pswBurner.init_app(app)
-        login_handler.init_app(app)
-        mail.init_app(app)
-        clock.init_app(app)
+    from app.users_glb import users
+    app.register_blueprint(users)
 
-        from app.main import main
-        app.register_blueprint(main)
+    app.cli.add_command(db_build)
+    app.cli.add_command(db_reset)
 
-        from app.errors import errors
-        app.register_blueprint(errors)
-
-        from app.users_glb import users
-        app.register_blueprint(users)
-
-        app.cli.add_command(db_build)
-        app.cli.add_command(db_reset)
-
-        return app
-    else:
-        pass
+    return app
