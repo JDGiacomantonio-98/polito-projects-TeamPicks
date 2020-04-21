@@ -9,9 +9,11 @@ In order to quickly create and update a package-log file named 'requirements.txt
 
 In order to quickly create new db files able to work correctly with all config profiles, run the following command :
 
+(venv) $ flask reset [config_key]
 (venv) $ flask build [config_key]
 
-if not specificied, build command will assign 'def' default value to <config_key>
+If not specificied, command will print a menu where to choose which config profile to load.
+Use 'env' argument in order to let <reset> and <build> commands look in sys environment variables for config profile to load.
 
 ++++++++++++++++++++++++++++++++++++++++++++++++++++|
 REQUIREMENT VERSION LOG
