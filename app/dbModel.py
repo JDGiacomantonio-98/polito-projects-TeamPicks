@@ -5,10 +5,7 @@ from app import db, login_handler
 from itsdangerous import TimedJSONWebSignatureSerializer as timedTokenizer
 from flask_login import UserMixin
 
-# DATABASE LEVEL FUNCTIONS #
-
-# this function has to be adapted to our purposes because we have not an only db.Model type but two
-# I m think of overriding some flask-login source functions
+# DATABASE GLOBAL FUNCTIONS #
 
 
 @login_handler.user_loader
@@ -17,9 +14,9 @@ def loadUser(user_id):
     if session.get('dbModelType') == 'user':
         return User.query.get(user_id)
     else:
-        return Pub.query.get(user_id)
+        return Owner.query.get(user_id)
 
-# DATABASE OBJECT STRUCTURE #
+# DATABASE OBJECTS STRUCTURE #
 
 
 class USER(db.Model, UserMixin):
@@ -27,14 +24,24 @@ class USER(db.Model, UserMixin):
     __abstract__ = True
 
     id = db.Column(db.Integer, primary_key=True)
-    # for Pubs username will be identify their businessName
-    username = db.Column(db.String(15), unique=True, nullable=False)
-    city = db.Column(db.String, nullable=True)
-    email = db.Column(db.String, unique=True, nullable=False)
+    username = db.Column(db.String(15), unique=True, nullable=False, index=True)
+    email = db.Column(db.String, unique=True, nullable=False, index=True)
     confirmed = db.Column(db.Boolean, nullable=False, default=False)
+    lastSession = db.Column(db.DateTime, nullable=True)     # nullable=True temporary solution until dates management
+    firstName = db.Column(db.String(60), unique=False, nullable=False)
+    lastName = db.Column(db.String(60), unique=False, nullable=False)
+    age = db.Column(db.Integer, unique=False, nullable=True)
+    sex = db.Column(db.String)
+    img = db.Column(db.String)     # stores the filename string of the img file
+    about_me = db.Column(db.Text)
+    city = db.Column(db.String, nullable=True)
 
-    # Following value stores hashed user password
-    pswHash = db.Column(db.String(60), unique=False, nullable=False)
+    pswHash = db.Column(db.String(60), unique=False, nullable=False)    # stores hashed user password
+
+    def fingerPrint(self):
+        print('USER :\n')
+        for attr, value in self.__dict__.items():
+            print("{} : {}\n".format(attr, value))
 
     def createToken(self, expireInSec=(8*60)):
         return timedTokenizer(current_app.config['SECRET_KEY'], expireInSec).dumps({'user-id': self.id}).decode('utf-8')
@@ -42,11 +49,11 @@ class USER(db.Model, UserMixin):
     @staticmethod
     def confirmAccount(token):
         try:
-            userID = timedTokenizer(current_app.config['SECRET_KEY']).loads(token)['user-id']
-            user = User.query.get(userID)
+            user_id = timedTokenizer(current_app.config['SECRET_KEY']).loads(token)['user-id']
+            user = User.query.get(user_id)
         except:
             return None
-        if userID != user.id:
+        if user_id != user.id:
             user.confirmed = False
             db.session.commit()
             return None
@@ -67,50 +74,40 @@ class USER(db.Model, UserMixin):
 class User(USER):
     __tablename__ = 'users'
 
-    firstName = db.Column(db.String(), unique=False, nullable=False)
-    lastName = db.Column(db.String(120), unique=False, nullable=False)
-    age = db.Column(db.Integer, unique=False, nullable=True)
-    sex = db.Column(db.String)
-    img = db.Column(db.String)
-    about_me = db.Column(db.Text)
-    """Following columns should store list object"""
-    sports = db.Column(db.Integer, nullable=True)
-    groups = db.Column(db.Integer, nullable=True)
-
-    """ nullable=True is only a temporary solution """
-    lastSession = db.Column(db.DateTime, nullable=True)
-
-    def fingerPrint(self):
-        for attr, value in self.__dict__.items():
-            print(attr, value)
+    sports = db.Column(db.Boolean)    # relationship
+    groups = db.Column(db.Boolean)    # relationship
 
 
-class Pub(USER):
-    __tablename__ = 'local-partners'
+class Owner(USER):
+    __tablename__ = 'owners'
 
-    ownerFirstName = db.Column(db.String, nullable=False)
-    ownerLastName = db.Column(db.String, nullable=False)
+    pub = db.Column(db.Boolean)  # creates one-to-one relationship between owner and his pub
+    subsType = db.Column(db.String, nullable=False, default='free-acc') # stores hex codes whose refers to different acc-subscriptions
+    subsExpirationDate = db.Column(db.DateTime, nullable=True)       # should be not nullable
+
+
+class Pub(db.Model):
+    __tablename__ = 'pubs'
+
+    id = db.Column(db.Integer, primary_key=True)
+    ownerCredentials = db.Column(db.Boolean)      # backref to owner firstname + lastname
+    #ownerLastName = db.Column(db.String, nullable=False)
     businessAddress = db.Column(db.String, nullable=False)
     isBookable = db.Column(db.Boolean, nullable=False)
     seatsMax = db.Column(db.Integer, nullable=False)
     seatsBooked = db.Column(db.Integer, nullable=False, default=0)
-    businessRating = db.Column(db.Integer, nullable=False, default=0)
-    # in future the following column should store only hex codes to name different acc-subscriptions
-    subsType = db.Column(db.String, nullable=False, default='free-acc')
-    # following value should be not nullable
-    subsExpirationDate = db.Column(db.DateTime, nullable=True)
+    rating = db.Column(db.Integer, nullable=False, default=0)
     businessDescription = db.Column(db.Text, nullable=True, default='let your customer know what you do best.')
 
 
 class Group(db.Model):
-    __tablename__='groups'
+    __tablename__ = 'groups'
 
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(15), unique=True, nullable=False)
     administrator = db.Column(db.String(15), unique=True, nullable=False)
     members = db.Column(db.Integer, default=0)
-    """ The following parameter store the list of matches the group want to see this week """
-    watchlist = db.Column(db.String, default="")
+    watchlist = db.Column(db.String, default="")    # stores list of matches the group want to see this week
 
 
 class Match(db.Model):
@@ -119,7 +116,6 @@ class Match(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     type = db.Column(db.Binary, nullable=False)
     date = db.Column(db.DateTime)
-    """ The following parameter stores the two teams who will play against each other """
-    opponents = db.Column(db.String, nullable=False)
+    opponents = db.Column(db.String, nullable=False)    # stores the two teams who will play against each other
 
 

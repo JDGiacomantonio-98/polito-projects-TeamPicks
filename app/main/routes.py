@@ -2,7 +2,7 @@ from flask import render_template, url_for, flash, redirect, request
 from flask_login import login_user, login_required, current_user
 from app.main.forms import trialForm, resetRequestForm
 from app.main.methods import sendEmail, send_ConfirmationEmail
-from app.dbModel import User, Pub
+from app.dbModel import User, Owner
 from app.main import main
 from datetime import datetime
 
@@ -12,7 +12,7 @@ def index():
     form = trialForm()
     if request.method == 'POST':
         # query number of pubs
-        pubs = Pub.query.filter_by(city=form.city.data).count()
+        pubs = Owner.query.filter_by(city=form.city.data).count()
         return render_template('landingPage.html', city=form.city.data, pubs=pubs)
     elif current_user.is_authenticated and current_user.confirmed:
         return render_template('homePage.html')
@@ -66,7 +66,7 @@ def send_resetRequest():
             # send user an email
             query = User.query.filter_by(email=form.emailAddr.data).first()
             if not query:
-                query = Pub.query.filter_by(email=form.emailAddr.data).first()
+                query = Owner.query.filter_by(email=form.emailAddr.data).first()
             if query.confirmed:
                 sendEmail(query, 'email-copy/reset-psw', 'psw reset', token=query.createToken())
                 flash('An email has been sent to your inbox containing all instructions to reset your password!', 'warning')

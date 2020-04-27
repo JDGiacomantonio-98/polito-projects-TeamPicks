@@ -97,7 +97,7 @@ def create_app():
     from app.errors import errors
     app.register_blueprint(errors)
 
-    from app.users_glb import users
+    from app.users import users
     app.register_blueprint(users)
 
     app.cli.add_command(db_build)

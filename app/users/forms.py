@@ -3,7 +3,7 @@ from flask_wtf import FlaskForm, RecaptchaField
 from flask_wtf.file import FileField, FileAllowed
 from wtforms import StringField, PasswordField, BooleanField, SubmitField, SelectField, IntegerField, TextAreaField
 from wtforms.validators import DataRequired, Length, EqualTo, Email, ValidationError
-from app.dbModel import User, Pub
+from app.dbModel import User, Owner
 from flask_login import current_user
 
 # it should be checked if the validate_field form method can already return the query result if not empty (!!)
@@ -22,11 +22,11 @@ class registrationForm_user(FlaskForm):
     submit = SubmitField('Complete registration!')
 
     def validate_username(self, username):
-        if User.query.filter_by(username=username.data).first() or Pub.query.filter_by(username=username.data).first():
+        if User.query.filter_by(username=username.data).first() or Owner.query.filter_by(username=username.data).first():
             raise ValidationError('This username has been already taken. Choose a different one.')
 
     def validate_emailAddr(self, emailAddr):
-        if User.query.filter_by(email=emailAddr.data).first() or Pub.query.filter_by(email=emailAddr.data).first():
+        if User.query.filter_by(email=emailAddr.data).first() or Owner.query.filter_by(email=emailAddr.data).first():
             raise ValidationError('This email address has been already taken. Choose a different one.')
 
 
@@ -46,11 +46,11 @@ class registrationForm_pub(FlaskForm):
     submit = SubmitField('Complete registration!')
 
     def validate_username(self, username):
-        if User.query.filter_by(username=username.data).first() or Pub.query.filter_by(username=username.data).first():
+        if User.query.filter_by(username=username.data).first() or Owner.query.filter_by(username=username.data).first():
             raise ValidationError('This username has been already taken. Choose a different one.')
 
     def validate_emailAddr(self, emailAddr):
-        if User.query.filter_by(email=emailAddr.data).first() or Pub.query.filter_by(email=emailAddr.data).first():
+        if User.query.filter_by(email=emailAddr.data).first() or Owner.query.filter_by(email=emailAddr.data).first():
             raise ValidationError('This email address has been already taken. Choose a different one.')
 
 
@@ -70,7 +70,7 @@ class accountDashboardForm(FlaskForm):
     def validate_username(self, username):
         if len(self.username.data) > 1:
             if current_user.username != self.username.data:
-                query = [User.query.filter_by(username=username.data).first(), Pub.query.filter_by(username=username.data).first()]
+                query = [User.query.filter_by(username=username.data).first(), Owner.query.filter_by(username=username.data).first()]
                 if query[0] or query[1]:
                     raise ValidationError('This username has been already taken. Choose a different one.')
                 else:
@@ -80,7 +80,7 @@ class accountDashboardForm(FlaskForm):
 
     def validate_emailAddr(self, emailAddr):
         if current_user.email != self.emailAddr.data:
-            query = [User.query.filter_by(email=emailAddr.data).first(), Pub.query.filter_by(email=emailAddr.data).first()]
+            query = [User.query.filter_by(email=emailAddr.data).first(), Owner.query.filter_by(email=emailAddr.data).first()]
             if query[0] or query[1]:
                 flash('There are some problem with your input. Please make correction.', 'danger')
                 raise ValidationError('This email address has been already taken. Choose a different one.')

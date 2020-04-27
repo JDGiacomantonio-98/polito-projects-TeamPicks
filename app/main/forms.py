@@ -1,7 +1,7 @@
 from flask_wtf import FlaskForm
 from wtforms import StringField, SubmitField
 from wtforms.validators import DataRequired, Email, ValidationError
-from app.dbModel import Pub, User
+from app.dbModel import Owner, User
 
 
 class trialForm(FlaskForm):
@@ -15,5 +15,5 @@ class resetRequestForm(FlaskForm):
     submit = SubmitField('Send request')
 
     def validate_emailAddr(self, emailAddr):
-        if not(User.query.filter_by(email=emailAddr.data).first() or Pub.query.filter_by(email=emailAddr.data).first()):
+        if not(User.query.filter_by(email=emailAddr.data).first() or Owner.query.filter_by(email=emailAddr.data).first()):
             raise ValidationError('No existing accounts are linked with this email address.')

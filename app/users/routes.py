@@ -4,10 +4,10 @@ from flask import render_template, url_for, flash, redirect, request, session, a
 from flask_login import login_user, logout_user, login_required, current_user
 from app import db, pswBurner
 from app.main.methods import send_ConfirmationEmail
-from app.dbModel import User, Pub
-from app.users_glb import users
-from app.users_glb.forms import registrationForm_user, registrationForm_pub, loginForm, accountDashboardForm, resetPswForm
-from app.users_glb.methods import save_profilePic
+from app.dbModel import User, Owner
+from app.users import users
+from app.users.forms import registrationForm_user, registrationForm_pub, loginForm, accountDashboardForm, resetPswForm
+from app.users.methods import save_profilePic
 
 
 # following routes are user-specific no need for 'app' instance
@@ -42,7 +42,7 @@ def registration(userType, accType):
                 else:
                     newItem.img = 'favicon.png'
             else:
-                newItem = Pub(
+                newItem = Owner(
                     username=form.username.data,
                     city=form.city.data,
                     businessAddress=form.businessAddress.data,
@@ -86,10 +86,10 @@ def login():
                 query = User.query.filter_by(username=form.credential.data).first()
                 endPoint = 'user'
             if not query:
-                query = Pub.query.filter_by(email=form.credential.data).first()
+                query = Owner.query.filter_by(email=form.credential.data).first()
                 endPoint = 'pub'
             if not query:
-                query = Pub.query.filter_by(username=form.credential.data).first()
+                query = Owner.query.filter_by(username=form.credential.data).first()
                 endPoint = 'pub'
             session['dbModelType'] = endPoint
             if query and pswBurner.check_password_hash(query.pswHash, form.psw.data):
