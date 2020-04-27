@@ -2,4 +2,4 @@ from flask import Blueprint
 
 errors = Blueprint('errors', __name__)
 
-from app.errors import errors
+from app.errors import handlers
