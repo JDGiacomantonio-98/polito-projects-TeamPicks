@@ -13,7 +13,7 @@ class Config(object):
     PERMANENT_SESSION_LIFETIME = datetime.timedelta(minutes=20)
     # associate a local sqlite server to the application
     SQLALCHEMY_TRACK_MODIFICATIONS = False
-    MAIL_SERVER = 'smtp.googlemail.com'
+    MAIL_SERVER = os.getenv('MAIL_SERVER')
     MAIL_PORT = 587
     MAIL_USE_TLS = True
     MAIL_USE_SSL = False
