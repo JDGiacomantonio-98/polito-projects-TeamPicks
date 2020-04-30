@@ -1,7 +1,7 @@
 from flask_wtf import FlaskForm
 from wtforms import StringField, SubmitField
 from wtforms.validators import DataRequired, Email, ValidationError
-from app.dbModel import Owner, User
+from app.dbModels import Owner, User
 
 
 class trialForm(FlaskForm):

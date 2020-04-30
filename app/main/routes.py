@@ -2,7 +2,7 @@ from flask import render_template, url_for, flash, redirect, request
 from flask_login import login_user, login_required, current_user
 from app.main.forms import trialForm, resetRequestForm
 from app.main.methods import sendEmail, send_ConfirmationEmail
-from app.dbModel import User, Owner
+from app.dbModels import User, Owner
 from app.main import main
 from datetime import datetime
 

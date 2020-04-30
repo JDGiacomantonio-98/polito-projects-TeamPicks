@@ -1,10 +1,8 @@
-from math import ceil
-from random import random, randint
 from flask import render_template, url_for, flash, redirect, request, session, abort
 from flask_login import login_user, logout_user, login_required, current_user
 from app import db, pswBurner
 from app.main.methods import send_ConfirmationEmail
-from app.dbModel import User, Owner
+from app.dbModels import User, Owner
 from app.users import users
 from app.users.forms import registrationForm_user, registrationForm_pub, loginForm, accountDashboardForm, resetPswForm
 from app.users.methods import save_profilePic
@@ -37,10 +35,7 @@ def registration(userType, accType):
                     email=form.emailAddr.data,
                     pswHash=pswHash
                 )
-                if newItem.sex != 'other':
-                    newItem.img = str('default_' + newItem.sex + '_' + str(ceil(randint(1, 10) * random())) + '.jpg')
-                else:
-                    newItem.img = 'favicon.png'
+                newItem.img = newItem.set_defaultImg()
             else:
                 newItem = Owner(
                     username=form.username.data,

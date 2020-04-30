@@ -1,11 +1,12 @@
 Use the following command in your terminal to re-create an exact working replica of python3.x venv used during development :
 
 (venv) $ python -m venv venv
-(venv) $ pip install -r requirements.txt
+(venv) $ pip install -r requirements/req-common.txt
+(venv) $ pip install -r requirements/req-dev.txt
 
 In order to quickly create and update a package-log file named 'requirements.txt' of all currently used modules, run the following command in your terminal :
 
-(venv) $ pip freeze >requirements.txt
+(venv) $ pip freeze >requirements/req-common.txt
 
 In order to quickly create new db files able to work correctly with all config profiles, run the following command :
 
