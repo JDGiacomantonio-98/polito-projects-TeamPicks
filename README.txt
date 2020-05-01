@@ -1,4 +1,10 @@
-To recreate an exact working replica of python3.x venv used during development, run the following commands in your terminal :
+++ REQUIREMENT VERSION LOG +++++++++++++++++++++++++++++++|
+filename : requirements.txt
+Last update date : 20/04/16
+----------------------------------------------------------|
+
+To recreate an exact working replica of python3.x venv used during development, run the following commands in your
+terminal :
 
     $ python -m venv venv
     $ venv\Scripts\activate
@@ -6,39 +12,42 @@ To recreate an exact working replica of python3.x venv used during development, 
     (venv) $ pip install -r requirements/req-common.txt
     (venv) $ pip install -r requirements/req-dev.txt
 
-If any package raise any exception please downgrade requirements to stable-only package version by using the following commands in your terminal :
+If any package raise any exception please downgrade requirements to stable-only package version by using the following
+commands in your terminal :
 
     (venv) $ pip install -r requirements/req-common-stable.txt
     (venv) $ pip install -r requirements/req-dev-stable.txt
+
+To quickly create or update a package-log file named 'requirements.txt' of all currently used modules by app, run the
+following command in your terminal :
+
+    (venv) $ pip freeze >requirements/req-common.txt
+
+To fully reset  your venv to only original python libraries in your main python interpreter, run the following commands in
+your terminal :
+
+    (venv) $ pip uninstall -r requirements/req-common.txt
+    (venv) $ pip uninstall -r requirements/req-dev.txt
 
 To switch venv off :
 
         $ venv\Scripts\deactivate
 
-To quickly create or update a package-log file named 'requirements.txt' of all currently used modules by app, run the following command in your terminal :
+-----------------------------------------------------------------------------------------------------------------------|
 
-    (venv) $ pip freeze >requirements/req-common.txt
-
-To fully reset  your venv to only original python libraries in your main python interpreter, run the following commands in your terminal :
-
-    (venv) $ pip uninstall -r requirements/req-common.txt
-    (venv) $ pip uninstall -r requirements/req-dev.txt
-
-To quickly create new db files capable of plugging-in correctly with all config profiles, the following click commands are available :
+++ CLICK COMMANDS +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++|
+To quickly create new db files capable of plugging-in correctly with all config profiles, the following click commands are
+available :
 
     (venv) $ flask reset [config_key]
     (venv) $ flask build [config_key]
 
 If not specificied, commands will print a menu where to choose which config profile to load.
-Use 'env' argument in order to let < reset > and < build > commands look in sys environment variables for config profile to load.
+Use 'env' argument in order to let < reset > and < build > commands look in sys environment variables for config profile to
+load.
+-----------------------------------------------------------------------------------------------------------------------|
 
-++++++++++++++++++++++++++++++++++++++++++++++++++++|
-REQUIREMENT VERSION LOG
-filename : requirements.txt
-Last update date : 20/04/16
-++++++++++++++++++++++++++++++++++++++++++++++++++++|
-
- ---- COMMIT LOG FROM PREVIOUS GITHUB FOLDER ------
+ ++ COMMIT LOG FROM PREVIOUS GITHUB FOLDER ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++|
 Tot n of commits before moving : 18
 
 v0.2.4.2
@@ -71,3 +80,4 @@ v0.2.1
 
 v0.2
     - TeamGATE app is now structured as a python package
+-----------------------------------------------------------------------------------------------------------------------|
