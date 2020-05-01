@@ -2,7 +2,7 @@ import os
 from sqlalchemy.exc import OperationalError
 
 
-#   i could think of creating an database unittest based on this func
+#   a database unittest can be created based on this func
 def db_exist(app):
     if app.debug:
         if 'DEV.db' not in os.listdir('.'):

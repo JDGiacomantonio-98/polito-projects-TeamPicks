@@ -1,0 +1,2 @@
+-r req-common-stable.txt
+Faker==4.0.3
