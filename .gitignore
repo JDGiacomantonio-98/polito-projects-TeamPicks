@@ -5,3 +5,4 @@ app/static/profile_pics/users/*
 !app/static/profile_pics/users/.keep
 .env
 *.db
+*.uml
