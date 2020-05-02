@@ -1,4 +1,3 @@
-************************************************************************************************************************
 == REQUIREMENT VERSION LOG =================|
 filename : requirements/req-common-stable.txt
 Last update date : 20/04/16
