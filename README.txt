@@ -1,7 +1,7 @@
-== REQUIREMENT VERSION LOG =================|
+== REQUIREMENT VERSION LOG ====================|
 filename : requirements/req-common-stable.txt
-Last update date : 20/04/16
---------------------------------------------|
+Last update date : 20/05/02
+-----------------------------------------------|
 
 == INSTALLATION ON NEW MACHINES =======================================================================================|
 To recreate an exact working replica of python3.x venv used during development, run the following commands in your
