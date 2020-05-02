@@ -22,7 +22,13 @@ commands in your terminal :
     (venv) $ pip install -r requirements/req-common-stable.txt
     (venv) $ pip install -r requirements/req-dev-stable.txt
 
-To quickly create or update a package-log file named 'requirements.txt' of all currently used modules by app, run the
+To update all existing used packages to their latest versions, please run the following commands in your terminal:
+
+    $ venv\Scripts\activate
+    (venv) pip install --upgrade -r requirements/req-common.txt
+    (venv) pip install --upgrade -r requirements/req-dev.txt
+
+To create or update a package-log file named 'requirements.txt' of all currently used modules by app, run the
 following command in your terminal :
 
     (venv) $ pip freeze >requirements/req-common.txt
