@@ -1,20 +1,24 @@
-++ REQUIREMENT VERSION LOG +++++++++++++++++++++++++++++++|
-filename : requirements.txt
+************************************************************************************************************************
+== REQUIREMENT VERSION LOG =================|
+filename : requirements/req-common-stable.txt
 Last update date : 20/04/16
-----------------------------------------------------------|
+--------------------------------------------|
 
+== INSTALLATION ON NEW MACHINES =======================================================================================|
 To recreate an exact working replica of python3.x venv used during development, run the following commands in your
 terminal :
 
     $ python -m venv venv
     $ venv\Scripts\activate
-
     (venv) $ pip install -r requirements/req-common.txt
     (venv) $ pip install -r requirements/req-dev.txt
 
 If any package raise any exception please downgrade requirements to stable-only package version by using the following
 commands in your terminal :
 
+    $ venv\Scripts\activate
+    (venv) $ pip uninstall -r requirements/req-common.txt
+    (venv) $ pip uninstall -r requirements/req-dev.txt
     (venv) $ pip install -r requirements/req-common-stable.txt
     (venv) $ pip install -r requirements/req-dev-stable.txt
 
@@ -23,31 +27,31 @@ following command in your terminal :
 
     (venv) $ pip freeze >requirements/req-common.txt
 
-To fully reset  your venv to only original python libraries in your main python interpreter, run the following commands in
-your terminal :
+To factory reset your venv to only original python distribution libraries of your main python interpreter, run the following
+commands in your terminal :
 
     (venv) $ pip uninstall -r requirements/req-common.txt
     (venv) $ pip uninstall -r requirements/req-dev.txt
 
-To switch venv off :
+To switch your venv off :
 
-        $ venv\Scripts\deactivate
+    $ venv\Scripts\deactivate
+_______________________________________________________________________________________________________________________|
 
------------------------------------------------------------------------------------------------------------------------|
-
-++ CLICK COMMANDS +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++|
+== CLI COMMANDS =======================================================================================================|
 To quickly create new db files capable of plugging-in correctly with all config profiles, the following click commands are
 available :
 
     (venv) $ flask reset [config_key]
     (venv) $ flask build [config_key]
 
-If not specificied, commands will print a menu where to choose which config profile to load.
+If not specified, commands will print a menu where to choose which config profile to load.
 Use 'env' argument in order to let < reset > and < build > commands look in sys environment variables for config profile to
 load.
------------------------------------------------------------------------------------------------------------------------|
+_______________________________________________________________________________________________________________________|
 
- ++ COMMIT LOG FROM PREVIOUS GITHUB FOLDER ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++|
+************************************************************************************************************************
+=== COMMITS LOG FROM PREVIOUS GITHUB FOLDER ===========================================================================|
 Tot n of commits before moving : 18
 
 v0.2.4.2
@@ -80,4 +84,4 @@ v0.2.1
 
 v0.2
     - TeamGATE app is now structured as a python package
------------------------------------------------------------------------------------------------------------------------|
+_______________________________________________________________________________________________________________________|
