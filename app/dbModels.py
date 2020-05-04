@@ -7,6 +7,7 @@ from faker import Faker
 from sqlalchemy.exc import IntegrityError
 from math import ceil
 from random import randint, random
+import datetime
 
 
 # DATABASE GLOBAL FUNCTIONS #
@@ -20,70 +21,78 @@ def loadUser(user_id):
         return Owner.query.get(user_id)
 
 
-def dummy(single, model=None, items=100):
+def dummy(single, model=None, items=100, one_cm=False):
     if type(single) != bool:
         print('ERROR : single parameter only accepts bool')
         return None
     if not model:
         print('Dummy objects to create : {}\n'.format(items))
         model = str(input('Which type of object do you want to create?\n'
-                      '[U]ser\n'
-                      '[O]wner\n'
-                      '[P]ub\n'
-                      '[G]roup\n'
-                      '[M]atch\n\n'
-                      '[Q]uit\n'
-                      'select here : '))
+                          '[U]ser\n'
+                          '[O]wner\n'
+                          '[P]ub\n'
+                          '[G]roup\n'
+                          '[M]atch\n\n'
+                          '[Q]uit\n'
+                          'select here : '))
     model = model.lower()
     if model == 'q' or model == '':
         print('dummy() has been quited.')
         return None
     else:
         rand = Faker()
-        if single:
-            items = 1
-        else:
-            print('Please wait while processing dummy units ...\n')
+        if not single:
+            print('Please wait while processing dummy units ... (this might take a while)\n')
+            start = datetime.datetime.now()
             flags = [0, 0, 0, 0, 0, 0]
-        for i in range(items):
-            pswHash = pswBurner.generate_password_hash('password').decode('utf-8')
+            errors = 0
+        i = 0
+        while i < items:
             if model == 'u' or model == 'users':
+                pswHash = pswBurner.generate_password_hash('password').decode('utf-8')
                 itm = User(username=rand.user_name(),
-                          email=rand.email(),
-                          lastSession=rand.past_date(),
-                          firstName=rand.first_name(),
-                          lastName=rand.last_name(),
-                          age=randint(16, 90),
-                          sex=rand.null_boolean(),
-                          about_me=rand.text(max_nb_chars=250),
-                          city=rand.city(),
-                          pswHash=pswHash,
-                          )
-                itm.img = itm.set_defaultImg()
-                model = 'users'
-            elif model == 'o' or model == 'owners':
-                itm = Owner(username=rand.user_name(),
                            email=rand.email(),
                            lastSession=rand.past_date(),
                            firstName=rand.first_name(),
                            lastName=rand.last_name(),
-                           age=randint(18, 90),
+                           age=randint(16, 90),
                            sex=rand.null_boolean(),
                            about_me=rand.text(max_nb_chars=250),
                            city=rand.city(),
                            pswHash=pswHash,
-                           subsType="{0:b}".format(randint(0, 5)),
-                           subsExpirationDate=rand.future_date('+90d')
                            )
                 itm.img = itm.set_defaultImg()
+                model = 'users'
+            elif model == 'o' or model == 'owners':
+                pswHash = pswBurner.generate_password_hash('password').decode('utf-8')
+                itm = Owner(username=rand.user_name(),
+                            email=rand.email(),
+                            lastSession=rand.past_date(),
+                            firstName=rand.first_name(),
+                            lastName=rand.last_name(),
+                            age=randint(18, 90),
+                            sex=rand.null_boolean(),
+                            about_me=rand.text(max_nb_chars=250),
+                            city=rand.city(),
+                            pswHash=pswHash,
+                            subsType="{0:b}".format(randint(0, 2)),
+                            subsExpirationDate=rand.future_date('+90d')
+                            )
+                itm.img = itm.set_defaultImg()
+                if rand.boolean(chance_of_getting_true=70):
+                    pub = dummy(single=True, model='p')
+                    itm.create_pub(pub)
                 model = 'owners'
             elif model == 'p' or model == 'pubs':
-                print('We are sorry but this function is still under development!')
-                if single:
-                    return None
-                else:
-                    quit()
-                # it = Pub()
+                seatsMax = randint(0, 200)
+                itm = Pub(address=rand.address(),
+                          isBookable=rand.boolean(chance_of_getting_true=50),
+                          seatsMax=seatsMax,
+                          rating=randint(0, 5),
+                          description=rand.text(max_nb_chars=500)
+                          )
+                if itm.isBookable:
+                    itm.seatsBooked = seatsMax - randint(0, seatsMax)
                 model = 'pubs'
             elif model == 'g' or model == 'groups':
                 print('We are sorry but this function is still under development!')
@@ -103,34 +112,47 @@ def dummy(single, model=None, items=100):
                 model = 'matches'
             if not single:
                 db.session.add(itm)
+                if not one_cm:
+                    try:
+                        db.session.commit()
+                        i += 1
+                    except IntegrityError:
+                        db.session.rollback()
+                        errors += 1
+                else:
+                    i += 1
                 if ((i / items) < 0.1) and (flags[0] == 0):
-                    print('*')
+                    print('completed : *')
                     flags[0] = 1
                 if (0.15 <= (i / items) < 0.2) and (flags[1] == 0):
-                    print('**')
+                    print('completed : **')
                     flags[1] = 1
                 if (0.2 <= (i / items) < 0.4) and (flags[2] == 0):
-                    print('*** (20%)')
+                    print('completed : *** (20%)')
                     flags[2] = 1
                 if (0.4 <= (i / items) < 0.6) and (flags[3] == 0):
-                    print('***** (40%)')
+                    print('completed : ***** (40%)')
                     flags[3] = 1
                 if (0.6 <= (i / items) < 0.8) and (flags[4] == 0):
-                    print('******* (60%)')
+                    print('completed : ******* (60%)')
                     flags[4] = 1
                 if (0.8 <= (i / items) < 0.95) and (flags[5] == 0):
-                    print('********* (80%)')
+                    print('completed : ********* (80%)')
                     flags[5] = 1
-        if not single:
+            else:
+                return itm
+        if one_cm:
             try:
                 db.session.commit()
+                print('Completed!\n{} new dummy-{} instances has been successfully created and add to db.'.format(items, model))
             except IntegrityError:
                 db.session.rollback()
-                print('Process stopped with code 1 : some dummy object raised an Integrity Error.\nAny data has been committed to db.')
-            print('Completed!\n{} new dummy-{} instances has been successfully created and add to db.'.format(items, model))
-            print('Connection happened on : {}'.format(current_app.config['SQLALCHEMY_DATABASE_URI']))
+                print('dummy() ended with code 1 : some dummy objects have caused an IntegrityError on commit. Nay data has been written to db.')
         else:
-            return itm
+            print('Completed!\n{} new dummy-{} instances has been successfully created and add to db. ({} errors occurred)'.format(items, model, errors))
+        print('Connection happened on : {}'.format(current_app.config['SQLALCHEMY_DATABASE_URI']))
+        print('Process duration : {}'.format(datetime.datetime.now() - start))
+
 
 
 # DATABASE OBJECTS STRUCTURE #
@@ -143,9 +165,7 @@ with those **kwargs to preserve this behavior
 """
 
 
-class USER(db.Model, UserMixin):
-    __abstract__ = True
-
+class USER:
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(15),
                          unique=True,
@@ -223,24 +243,31 @@ class USER(db.Model, UserMixin):
         return User.query.get(userID)
 
 
-class User(USER):
+class User(db.Model, UserMixin, USER):
     __tablename__ = 'users'
 
     sports = db.Column(db.Boolean)  # relationship
     groups = db.Column(db.Boolean)  # relationship
 
+    @staticmethod
+    def send_bookingRequest(guests):
+        pass
 
-class Owner(USER):
+
+class Owner(db.Model, UserMixin, USER):
     __tablename__ = 'owners'
 
     pub = db.relationship('Pub',
-                          uselist=False,    # creates one-to-one relationship between owner and his pub
+                          uselist=False,  # creates one-to-one relationship between owner and his pub
                           backref='owner')
     subsType = db.Column(db.String,
                          nullable=False,
                          default='free-acc')  # stores hex codes whose refers to different acc-subscriptions
     subsExpirationDate = db.Column(db.DateTime,
                                    nullable=True)  # should be not nullable
+
+    def create_pub(self, pub):  # pub object comes from form submission
+        self.pub = pub
 
 
 class Pub(db.Model):
@@ -262,9 +289,41 @@ class Pub(db.Model):
     rating = db.Column(db.Integer,
                        nullable=False,
                        default=0)
-    description = db.Column(db.Text,
-                                    nullable=True,
-                                    default='let your customer know what you do best.')
+    description = db.Column(db.Text(500),
+                            nullable=True,
+                            default='let your customer know what you do best.')
+
+    def get_address(self):
+        return self.address
+
+    def get_rating(self):
+        return self.rating
+
+    def get_description(self):
+        return self.description
+
+    def is_available_for(self, guests):
+        if self.isBookable and self.get_availability() >= guests:
+            return True
+        else:
+            return False
+
+    def get_availability(self):
+        if self.seatsMax-self.seatsBooked > 0:
+            return self.seatsMax-self.seatsBooked
+        else:
+            return False
+
+    def book_for(self, guests):
+        if self.is_available_for(guests):
+            self.seatsBooked += guests
+            QRcode = str(randint(0, 999999999))
+            print('Reservation id : {}'.format(QRcode))
+            return QRcode
+        else:
+            print('Impossible to schedule a reservation for that date.')
+            print('Free tables : {}'.format(self.get_availability()))
+            return None
 
 
 class Group(db.Model):
