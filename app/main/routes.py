@@ -42,7 +42,7 @@ def show_wip(callerPage):
 
 @main.route('/confirm-account/<token>')
 def confirmAccount(token):
-     #if user comes from email confirmation link there is no current user to check
+    # if user comes from email confirmation link there is no current user to check
     if (not current_user.is_anonymous) and current_user.confirmed:
         flash('You account has already been activated.', 'secondary')
         return redirect(url_for('main.index'))

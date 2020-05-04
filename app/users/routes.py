@@ -171,7 +171,7 @@ def pswReset(token):
     if current_user.is_authenticated:
         flash('You are logged in already.', 'info')
         return redirect(url_for('main.index'))
-    user = User.verifyToken_pswReset(token)
+    user = User.verifyToken(token)
     if not user:
         flash('The used token is expired or invalid.', 'danger')
         return redirect(url_for('main.send_resetRequest'))

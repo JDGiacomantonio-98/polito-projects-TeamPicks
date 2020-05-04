@@ -7,7 +7,7 @@ from faker import Faker
 from sqlalchemy.exc import IntegrityError
 from math import ceil
 from random import randint, random
-import datetime
+from datetime import datetime
 
 
 # DATABASE GLOBAL FUNCTIONS #
@@ -43,7 +43,7 @@ def dummy(single, model=None, items=100, one_cm=False):
         rand = Faker()
         if not single:
             print('Please wait while processing dummy units ... (this might take a while)\n')
-            start = datetime.datetime.now()
+            start = datetime.now()
             flags = [0, 0, 0, 0, 0, 0]
             errors = 0
         i = 0
@@ -59,7 +59,7 @@ def dummy(single, model=None, items=100, one_cm=False):
                            sex=rand.null_boolean(),
                            about_me=rand.text(max_nb_chars=250),
                            city=rand.city(),
-                           pswHash=pswHash,
+                           pswHash=pswHash
                            )
                 itm.img = itm.set_defaultImg()
                 model = 'users'
@@ -81,17 +81,17 @@ def dummy(single, model=None, items=100, one_cm=False):
                 itm.img = itm.set_defaultImg()
                 if rand.boolean(chance_of_getting_true=70):
                     pub = dummy(single=True, model='p')
-                    itm.create_pub(pub)
+                    itm.associate_pub(pub)
                 model = 'owners'
             elif model == 'p' or model == 'pubs':
                 seatsMax = randint(0, 200)
                 itm = Pub(address=rand.address(),
-                          isBookable=rand.boolean(chance_of_getting_true=50),
+                          bookable=rand.boolean(chance_of_getting_true=50),
                           seatsMax=seatsMax,
                           rating=randint(0, 5),
                           description=rand.text(max_nb_chars=500)
                           )
-                if itm.isBookable:
+                if itm.bookable:
                     itm.seatsBooked = seatsMax - randint(0, seatsMax)
                 model = 'pubs'
             elif model == 'g' or model == 'groups':
@@ -144,15 +144,14 @@ def dummy(single, model=None, items=100, one_cm=False):
         if one_cm:
             try:
                 db.session.commit()
-                print('Completed!\n{} new dummy-{} instances has been successfully created and add to db.'.format(items, model))
+                print('Completed!\n{} new dummy-{} instances has been successfully created and added to db.'.format(items, model))
             except IntegrityError:
                 db.session.rollback()
                 print('dummy() ended with code 1 : some dummy objects have caused an IntegrityError on commit. Nay data has been written to db.')
         else:
             print('Completed!\n{} new dummy-{} instances has been successfully created and add to db. ({} errors occurred)'.format(items, model, errors))
         print('Connection happened on : {}'.format(current_app.config['SQLALCHEMY_DATABASE_URI']))
-        print('Process duration : {}'.format(datetime.datetime.now() - start))
-
+        print('Process duration : {}'.format(datetime.now() - start))
 
 
 # DATABASE OBJECTS STRUCTURE #
@@ -163,6 +162,32 @@ implicit constructor to all model classes which accepts keyword arguments for al
 decide to override the constructor for any reason, make sure to keep accepting **kwargs and call the super constructor 
 with those **kwargs to preserve this behavior
 """
+
+
+class Reservation(db.Model):
+    """association table to solve users-to-pubs many-to-many relationship"""
+    __tablename__ = 'reservations'
+
+    QR_code = db.Column(db.Integer,  # need to figure out how QR code can be stored
+                        primary_key=True,
+                        index=True)
+    by_id = db.Column(db.Integer, db.ForeignKey('users.id'), index=True)    # user_id foreignKey
+    at_id = db.Column(db.Integer, db.ForeignKey('pubs.id'), index=True)     # pub_id foreignKey
+    date = db.Column(db.DateTime, default=datetime.now(), index=True)       # reservation timestamp
+    guests = db.Column(db.Integer)                                         # number of people within the reservation
+    confirmed = db.Column(db.Boolean, default=False, index=True)    # pub owner confirmation of the reservation
+
+
+class Subscription(db.Model):
+    """association table to solve users-to-groups many-to-many relationship"""
+    __tablename__ = 'groups-subs'
+
+    id = db.Column(db.Integer,
+                   primary_key=True)
+    member = db.Column(db.Boolean)      # user.id backref
+    group = db.Column(db.Boolean)       # group.id backref
+    permissions = db.Column(db.String)   # user allowed actions in the group
+    member_since = db.Column(db.DateTime)  # subscription timestamp
 
 
 class USER:
@@ -179,31 +204,26 @@ class USER:
                           nullable=False,
                           default=False)
     lastSession = db.Column(db.DateTime,
-                            nullable=True)  # nullable=True temporary solution until dates management
+                            nullable=False, default=datetime.utcnow())
     firstName = db.Column(db.String(60),
-                          unique=False,
                           nullable=False)
     lastName = db.Column(db.String(60),
-                         unique=False,
                          nullable=False)
-    age = db.Column(db.Integer,
-                    unique=False,
-                    nullable=True)
+    age = db.Column(db.Integer)
     sex = db.Column(db.String)
     img = db.Column(db.String)  # stores the filename string of the img file
     about_me = db.Column(db.Text(250))
-    city = db.Column(db.String,
-                     nullable=True)
+    city = db.Column(db.String)
 
-    pswHash = db.Column(db.String(60),
+    pswHash = db.Column(db.String(60),  # stores hashed user password
                         unique=False,
-                        nullable=False)  # stores hashed user password
+                        nullable=False)
 
     def fingerprint(self):
         print('INFO :')
         for attr, value in self.__dict__.items():
             if not (attr.startswith('_') or attr.isupper()):  # print only public attributes of User class instance
-                print("| {} -->\t{} |".format(attr, value))
+                print("| {} -->\t{}".format(attr, value))
 
     def set_defaultImg(self):
         if self.sex != ('other' or None):
@@ -219,54 +239,57 @@ class USER:
         return timedTokenizer(current_app.config['SECRET_KEY'], expireInSec).dumps({'user-id': self.id}).decode('utf-8')
 
     @staticmethod
-    def confirmAccount(token):
+    def verifyToken(token, to_confirm_account=False):
         try:
             user_id = timedTokenizer(current_app.config['SECRET_KEY']).loads(token)['user-id']
-            user = User.query.get(user_id)
+            if to_confirm_account:
+                return User.query.get(user_id), user_id  # (!) FIX HERE : what if is not an User but a Pub ?
+            else:
+                return User.query.get(user_id)  # (!) FIX HERE : what if is not an User but a Pub ?
         except:
             return None
-        if user_id != user.id:
-            user.confirmed = False
-            db.session.commit()
-            return None
-        else:
+
+    def confirmAccount(self, token):
+        user, user_id = self.verifyToken(token, to_confirm_account=True)
+        if user_id == user.id:
             user.confirmed = True
             db.session.commit()
             return user
-
-    @staticmethod
-    def verifyToken_pswReset(resetToken):
-        try:
-            userID = timedTokenizer(current_app.config['SECRET_KEY']).loads(resetToken)['user-id']
-        except:
+        else:
+            user.confirmed = False
+            db.session.commit()
             return None
-        return User.query.get(userID)
 
 
 class User(db.Model, UserMixin, USER):
     __tablename__ = 'users'
 
+    reservations = db.relationship('Reservation',
+                                backref=db.backref('made_by', lazy='join'), # adds <made_by> parameter to Reservation model : gain complete access user object
+                                lazy='dynamic',
+                                cascade='all, delete-orphan')
     sports = db.Column(db.Boolean)  # relationship
     groups = db.Column(db.Boolean)  # relationship
 
-    @staticmethod
-    def send_bookingRequest(guests):
-        pass
+    def send_bookingReq(self, pub, guests):
+        if pub.is_available_for(guests):
+            tempRes = pub.cache_bookingReq(booked_by=self, guests=guests)
+            print('\nQR code : {}\nconfirmation status : {}'.format(tempRes.QR_code, tempRes.confirmed))
 
 
 class Owner(db.Model, UserMixin, USER):
     __tablename__ = 'owners'
 
     pub = db.relationship('Pub',
-                          uselist=False,  # creates one-to-one relationship between owner and his pub
+                          uselist=False,  # force a one-to-one relationship between owner and his pub
                           backref='owner')
     subsType = db.Column(db.String,
                          nullable=False,
                          default='free-acc')  # stores hex codes whose refers to different acc-subscriptions
     subsExpirationDate = db.Column(db.DateTime,
-                                   nullable=True)  # should be not nullable
+                                   nullable=False)
 
-    def create_pub(self, pub):  # pub object comes from form submission
+    def associate_pub(self, pub):  # pub object comes from form submission
         self.pub = pub
 
 
@@ -276,11 +299,15 @@ class Pub(db.Model):
     id = db.Column(db.Integer,
                    primary_key=True)
     owner_id = db.Column(db.Integer, db.ForeignKey('owners.id'))
-
+    reservations = db.relationship('Reservation',
+                                backref=db.backref('at', lazy='joined'), # adds <at> parameter to Reservation model : gain complete access pub object
+                                lazy='dynamic',
+                                cascade='all, delete-orphan'
+                                )
     address = db.Column(db.String,
                         nullable=False)
-    isBookable = db.Column(db.Boolean,
-                           nullable=False)
+    bookable = db.Column(db.Boolean,
+                         nullable=False)
     seatsMax = db.Column(db.Integer,
                          nullable=False)
     seatsBooked = db.Column(db.Integer,
@@ -302,28 +329,38 @@ class Pub(db.Model):
     def get_description(self):
         return self.description
 
+    def get_availability(self):
+        return self.seatsMax - self.seatsBooked
+
     def is_available_for(self, guests):
-        if self.isBookable and self.get_availability() >= guests:
-            return True
+        if self.bookable:
+            if self.get_availability() >= guests:
+                return True
+            else:
+                print('Impossible to schedule a reservation for that date.')
+                print('Free tables : {}'.format(self.get_availability()))
         else:
+            print("This pub doesn't accepts reservation yet!")
             return False
 
-    def get_availability(self):
-        if self.seatsMax-self.seatsBooked > 0:
-            return self.seatsMax-self.seatsBooked
-        else:
-            return False
+    def notify(self, eventType, item=None):
+        # here we should notify Owner of the incoming request in order to let him accept it or not
+        print('Owner id : {}'.format(self.owner_id))
+        if eventType == 'new-booking':
+            pass
+
+    def cache_bookingReq(self, booked_by, guests):
+        tempRes = Reservation(booked_by=booked_by,
+                              booked_at=self,
+                              guests=guests
+                              )
+        db.session.add(tempRes)
+        db.session.commit()
+        self.notify(eventType='new-booking', item=tempRes)
+        return tempRes
 
     def book_for(self, guests):
-        if self.is_available_for(guests):
-            self.seatsBooked += guests
-            QRcode = str(randint(0, 999999999))
-            print('Reservation id : {}'.format(QRcode))
-            return QRcode
-        else:
-            print('Impossible to schedule a reservation for that date.')
-            print('Free tables : {}'.format(self.get_availability()))
-            return None
+        self.seatsBooked += guests
 
 
 class Group(db.Model):
@@ -349,28 +386,3 @@ class Match(db.Model):
     date = db.Column(db.DateTime)
     opponents = db.Column(db.String,
                           nullable=False)  # stores the two teams who will play against each other
-
-
-class Reservation(db.Model):
-    """association table to solve users-to-pubs many-to-many relationship"""
-    __tablename__ = 'reservations'
-
-    QR_code = db.Column(db.String,
-                        primary_key=True)  # need to figure out how QR code can be stored
-    booked_by = db.Column(db.Boolean)  # user.id backref
-    booked_at = db.Column(db.Boolean)  # pub.id backref
-    date = db.Column(db.DateTime)  # reservation timestamp
-    seats = db.Column(db.Integer)  # number of people within the reservation
-    confirmed = db.Column(db.Boolean)  # pub owner confirmation of the reservation
-
-
-class Subscription(db.Model):
-    """association table to solve users-to-groups many-to-many relationship"""
-    __tablename__ = 'groups-subs'
-
-    id = db.Column(db.Integer,
-                   primary_key=True)
-    member = db.Column(db.Boolean)  # user.id backref
-    group = db.Column(db.Boolean)  # group.id backref
-    permissions = db.Column(db.String)  # user allowed actions in the group
-    member_since = db.Column(db.DateTime)  # subscription timestamp
