@@ -120,7 +120,7 @@ def logout():
 def showProfile(userInfo):
     form = accountDashboardForm()
     if 'user' == session.get('dbModelType'):
-        if ('default_' in current_user.img) or (current_user.img == 'favicon.png'):
+        if ('def-' in current_user.img) or (current_user.img == 'favicon.png'):
             imgFile = url_for('static', filename='profile_pics/AVATAR/' + current_user.img)
         else:
             imgFile = url_for('static', filename='profile_pics/users/' + current_user.img)
@@ -150,7 +150,9 @@ def showProfile(userInfo):
                 session['del'] = True
             else:
                 session['del'] = False
+            flash('You profile has been updated!', 'success')
             return redirect(url_for('users.showProfile', userInfo=current_user.username))
+        flash('There are some problem with your input: please make correction before resubmitting !', 'danger')
     return render_template('profilePage.html', title=current_user.firstName + " " + current_user.lastName, imgFile=imgFile, form=form)
 
 
@@ -158,7 +160,7 @@ def showProfile(userInfo):
 @users.route('/<ID>/delete-account')
 def deleteAccount(ID):
     # deletion should be authorized only by code and not by manual writing the URL
-    if int(ID) == current_user.id and session['del']:
+    if int(ID) == current_user.id and session['del']: #error here
         db.session.delete(current_user)
         db.session.commit()
         flash('Your account has been successfully removed. We are sad about that :C', 'secondary')

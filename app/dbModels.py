@@ -171,11 +171,11 @@ class Reservation(db.Model):
     QR_code = db.Column(db.Integer,  # need to figure out how QR code can be stored
                         primary_key=True,
                         index=True)
-    by_id = db.Column(db.Integer, db.ForeignKey('users.id'), index=True)    # user_id foreignKey
-    at_id = db.Column(db.Integer, db.ForeignKey('pubs.id'), index=True)     # pub_id foreignKey
     date = db.Column(db.DateTime, default=datetime.now(), index=True)       # reservation timestamp
     guests = db.Column(db.Integer)                                         # number of people within the reservation
     confirmed = db.Column(db.Boolean, default=False, index=True)    # pub owner confirmation of the reservation
+    by_id = db.Column(db.Integer, db.ForeignKey('users.id'), index=True, nullable=False)    # user_id foreignKey
+    at_id = db.Column(db.Integer, db.ForeignKey('pubs.id'), index=True, nullable=False)     # pub_id foreignKey
 
 
 class Subscription(db.Model):
@@ -210,7 +210,7 @@ class USER:
     lastName = db.Column(db.String(60),
                          nullable=False)
     age = db.Column(db.Integer)
-    sex = db.Column(db.String)
+    sex = db.Column(db.String, default='other')
     img = db.Column(db.String)  # stores the filename string of the img file
     about_me = db.Column(db.Text(250))
     city = db.Column(db.String)
@@ -226,31 +226,17 @@ class USER:
                 print("| {} -->\t{}".format(attr, value))
 
     def set_defaultImg(self):
-        if self.sex != ('other' or None):
-            if (type(self.sex) == bool) and self.sex:
-                self.sex = 'male'
-            else:
-                self.sex = 'female'
-            return str('default_' + self.sex + '_' + str(ceil(randint(1, 10) * random())) + '.jpg')
+        if self.sex != 'other':
+            return str('def-{}-{}.jpg'.format(self.sex, str(ceil(randint(1, 10) * random()))))
         else:
             return str('favicon.png')
 
     def createToken(self, expireInSec=(8 * 60)):
-        return timedTokenizer(current_app.config['SECRET_KEY'], expireInSec).dumps({'user-id': self.id}).decode('utf-8')
+        return timedTokenizer(current_app.config['SECRET_KEY'], expireInSec).dumps({'load': self.id}).decode('utf-8')
 
     @staticmethod
-    def verifyToken(token, to_confirm_account=False):
-        try:
-            user_id = timedTokenizer(current_app.config['SECRET_KEY']).loads(token)['user-id']
-            if to_confirm_account:
-                return User.query.get(user_id), user_id  # (!) FIX HERE : what if is not an User but a Pub ?
-            else:
-                return User.query.get(user_id)  # (!) FIX HERE : what if is not an User but a Pub ?
-        except:
-            return None
-
-    def confirmAccount(self, token):
-        user, user_id = self.verifyToken(token, to_confirm_account=True)
+    def confirmAccount(token):
+        user, user_id = USER.verifyToken(token, to_confirm_account=True)
         if user_id == user.id:
             user.confirmed = True
             db.session.commit()
@@ -260,16 +246,29 @@ class USER:
             db.session.commit()
             return None
 
+    @staticmethod
+    def verifyToken(token, to_confirm_account=False):
+        try:
+            user_id = timedTokenizer(current_app.config['SECRET_KEY']).loads(token)['load']
+            if to_confirm_account:
+                return User.query.get(user_id), user_id  # (!) FIX HERE : what if is not an User but a Pub ?
+            else:
+                return User.query.get(user_id)  # (!) FIX HERE : what if is not an User but a Pub ?
+        except:
+            return None
+
 
 class User(db.Model, UserMixin, USER):
     __tablename__ = 'users'
 
-    reservations = db.relationship('Reservation',
-                                backref=db.backref('made_by', lazy='join'), # adds <made_by> parameter to Reservation model : gain complete access user object
-                                lazy='dynamic',
-                                cascade='all, delete-orphan')
     sports = db.Column(db.Boolean)  # relationship
     groups = db.Column(db.Boolean)  # relationship
+
+    reservations = db.relationship('Reservation',
+                                foreign_keys=[Reservation.by_id],
+                                backref=db.backref('made_by', lazy='joined'), # adds <made_by> parameter to Reservation model : gain complete access user object
+                                lazy='dynamic',
+                                cascade='all, delete-orphan')
 
     def send_bookingReq(self, pub, guests):
         if pub.is_available_for(guests):
@@ -280,14 +279,14 @@ class User(db.Model, UserMixin, USER):
 class Owner(db.Model, UserMixin, USER):
     __tablename__ = 'owners'
 
-    pub = db.relationship('Pub',
-                          uselist=False,  # force a one-to-one relationship between owner and his pub
-                          backref='owner')
     subsType = db.Column(db.String,
                          nullable=False,
                          default='free-acc')  # stores hex codes whose refers to different acc-subscriptions
     subsExpirationDate = db.Column(db.DateTime,
                                    nullable=False)
+    pub = db.relationship('Pub',
+                          uselist=False,  # force a one-to-one relationship between owner and his pub
+                          backref='owner')
 
     def associate_pub(self, pub):  # pub object comes from form submission
         self.pub = pub
@@ -299,11 +298,6 @@ class Pub(db.Model):
     id = db.Column(db.Integer,
                    primary_key=True)
     owner_id = db.Column(db.Integer, db.ForeignKey('owners.id'))
-    reservations = db.relationship('Reservation',
-                                backref=db.backref('at', lazy='joined'), # adds <at> parameter to Reservation model : gain complete access pub object
-                                lazy='dynamic',
-                                cascade='all, delete-orphan'
-                                )
     address = db.Column(db.String,
                         nullable=False)
     bookable = db.Column(db.Boolean,
@@ -319,6 +313,11 @@ class Pub(db.Model):
     description = db.Column(db.Text(500),
                             nullable=True,
                             default='let your customer know what you do best.')
+    reservations = db.relationship('Reservation',
+                                foreign_keys=[Reservation.at_id],
+                                backref=db.backref('at', lazy='joined'), # adds <at> parameter to Reservation model : gain complete access pub object
+                                lazy='dynamic',
+                                cascade='all, delete-orphan')
 
     def get_address(self):
         return self.address
@@ -350,8 +349,8 @@ class Pub(db.Model):
             pass
 
     def cache_bookingReq(self, booked_by, guests):
-        tempRes = Reservation(booked_by=booked_by,
-                              booked_at=self,
+        tempRes = Reservation(made_by=booked_by,
+                              at=self,
                               guests=guests
                               )
         db.session.add(tempRes)

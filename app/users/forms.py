@@ -13,8 +13,8 @@ class registrationForm_user(FlaskForm):
     firstName = StringField('Name :', validators=[DataRequired()], render_kw={'placeholder':'Your firstname'})
     lastName = StringField('Surname :', validators=[DataRequired()], render_kw={'placeholder':'Your lastname'})
     username = StringField('Choose an username :', validators=[DataRequired(), Length(min=2)], render_kw={'placeholder': 'choose an username'})
-    city = StringField('You live in :', validators=[DataRequired()], render_kw={'placeholder':'City you live in'})
-    sex = SelectField('Sex', validators=[DataRequired()], choices=[('male', 'male'), ('female', 'female'), ('other', 'none')])
+    city = StringField('You live in :', validators=[DataRequired()], render_kw={'placeholder': 'City you live in'})
+    sex = SelectField('Sex', validators=[DataRequired()], choices=[('m', 'male'), ('f', 'female'), ('other', 'none')])
     emailAddr = StringField('Email address :', validators=[DataRequired(), Email()], render_kw={'placeholder': 'Active email address'})
     psw = PasswordField('Password :', validators=[DataRequired(), Length(min=8)], render_kw={'placeholder': 'Choose a strong password'})
     confirmPsw = PasswordField('Confirm your Password :', validators=[DataRequired(), EqualTo('psw')], render_kw={'placeholder': 'Confirm password'})
@@ -73,19 +73,12 @@ class accountDashboardForm(FlaskForm):
                 query = [User.query.filter_by(username=username.data).first(), Owner.query.filter_by(username=username.data).first()]
                 if query[0] or query[1]:
                     raise ValidationError('This username has been already taken. Choose a different one.')
-                else:
-                    flash('Your profile has been updated!', 'success')
-        else:
-            flash('There are some problem with your input. Please make correction.', 'danger')
 
     def validate_emailAddr(self, emailAddr):
         if current_user.email != self.emailAddr.data:
             query = [User.query.filter_by(email=emailAddr.data).first(), Owner.query.filter_by(email=emailAddr.data).first()]
             if query[0] or query[1]:
-                flash('There are some problem with your input. Please make correction.', 'danger')
                 raise ValidationError('This email address has been already taken. Choose a different one.')
-            else:
-                flash('Your profile has been updated!', 'success')
 
 
 class loginForm(FlaskForm):
