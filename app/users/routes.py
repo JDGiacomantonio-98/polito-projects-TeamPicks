@@ -2,9 +2,9 @@ from flask import render_template, url_for, flash, redirect, request, session, a
 from flask_login import login_user, logout_user, login_required, current_user
 from app import db, pswBurner
 from app.main.methods import send_ConfirmationEmail
-from app.dbModels import User, Owner
+from app.dbModels import User, Owner, Group
 from app.users import users
-from app.users.forms import registrationForm_user, registrationForm_pub, loginForm, accountDashboardForm, resetPswForm
+from app.users.forms import registrationForm_user, registrationForm_pub, loginForm, accountDashboardForm, resetPswForm, createGroupForm
 from app.users.methods import save_profilePic
 
 
@@ -115,15 +115,24 @@ def logout():
     return redirect(url_for('main.index'))
 
 
+@users.route('/create-your-group')
+@login_required
+def createGroup():
+    form = createGroupForm()
+    if request.method == 'GET':
+        return render_template('createGroup.html', form=form, title='create your group')
+    if form.validate_on_submit():
+        if current_user.has_permission_to('CREATE-GROUP'):
+            itm = Group(name=form.name.data)
+    else:
+        return redirect(url_for('users.createGroup'))
+
+
 @users.route('/profile/<userInfo>/dashboard', methods=['GET', 'POST'])
 @login_required
-def showProfile(userInfo):
+def openProfile(userInfo):
     form = accountDashboardForm()
-    if 'user' == session.get('dbModelType'):
-        if ('def-' in current_user.img) or (current_user.img == 'favicon.png'):
-            imgFile = url_for('static', filename='profile_pics/AVATAR/' + current_user.img)
-        else:
-            imgFile = url_for('static', filename='profile_pics/users/' + current_user.img)
+    #if 'user' == session.get('dbModelType'):
     if request.method == 'GET':
         if not current_user.confirmed:
             flash('Your profile has been temporally deactivated until you reconfirm it.', 'secondary')
@@ -151,13 +160,13 @@ def showProfile(userInfo):
             else:
                 session['del'] = False
             flash('You profile has been updated!', 'success')
-            return redirect(url_for('users.showProfile', userInfo=current_user.username))
+            return redirect(url_for('users.openProfile', userInfo=current_user.username))
         flash('There are some problem with your input: please make correction before resubmitting !', 'danger')
-    return render_template('profilePage.html', title=current_user.firstName + " " + current_user.lastName, imgFile=imgFile, form=form)
+    return render_template('profilePage.html', title=current_user.firstName + " " + current_user.lastName, imgFile=current_user.get_imgFile(), form=form)
 
 
-@login_required
 @users.route('/<ID>/delete-account')
+@login_required
 def deleteAccount(ID):
     # deletion should be authorized only by code and not by manual writing the URL
     if int(ID) == current_user.id and session['del']: #error here
@@ -186,5 +195,5 @@ def pswReset(token):
                 db.session.commit()
                 login_user(user, remember=False)
                 flash("Hi {}, your password has been successfully reset. Welcome back on board!".format(current_user.username), 'success')
-                return redirect(url_for('users.showProfile', userInfo=current_user.username))
+                return redirect(url_for('users.openProfile', userInfo=current_user.username))
     return render_template('resetPsw.html', title='Resetting your psw', form=form)

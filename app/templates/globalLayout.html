@@ -26,59 +26,56 @@
                     {% block navbar %}
                         <nav class="navbar navbar-light pb-1">
                             <div class="container">
-                                <a class="navbar-brand mb-0 h1" href="{{ url_for('main.index') }}">
-                                    <img src=" {{ url_for('static', filename='/app-icons/logo-min.png') }}" width="30" height="30" class="d-inline-block align-top" alt="Website Logo">
+                                <div class="col-3">
+                                     <a class="navbar-brand mb-0 h1" href="{{ url_for('main.index') }}">
+                                    <img src="{{ url_for('static', filename='/app-icons/logo-min.png') }}" width="30" height="30" class="d-inline-block align-top" alt="Website Logo">
                                     TeamPicks
-                                </a>
-                                <div class="media">
-                                    <div class="media-body">
-                                        <a class="nav-link active text-dark" href="{{ url_for('users.showProfile', userInfo=current_user.username) }}">
-                                            Profile
-                                        </a>
-                                    </div>
-                                    <a class="align-self-center mr-3" href="{{ url_for('users.showProfile', userInfo=current_user.username) }}">
-                                        <i class="far fa-user-circle" style="color: #05afb9; width: 25px;height: 25px"></i>
-                                    </a>
+                                     </a>
                                 </div>
-                                <div class="media">
-                                    <div class="media-body">
-                                        <a class="nav-link active text-dark" href="{{ url_for('main.findPub') }}">
-                                            Find Pubs
-                                        </a>
+                                <div class="col-6">
+                                    <div class="row justify-content-between">
+                                        <div class="media">
+                                            <div class="media-body">
+                                                <a class="nav-link active text-dark" href="{{ url_for('main.findPub') }}">
+                                                    Find Pubs
+                                                </a>
+                                            </div>
+                                            <a class="align-self-center mr-3" href="{{ url_for('main.findPub') }}">
+                                                <i class="fas fa-map-marked-alt" style="color: darkslategrey; width: 20px; height: 20px" ></i>
+                                            </a>
+                                        </div>
+                                        <div class="media">
+                                            <div class="media-body">
+                                                <a class="nav-link active text-dark" href="{{ url_for('main.show_wip', callerPage='booking-manager') }}">
+                                                    Booking manager
+                                                </a>
+                                            </div>
+                                            <a class="align-self-center mr-3" href="{{ url_for('main.show_wip', callerPage='booking-manager') }}">
+                                                <i class="fas fa-calendar-check" style="color: darkslategrey; width: 20px; height: 20px"></i>
+                                            </a>
+                                        </div>
+                                        <div class="media">
+                                            <div class="media-body">
+                                                <a class="nav-link active text-dark" href="{{ url_for('main.show_wip', callerPage='chat') }}">
+                                                    Chats
+                                                </a>
+                                            </div>
+                                            <a class="align-self-center mr-3" href="{{ url_for('main.show_wip', callerPage='chat') }}">
+                                                <i class="far fa-comments" style="color: darkslategrey; width: 25px; height: 30px"></i>
+                                            </a>
+                                        </div>
                                     </div>
-                                    <a class="align-self-center mr-3" href="{{ url_for('main.findPub') }}">
-                                        <i class="fas fa-map-marked-alt" style="color: black; width: 25px; height: 30px" ></i>
-                                    </a>
                                 </div>
-                                <div class="media">
-                                    <div class="media-body">
-                                        <a class="nav-link active text-dark" href="{{ url_for('main.show_wip', callerPage='chat') }}">
-                                            Chats
-                                        </a>
+                                <div class="col-3">
+                                    <div class="media">
+                                        <div class="media-body">
+                                            <a class="nav-link active text-dark" href="{{ url_for('users.openProfile', userInfo=current_user.username) }}">
+                                                Profile
+                                                <img class="img-profile-nav profile-thumbnail" src="{{ current_user.get_imgFile() }}" alt='user profile image'>
+                                                <!-- <i class="far fa-user-circle" style="color: #05afb9; width: 25px;height: 25px"></i> -->
+                                            </a>
+                                        </div>
                                     </div>
-                                    <a class="align-self-center mr-3" href="{{ url_for('main.show_wip', callerPage='chat') }}">
-                                        <i class="far fa-comments" style="color: black; width: 25px; height: 30px"></i>
-                                    </a>
-                                </div>
-                                <div class="media">
-                                    <div class="media-body">
-                                        <a class="nav-link active text-dark" href="{{ url_for('main.show_wip', callerPage='booking-manager') }}">
-                                            Booking manager
-                                        </a>
-                                    </div>
-                                    <a class="align-self-center mr-3" href="{{ url_for('main.show_wip', callerPage='booking-manager') }}">
-                                        <i class="fas fa-calendar-check" style="color: black; width: 20px; height: 20px"></i>
-                                    </a>
-                                </div>
-                                <div class="media">
-                                    <div class="media-body">
-                                        <a class="nav-link active text-dark" href="{{ url_for('users.logout') }}">
-                                            Log Out
-                                        </a>
-                                    </div>
-                                    <a class="align-self-center mr-3" href="{{ url_for('users.logout') }}">
-                                        <i class="fas fa-power-off" style="color: red; width: 20px; height: 20px"></i>
-                                    </a>
                                 </div>
                             </div>
                         </nav>

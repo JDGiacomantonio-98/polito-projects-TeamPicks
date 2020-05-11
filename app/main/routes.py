@@ -82,4 +82,4 @@ def send_resetRequest():
 def sendConfirmation(callerRoute):
     send_ConfirmationEmail(recipient=current_user)
     if callerRoute == 'profile':
-        return redirect(url_for('users.showProfile', userInfo=current_user.username))
+        return redirect(url_for('users.openProfile', userInfo=current_user.username))

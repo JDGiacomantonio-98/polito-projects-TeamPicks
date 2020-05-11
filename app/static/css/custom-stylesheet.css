@@ -37,3 +37,10 @@
 	height: 130px;
 	width: 130px;
 }
+
+.img-profile-nav {
+	border-color: black;
+	border-radius: 5000px;
+	height: 30px;
+	width: 30px;
+}

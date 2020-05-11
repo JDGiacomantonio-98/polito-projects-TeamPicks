@@ -1,5 +1,5 @@
 # DATABASE OBJECT CLASS SPECIFICATION MODULE : SQLAlchemy builds Object-Oriented Databases
-from flask import session, current_app
+from flask import session, current_app, url_for
 from app import db, login_handler, pswBurner
 from itsdangerous import TimedJSONWebSignatureSerializer as timedTokenizer
 from flask_login import UserMixin
@@ -19,6 +19,15 @@ def loadUser(user_id):
         return User.query.get(user_id)
     else:
         return Owner.query.get(user_id)
+
+
+def create_userbase(items):
+    userbase = {
+        'user': 'u',
+        'owner': 'o'
+    }
+    for k in userbase:
+        dummy(single=False, model=userbase[k], items=items)
 
 
 def dummy(single, model=None, items=100, one_cm=False):
@@ -61,6 +70,12 @@ def dummy(single, model=None, items=100, one_cm=False):
                            city=rand.city(),
                            pswHash=pswHash
                            )
+                if itm.sex:
+                    itm.sex = 'm'
+                elif itm.sex is not None:
+                    itm.sex = 'f'
+                else:
+                    itm.sex = 'other'
                 itm.img = itm.set_defaultImg()
                 model = 'users'
             elif model == 'o' or model == 'owners':
@@ -95,12 +110,7 @@ def dummy(single, model=None, items=100, one_cm=False):
                     itm.seatsBooked = seatsMax - randint(0, seatsMax)
                 model = 'pubs'
             elif model == 'g' or model == 'groups':
-                print('We are sorry but this function is still under development!')
-                if single:
-                    return None
-                else:
-                    quit()
-                # it = Group()
+                itm = Group(name=rand.sentence(nb_words=8))
                 model = 'groups'
             elif model == 'm' or model == 'matches':
                 print('We are sorry but this function is still under development!')
@@ -108,7 +118,7 @@ def dummy(single, model=None, items=100, one_cm=False):
                     return None
                 else:
                     quit()
-                # it = Match()
+                itm = Match()
                 model = 'matches'
             if not single:
                 db.session.add(itm)
@@ -174,20 +184,20 @@ class Reservation(db.Model):
     date = db.Column(db.DateTime, default=datetime.now(), index=True)       # reservation timestamp
     guests = db.Column(db.Integer)                                         # number of people within the reservation
     confirmed = db.Column(db.Boolean, default=False, index=True)    # pub owner confirmation of the reservation
-    by_id = db.Column(db.Integer, db.ForeignKey('users.id'), index=True, nullable=False)    # user_id foreignKey
-    at_id = db.Column(db.Integer, db.ForeignKey('pubs.id'), index=True, nullable=False)     # pub_id foreignKey
+    by_id = db.Column(db.Integer, db.ForeignKey('users.id'), index=True, nullable=False)    # user.id foreignKey
+    at_id = db.Column(db.Integer, db.ForeignKey('pubs.id'), index=True, nullable=False)     # pub.id foreignKey
 
 
 class Subscription(db.Model):
     """association table to solve users-to-groups many-to-many relationship"""
-    __tablename__ = 'groups-subs'
+    __tablename__ = 'groups_subs'
 
     id = db.Column(db.Integer,
                    primary_key=True)
-    member = db.Column(db.Boolean)      # user.id backref
-    group = db.Column(db.Boolean)       # group.id backref
-    permissions = db.Column(db.String)   # user allowed actions in the group
-    member_since = db.Column(db.DateTime)  # subscription timestamp
+    member_id = db.Column(db.Integer, db.ForeignKey('users.id'), index=True, unique=True, nullable=False)      # user.id foreignKey
+    group_id = db.Column(db.Integer, db.ForeignKey('groups.id'), index=True, nullable=False)        # group.id backref
+    role = db.Column(db.Integer, db.ForeignKey('group_roles.id'), nullable=False)   # user allowed actions in the group
+    member_since = db.Column(db.DateTime, default=datetime.utcnow())  # subscription timestamp
 
 
 class USER:
@@ -214,7 +224,6 @@ class USER:
     img = db.Column(db.String)  # stores the filename string of the img file
     about_me = db.Column(db.Text(250))
     city = db.Column(db.String)
-
     pswHash = db.Column(db.String(60),  # stores hashed user password
                         unique=False,
                         nullable=False)
@@ -229,10 +238,28 @@ class USER:
         if self.sex != 'other':
             return str('def-{}-{}.jpg'.format(self.sex, str(ceil(randint(1, 10) * random()))))
         else:
+            # create Gravatar
             return str('favicon.png')
+
+    def get_imgFile(self):
+        if ('def-' in self.img) or (self.img == 'favicon.png'):
+            return url_for('static', filename='profile_pics/AVATAR/' + self.img)
+        else:
+            return url_for('static', filename='profile_pics/users/' + self.img)
 
     def createToken(self, expireInSec=(8 * 60)):
         return timedTokenizer(current_app.config['SECRET_KEY'], expireInSec).dumps({'load': self.id}).decode('utf-8')
+
+    @staticmethod
+    def verifyToken(token, to_confirm_account=False):
+        try:
+            user_id = timedTokenizer(current_app.config['SECRET_KEY']).loads(token)['load']
+            if to_confirm_account:
+                return User.query.get(user_id), user_id  # (!) FIX HERE : what if is not an User but a Pub ?
+            else:
+                return User.query.get(user_id)  # (!) FIX HERE : what if is not an User but a Pub ?
+        except:
+            return None
 
     @staticmethod
     def confirmAccount(token):
@@ -246,24 +273,19 @@ class USER:
             db.session.commit()
             return None
 
-    @staticmethod
-    def verifyToken(token, to_confirm_account=False):
-        try:
-            user_id = timedTokenizer(current_app.config['SECRET_KEY']).loads(token)['load']
-            if to_confirm_account:
-                return User.query.get(user_id), user_id  # (!) FIX HERE : what if is not an User but a Pub ?
-            else:
-                return User.query.get(user_id)  # (!) FIX HERE : what if is not an User but a Pub ?
-        except:
-            return None
+    def has_permission_to(self, action):
+        pass
 
 
 class User(db.Model, UserMixin, USER):
     __tablename__ = 'users'
 
     sports = db.Column(db.Boolean)  # relationship
-    groups = db.Column(db.Boolean)  # relationship
-
+    groups = db.relationship('Subscription',
+                             foreign_keys=[Subscription.member_id],
+                             backref=db.backref('member', lazy='joined'),
+                             lazy='dynamic',
+                             cascade='all, delete-orphan')
     reservations = db.relationship('Reservation',
                                 foreign_keys=[Reservation.by_id],
                                 backref=db.backref('made_by', lazy='joined'), # adds <made_by> parameter to Reservation model : gain complete access user object
@@ -273,7 +295,13 @@ class User(db.Model, UserMixin, USER):
     def send_bookingReq(self, pub, guests):
         if pub.is_available_for(guests):
             tempRes = pub.cache_bookingReq(booked_by=self, guests=guests)
-            print('\nQR code : {}\nconfirmation status : {}'.format(tempRes.QR_code, tempRes.confirmed))
+            print('\nQR code : {}\nconfirmation status : {}'.format(tempRes.QR_code, tempRes.confirmed)) #debug
+
+    def send_joinReq(self, group):
+        pass
+
+    def accept_joinReq(self):
+        pass
 
 
 class Owner(db.Model, UserMixin, USER):
@@ -370,9 +398,33 @@ class Group(db.Model):
     name = db.Column(db.String(15),
                      unique=True,
                      nullable=False)
-    creation_date = db.Column(db.DateTime)  # creation date timestamp
-    members = db.Column(db.Boolean)  # relationship thought group-subs association table
-    watchlist = db.Column(db.Boolean)  # stores list of matches the group want to see this week
+    creation_date = db.Column(db.DateTime, default=datetime.utcnow())  # creation date timestamp
+    subs = db.relationship('Subscription',
+                             foreign_keys=[Subscription.group_id],
+                             backref=db.backref('group', lazy='joined'),
+                             lazy='dynamic',
+                             cascade='all, delete-orphan')  # relationship thought group-subs association table
+    #watchlist = db.Column(db.Boolean)  # stores list of matches the group want to see this week
+
+
+class G_Role(db.Model):
+    __tablename__ = 'group_roles'
+
+    id = db.Column(db.Integer, primary_key=True)
+    type = db.Column(db.String, unique=True)
+    default = db.Column(db.Boolean, default=False, index=True)
+    permissions = db.Column(db.Integer, default=0)
+    users = db.relationship('Subscription',
+                            foreign_keys=[Subscription.role],
+                            uselist=False,
+                            backref=db.backref('type', lazy='joined')
+                            )
+
+
+class G_PERMISSIONS:
+    MANAGE_SUBS = 1     # add/remove members
+    MODIFY = 2          # modify group topic and image
+    SET_FLAGS = 4      # flag the group as 'accepting pub offers'
 
 
 class Match(db.Model):

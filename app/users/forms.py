@@ -3,7 +3,7 @@ from flask_wtf import FlaskForm, RecaptchaField
 from flask_wtf.file import FileField, FileAllowed
 from wtforms import StringField, PasswordField, BooleanField, SubmitField, SelectField, IntegerField, TextAreaField
 from wtforms.validators import DataRequired, Length, EqualTo, Email, ValidationError
-from app.dbModels import User, Owner
+from app.dbModels import User, Owner, Group
 from flask_login import current_user
 
 # it should be checked if the validate_field form method can already return the query result if not empty (!!)
@@ -56,9 +56,9 @@ class registrationForm_pub(FlaskForm):
 
 class accountDashboardForm(FlaskForm):
     img = FileField('Change profile pic', validators=[FileAllowed(['jpg', 'png'])])
-    firstName = StringField('Name :\t', validators=[DataRequired()])
-    lastName = StringField('Surname :\t', validators=[DataRequired()])
-    username = StringField('Username :\t', validators=[DataRequired(), Length(min=2)])
+    firstName = StringField('Name :', validators=[DataRequired()])
+    lastName = StringField('Surname :', validators=[DataRequired()])
+    username = StringField('Username :', validators=[DataRequired(), Length(min=2)])
     emailAddr = StringField('Email address :', validators=[DataRequired(), Email()], render_kw={'placeholder': 'Active email address'})
 
     submit = SubmitField('Update profile')
@@ -82,8 +82,8 @@ class accountDashboardForm(FlaskForm):
 
 
 class loginForm(FlaskForm):
-    credential = StringField('Email address:\t', validators=[DataRequired(), Length(min=2)], render_kw={'placeholder':'Email address or Username'})
-    psw = PasswordField('Password :\t', validators=[DataRequired(), Length(min=8)], render_kw={'placeholder':'Password'})
+    credential = StringField('Email address:', validators=[DataRequired(), Length(min=2)], render_kw={'placeholder':'Email address or Username'})
+    psw = PasswordField('Password :', validators=[DataRequired(), Length(min=8)], render_kw={'placeholder':'Password'})
     rememberMe = BooleanField('Remember Me!')
 
     submit = SubmitField('Log me in!')
@@ -94,3 +94,13 @@ class resetPswForm(FlaskForm):
     confirmPsw = PasswordField('Confirm your Password :', validators=[DataRequired(), EqualTo('psw')], render_kw={'placeholder': 'Confirm your password'})
 
     submit = SubmitField('Reset your password')
+
+
+class createGroupForm(FlaskForm):
+    name = StringField('Name:', validators=[DataRequired(), Length(min=10, max=100)], render_kw={'placeholder': 'your group name'})
+
+    submit = SubmitField('Create it now!')
+
+    def validate_name(self, name):
+        if Group.query.filter_by(name=name):
+            raise ValidationError('Ouch! you need to be more creative : this group already exist, choose another name.')
