@@ -220,7 +220,7 @@ def pswReset(token):
     user = verify_token(token)
     if not user:
         flash('The used token is expired or invalid.', 'danger')
-        return redirect(url_for('main.send_resetRequest'))
+        return redirect(url_for('users.send_resetRequest'))
     else:
         form = resetPswForm()
         if request.method == 'POST':

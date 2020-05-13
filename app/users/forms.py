@@ -18,6 +18,8 @@ class registrationForm_user(FlaskForm):
     psw = PasswordField('Password :', validators=[DataRequired(), Length(min=8)], render_kw={'placeholder': 'Choose a strong password'})
     confirmPsw = PasswordField('Confirm your Password :', validators=[DataRequired(), EqualTo('psw')], render_kw={'placeholder': 'Confirm password'})
 
+    # move here the accept agreement field and make it required
+
     submit = SubmitField('Complete registration!')
 
     def validate_username(self, username):
@@ -41,6 +43,8 @@ class registrationForm_pub(FlaskForm):
     emailAddr = StringField('Email address :', validators=[DataRequired(), Email()], render_kw={'placeholder': 'Active email address'})
     psw = PasswordField('Password :', validators=[DataRequired(), Length(min=8)], render_kw={'placeholder': 'Choose a strong password'})
     confirmPsw = PasswordField('Confirm your Password :', validators=[DataRequired(), EqualTo('psw')], render_kw={'placeholder': 'Confirm password'})
+
+    # move here the accept agreement field and make it required
 
     submit = SubmitField('Complete registration!')
 
