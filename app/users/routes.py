@@ -1,12 +1,11 @@
 from flask import render_template, url_for, flash, redirect, request, session, abort
 from flask_login import login_user, logout_user, login_required, current_user
-from app import db, pswBurner
-from app.main.methods import send_ConfirmationEmail
-from app.dbModels import User, Owner, Group
+from app.users.methods import save_profilePic, hash_psw, verify_psw, verify_token, confirm_account
+from app.users.forms import registrationForm_user, registrationForm_pub, loginForm, accountDashboardForm, resetPswForm, createGroupForm, resetRequestForm
 from app.users import users
-from app.users.forms import registrationForm_user, registrationForm_pub, loginForm, accountDashboardForm, resetPswForm, createGroupForm
-from app.users.methods import save_profilePic
-
+from app.main.methods import send_ConfirmationEmail, send_ResetPswEmail
+from app import db
+from app.dbModels import User, Owner, Group
 
 # following routes are user-specific no need for 'app' instance
 
@@ -24,7 +23,6 @@ def registration(userType, accType):
         return render_template('signUp.html', title='Registration page', form=form, userType=userType)
     else:
         if form.validate_on_submit():
-            pswHash = pswBurner.generate_password_hash(form.psw.data).decode('utf-8')
             if userType == 'user':
                 newItem = User(
                     username=form.username.data,
@@ -33,7 +31,7 @@ def registration(userType, accType):
                     city=form.city.data,
                     sex=form.sex.data,
                     email=form.emailAddr.data,
-                    pswHash=pswHash
+                    pswHash=hash_psw(form.confirmPsw.data)
                 )
                 newItem.img = newItem.set_defaultImg()
             else:
@@ -47,7 +45,7 @@ def registration(userType, accType):
                     subsType=form.subsType.data,
                     businessDescription=form.businessDescription.data,
                     email=form.emailAddr.data,
-                    pswHash=pswHash
+                    pswHash=hash_psw(form.confirmPsw.data)
                 )
                 if newItem.subsType == 'free-acc':
                     newItem.isBookable = False
@@ -64,6 +62,21 @@ def registration(userType, accType):
         elif form.username.data or form.businessName.data:
             flash("Something went wrong with your input, please check again.", 'danger')
             return render_template('signUp.html', title='Registration page', form=form, userType=userType)
+
+
+@users.route('/confirm-account/<token>')
+def confirmAccount(token):
+    # if user comes from email confirmation link there is no current user to check
+    if (not current_user.is_anonymous) and current_user.confirmed:
+        flash('You account has already been activated.', 'secondary')
+        return redirect(url_for('main.index'))
+    user = confirm_account(token)
+    if user:
+        flash('Account confirmed successfully. Great, you are good to go now!', 'success')
+        login_user(user, remember=False)
+    else:
+        flash('The confirmation link is invalid or has expired.', 'danger')
+    return redirect(url_for('main.index'))
 
 
 @users.route('/login', methods=['GET', 'POST'])
@@ -87,7 +100,7 @@ def login():
                 query = Owner.query.filter_by(username=form.credential.data).first()
                 endPoint = 'pub'
             session['dbModelType'] = endPoint
-            if query and pswBurner.check_password_hash(query.pswHash, form.psw.data):
+            if query and verify_psw(query.pswHash, form.psw.data):
                 login_user(query, remember=form.rememberMe.data)
                 if current_user.confirmed:
                     flash("Hi {}, welcome back!".format(query.username), 'success')
@@ -177,12 +190,34 @@ def deleteAccount(ID):
     abort(403)
 
 
+@users.route('/reset-request', methods=['GET', 'POST'])
+def send_resetRequest():
+    if current_user.is_authenticated and current_user.confirmed:
+        flash('You are logged in already.', 'info')
+        return redirect(url_for('main.index'))
+    form = resetRequestForm()
+    if request.method == 'POST':
+        if form.validate_on_submit():
+            # send user an email
+            query = User.query.filter_by(email=form.emailAddr.data).first()
+            if not query:
+                query = Owner.query.filter_by(email=form.emailAddr.data).first()
+            if query.confirmed:
+                send_ResetPswEmail(recipient=query)
+                flash('An email has been sent to your inbox containing all instructions to reset your password!', 'warning')
+                return redirect(url_for('users.login'))
+            else:
+                flash("Your account still require activation. Please check your email inbox.", 'warning')
+                return redirect(url_for('users.login'))
+    return render_template('resetRequest.html', title='Reset your psw', form=form)
+
+
 @users.route('/pswReset/<token>', methods=['GET', 'POST'])
 def pswReset(token):
     if current_user.is_authenticated:
         flash('You are logged in already.', 'info')
         return redirect(url_for('main.index'))
-    user = User.verifyToken(token)
+    user = verify_token(token)
     if not user:
         flash('The used token is expired or invalid.', 'danger')
         return redirect(url_for('main.send_resetRequest'))
@@ -190,8 +225,7 @@ def pswReset(token):
         form = resetPswForm()
         if request.method == 'POST':
             if form.validate_on_submit():
-                pswHash = pswBurner.generate_password_hash(form.psw.data).decode('utf-8')
-                user.pswHash = pswHash
+                user.pswHash = hash_psw(form.psw.data)
                 db.session.commit()
                 login_user(user, remember=False)
                 flash("Hi {}, your password has been successfully reset. Welcome back on board!".format(current_user.username), 'success')

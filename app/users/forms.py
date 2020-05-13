@@ -1,10 +1,9 @@
-from flask import flash
 from flask_wtf import FlaskForm, RecaptchaField
 from flask_wtf.file import FileField, FileAllowed
+from flask_login import current_user
 from wtforms import StringField, PasswordField, BooleanField, SubmitField, SelectField, IntegerField, TextAreaField
 from wtforms.validators import DataRequired, Length, EqualTo, Email, ValidationError
 from app.dbModels import User, Owner, Group
-from flask_login import current_user
 
 # it should be checked if the validate_field form method can already return the query result if not empty (!!)
 
@@ -87,6 +86,15 @@ class loginForm(FlaskForm):
     rememberMe = BooleanField('Remember Me!')
 
     submit = SubmitField('Log me in!')
+
+
+class resetRequestForm(FlaskForm):
+    emailAddr = StringField('Email address:\t', validators=[DataRequired(), Email()], render_kw={'placeholder': 'Email address'})
+    submit = SubmitField('Send request')
+
+    def validate_emailAddr(self, emailAddr):
+        if not(User.query.filter_by(email=emailAddr.data).first() or Owner.query.filter_by(email=emailAddr.data).first()):
+            raise ValidationError('No existing accounts are linked with this email address.')
 
 
 class resetPswForm(FlaskForm):

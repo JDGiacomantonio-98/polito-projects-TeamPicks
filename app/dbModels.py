@@ -1,14 +1,13 @@
 # DATABASE OBJECT CLASS SPECIFICATION MODULE : SQLAlchemy builds Object-Oriented Databases
 from flask import session, current_app, url_for
-from app import db, login_handler, pswBurner
-from itsdangerous import TimedJSONWebSignatureSerializer as timedTokenizer
 from flask_login import UserMixin
-from faker import Faker
-from sqlalchemy.exc import IntegrityError
+from itsdangerous import TimedJSONWebSignatureSerializer as timedTokenizer
 from math import ceil
 from random import randint, random
 from datetime import datetime
-
+from faker import Faker
+from sqlalchemy.exc import IntegrityError
+from app import db, login_handler
 
 # DATABASE GLOBAL FUNCTIONS #
 
@@ -21,16 +20,9 @@ def loadUser(user_id):
         return Owner.query.get(user_id)
 
 
-def create_userbase(items):
-    userbase = {
-        'user': 'u',
-        'owner': 'o'
-    }
-    for k in userbase:
-        dummy(single=False, model=userbase[k], items=items)
-
-
 def dummy(single, model=None, items=100, one_cm=False):
+    from app.users.methods import hash_psw
+
     if type(single) != bool:
         print('ERROR : single parameter only accepts bool')
         return None
@@ -58,7 +50,6 @@ def dummy(single, model=None, items=100, one_cm=False):
         i = 0
         while i < items:
             if model == 'u' or model == 'users':
-                pswHash = pswBurner.generate_password_hash('password').decode('utf-8')
                 itm = User(username=rand.user_name(),
                            email=rand.email(),
                            lastSession=rand.past_date(),
@@ -68,7 +59,7 @@ def dummy(single, model=None, items=100, one_cm=False):
                            sex=rand.null_boolean(),
                            about_me=rand.text(max_nb_chars=250),
                            city=rand.city(),
-                           pswHash=pswHash
+                           pswHash=hash_psw('password')
                            )
                 if itm.sex:
                     itm.sex = 'm'
@@ -79,7 +70,6 @@ def dummy(single, model=None, items=100, one_cm=False):
                 itm.img = itm.set_defaultImg()
                 model = 'users'
             elif model == 'o' or model == 'owners':
-                pswHash = pswBurner.generate_password_hash('password').decode('utf-8')
                 itm = Owner(username=rand.user_name(),
                             email=rand.email(),
                             lastSession=rand.past_date(),
@@ -89,10 +79,16 @@ def dummy(single, model=None, items=100, one_cm=False):
                             sex=rand.null_boolean(),
                             about_me=rand.text(max_nb_chars=250),
                             city=rand.city(),
-                            pswHash=pswHash,
+                            pswHash=hash_psw('password'),
                             subsType="{0:b}".format(randint(0, 2)),
                             subsExpirationDate=rand.future_date('+90d')
                             )
+                if itm.sex:
+                    itm.sex = 'm'
+                elif itm.sex is not None:
+                    itm.sex = 'f'
+                else:
+                    itm.sex = 'other'
                 itm.img = itm.set_defaultImg()
                 if rand.boolean(chance_of_getting_true=70):
                     pub = dummy(single=True, model='p')
@@ -249,29 +245,6 @@ class USER:
 
     def createToken(self, expireInSec=(8 * 60)):
         return timedTokenizer(current_app.config['SECRET_KEY'], expireInSec).dumps({'load': self.id}).decode('utf-8')
-
-    @staticmethod
-    def verifyToken(token, to_confirm_account=False):
-        try:
-            user_id = timedTokenizer(current_app.config['SECRET_KEY']).loads(token)['load']
-            if to_confirm_account:
-                return User.query.get(user_id), user_id  # (!) FIX HERE : what if is not an User but a Pub ?
-            else:
-                return User.query.get(user_id)  # (!) FIX HERE : what if is not an User but a Pub ?
-        except:
-            return None
-
-    @staticmethod
-    def confirmAccount(token):
-        user, user_id = USER.verifyToken(token, to_confirm_account=True)
-        if user_id == user.id:
-            user.confirmed = True
-            db.session.commit()
-            return user
-        else:
-            user.confirmed = False
-            db.session.commit()
-            return None
 
     def has_permission_to(self, action):
         pass

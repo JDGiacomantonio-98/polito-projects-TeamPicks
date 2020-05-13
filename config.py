@@ -1,41 +1,41 @@
-import os
-import datetime
+from os import path, getenv, environ
+from datetime import timedelta
 from dotenv import load_dotenv
 
-basedir = os.path.abspath(os.path.dirname(__file__))
-load_dotenv(os.path.join(basedir, '.env'))
+basedir = path.abspath(path.dirname(__file__))
+load_dotenv(path.join(basedir, '.env'))
 
 
 class Config(object):
     # needed to protect application from modifying cookies and cross site forgery request attacks
     # generated randomly by secret.token_hex(20)
-    SECRET_KEY = os.getenv('SECRET_KEY')
-    PERMANENT_SESSION_LIFETIME = datetime.timedelta(minutes=20)
+    SECRET_KEY = getenv('SECRET_KEY')
+    PERMANENT_SESSION_LIFETIME = timedelta(minutes=20)
     # associate a local sqlite server to the application
     SQLALCHEMY_TRACK_MODIFICATIONS = False
-    MAIL_SERVER = os.getenv('MAIL_SERVER')
+    MAIL_SERVER = getenv('MAIL_SERVER')
     MAIL_PORT = 587
     MAIL_USE_TLS = True
     MAIL_USE_SSL = False
-    MAIL_USERNAME = os.getenv('MAIL_USERNAME')
-    MAIL_PASSWORD = os.getenv('MAIL_PASSWORD')
-    MAIL_DEFAULT_SENDER = os.getenv('MAIL_USERNAME')
+    MAIL_USERNAME = getenv('MAIL_USERNAME')
+    MAIL_PASSWORD = getenv('MAIL_PASSWORD')
+    MAIL_DEFAULT_SENDER = getenv('MAIL_USERNAME')
 
 
 class DevConfig(Config):
     DEBUG = True
     SQLALCHEMY_TRACK_MODIFICATIONS = True
-    SQLALCHEMY_DATABASE_URI = 'sqlite:///' + os.path.join(basedir, 'DEV.db')
+    SQLALCHEMY_DATABASE_URI = 'sqlite:///' + path.join(basedir, 'DEV.db')
 
 
 class TestConfig(Config):
     TESTING = True
-    SQLALCHEMY_DATABASE_URI = 'sqlite:///' + os.path.join(basedir, 'TEST.db')
+    SQLALCHEMY_DATABASE_URI = 'sqlite:///' + path.join(basedir, 'TEST.db')
 
 
 class ProdConfig(Config):
     DEBUG = False
-    SQLALCHEMY_DATABASE_URI = os.getenv('SQLALCHEMY_DATABASE_URI')
+    SQLALCHEMY_DATABASE_URI = getenv('SQLALCHEMY_DATABASE_URI')
 
 
 config = {
@@ -62,13 +62,13 @@ def set_Config(pm=False):
         if ck == '':
             ck = 'def'
     else:
-        ck = os.getenv('CONFIG')
+        ck = getenv('CONFIG')
     if ck == 'd' or ck == 'def':
-        os.environ['FLASK_ENV'] = 'development'
+        environ['FLASK_ENV'] = 'development'
     elif ck == 't':
-        os.environ['FLASK_ENV'] = 'testing'
+        environ['FLASK_ENV'] = 'testing'
     elif ck == 'p':
-        os.environ['FLASK_ENV'] = 'production'
+        environ['FLASK_ENV'] = 'production'
     else:
         return None
     return config[ck]

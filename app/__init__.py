@@ -2,7 +2,7 @@
 #    Initialize all needed objects to make app run properly
 
 import click
-from flask import Flask,current_app
+from flask import Flask, current_app
 from flask.cli import with_appcontext
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
