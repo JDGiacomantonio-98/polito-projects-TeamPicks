@@ -12,15 +12,7 @@ from app import db, login_handler
 # DATABASE GLOBAL FUNCTIONS #
 
 
-@login_handler.user_loader
-def loadUser(user_id):
-    if session.get('dbModelType') == 'user':
-        return User.query.get(user_id)
-    else:
-        return Owner.query.get(user_id)
-
-
-def dummy(single, model=None, items=100, one_cm=False):
+def dummy(single, model=None, items=100, feedback=True):
     from app.users.methods import hash_psw
 
     if type(single) != bool:
@@ -35,129 +27,120 @@ def dummy(single, model=None, items=100, one_cm=False):
                           '[G]roup\n'
                           '[M]atch\n\n'
                           '[Q]uit\n'
-                          'select here : '))
-    model = model.lower()
+                          'select here : ')).lower()
     if model == 'q' or model == '':
         print('dummy() has been quited.')
         return None
+    if single:
+        items = 1
     else:
-        rand = Faker()
-        if not single:
+        if feedback:
             print('Please wait while processing dummy units ... (this might take a while)\n')
-            start = datetime.now()
-            flags = [0, 0, 0, 0, 0, 0]
+            progress = {
+                0.10: 'completed : |*.............|',
+                0.20: 'completed : |***...........| (20%)',
+                0.30: 'completed : |****..........| (30%)',
+                0.50: 'completed : |*******.......| (50%)',
+                0.60: 'completed : |********......| (60%)',
+                0.75: 'completed : |*********.....| (75%)',
+                0.90: 'completed : |************..| (90%)'
+            }
             errors = 0
-        i = 0
-        while i < items:
-            if model == 'u' or model == 'users':
-                itm = User(username=rand.user_name(),
-                           email=rand.email(),
-                           lastSession=rand.past_date(),
-                           firstName=rand.first_name(),
-                           lastName=rand.last_name(),
-                           age=randint(16, 90),
-                           sex=rand.null_boolean(),
-                           about_me=rand.text(max_nb_chars=250),
-                           city=rand.city(),
-                           pswHash=hash_psw('password')
-                           )
-                if itm.sex:
-                    itm.sex = 'm'
-                elif itm.sex is not None:
-                    itm.sex = 'f'
-                else:
-                    itm.sex = 'other'
-                itm.img = itm.set_defaultImg()
-                model = 'users'
-            elif model == 'o' or model == 'owners':
-                itm = Owner(username=rand.user_name(),
-                            email=rand.email(),
-                            lastSession=rand.past_date(),
-                            firstName=rand.first_name(),
-                            lastName=rand.last_name(),
-                            age=randint(18, 90),
-                            sex=rand.null_boolean(),
-                            about_me=rand.text(max_nb_chars=250),
-                            city=rand.city(),
-                            pswHash=hash_psw('password'),
-                            subsType="{0:b}".format(randint(0, 2)),
-                            subsExpirationDate=rand.future_date('+90d')
-                            )
-                if itm.sex:
-                    itm.sex = 'm'
-                elif itm.sex is not None:
-                    itm.sex = 'f'
-                else:
-                    itm.sex = 'other'
-                itm.img = itm.set_defaultImg()
-                if rand.boolean(chance_of_getting_true=70):
-                    pub = dummy(single=True, model='p')
-                    itm.associate_pub(pub)
-                model = 'owners'
-            elif model == 'p' or model == 'pubs':
-                seatsMax = randint(0, 200)
-                itm = Pub(address=rand.address(),
-                          bookable=rand.boolean(chance_of_getting_true=50),
-                          seatsMax=seatsMax,
-                          rating=randint(0, 5),
-                          description=rand.text(max_nb_chars=500)
-                          )
-                if itm.bookable:
-                    itm.seatsBooked = seatsMax - randint(0, seatsMax)
-                model = 'pubs'
-            elif model == 'g' or model == 'groups':
-                itm = Group(name=rand.sentence(nb_words=8))
-                model = 'groups'
-            elif model == 'm' or model == 'matches':
-                print('We are sorry but this function is still under development!')
-                if single:
-                    return None
-                else:
-                    quit()
-                itm = Match()
-                model = 'matches'
-            if not single:
-                db.session.add(itm)
-                if not one_cm:
-                    try:
-                        db.session.commit()
-                        i += 1
-                    except IntegrityError:
-                        db.session.rollback()
-                        errors += 1
-                else:
-                    i += 1
-                if ((i / items) < 0.1) and (flags[0] == 0):
-                    print('completed : *')
-                    flags[0] = 1
-                if (0.15 <= (i / items) < 0.2) and (flags[1] == 0):
-                    print('completed : **')
-                    flags[1] = 1
-                if (0.2 <= (i / items) < 0.4) and (flags[2] == 0):
-                    print('completed : *** (20%)')
-                    flags[2] = 1
-                if (0.4 <= (i / items) < 0.6) and (flags[3] == 0):
-                    print('completed : ***** (40%)')
-                    flags[3] = 1
-                if (0.6 <= (i / items) < 0.8) and (flags[4] == 0):
-                    print('completed : ******* (60%)')
-                    flags[4] = 1
-                if (0.8 <= (i / items) < 0.95) and (flags[5] == 0):
-                    print('completed : ********* (80%)')
-                    flags[5] = 1
+            start = datetime.now()
+            print('completed : |..............|')
+    rand = Faker()
+    i = 0
+    while i < items:
+        if model == 'u' or model == 'users':
+            itm = User(username=rand.user_name(),
+                       email=rand.email(),
+                       lastSession=rand.past_date(),
+                       firstName=rand.first_name(),
+                       lastName=rand.last_name(),
+                       age=randint(16, 90),
+                       sex=rand.null_boolean(),
+                       about_me=rand.text(max_nb_chars=250),
+                       city=rand.city(),
+                       pswHash=hash_psw('password')
+                       )
+            if itm.sex:
+                itm.sex = 'm'
+            elif itm.sex is not None:
+                itm.sex = 'f'
             else:
-                return itm
-        if one_cm:
+                itm.sex = 'other'
+            itm.img = itm.set_defaultImg()
+            model = 'users'
+        elif model == 'o' or model == 'owners':
+            itm = Owner(username=rand.user_name(),
+                        email=rand.email(),
+                        lastSession=rand.past_date(),
+                        firstName=rand.first_name(),
+                        lastName=rand.last_name(),
+                        age=randint(18, 90),
+                        sex=rand.null_boolean(),
+                        about_me=rand.text(max_nb_chars=250),
+                        city=rand.city(),
+                        pswHash=hash_psw('password'),
+                        subsType="{0:b}".format(randint(0, 2)),
+                        subsExpirationDate=rand.future_date('+90d')
+                        )
+            if itm.sex:
+                itm.sex = 'm'
+            elif itm.sex is not None:
+                itm.sex = 'f'
+            else:
+                itm.sex = 'other'
+            itm.img = itm.set_defaultImg()
+            if rand.boolean(chance_of_getting_true=70):
+                pub = dummy(single=True, model='p')
+                itm.associate_pub(pub)
+            model = 'owners'
+        elif model == 'p' or model == 'pubs':
+            seatsMax = randint(0, 200)
+            itm = Pub(address=rand.address(),
+                      bookable=rand.boolean(chance_of_getting_true=50),
+                      seatsMax=seatsMax,
+                      rating=randint(0, 5),
+                      description=rand.text(max_nb_chars=500)
+                      )
+            if itm.bookable:
+                itm.seatsBooked = seatsMax - randint(0, seatsMax)
+            model = 'pubs'
+        elif model == 'g' or model == 'groups':
+            itm = Group(name=rand.sentence(nb_words=8))
+            model = 'groups'
+        elif model == 'm' or model == 'matches':
+            print('We are sorry but this function is still under development!')
+            itm = Match()
+            model = 'matches'
+        if not single:
+            db.session.add(itm)
             try:
                 db.session.commit()
-                print('Completed!\n{} new dummy-{} instances has been successfully created and added to db.'.format(items, model))
+                i += 1
             except IntegrityError:
                 db.session.rollback()
-                print('dummy() ended with code 1 : some dummy objects have caused an IntegrityError on commit. Nay data has been written to db.')
+                errors += 1
+            if feedback:
+                try:
+                    print(progress[round((i / items), 3)])
+                except KeyError:
+                    pass
         else:
-            print('Completed!\n{} new dummy-{} instances has been successfully created and add to db. ({} errors occurred)'.format(items, model, errors))
+            return itm
+    if feedback:
+        print('Completed!\n{} new dummy-{} instances has been successfully created and add to db. ({} errors occurred)'.format(items, model, errors))
         print('Connection happened on : {}'.format(current_app.config['SQLALCHEMY_DATABASE_URI']))
         print('Process duration : {}'.format(datetime.now() - start))
+
+
+@login_handler.user_loader
+def loadUser(user_id):
+    if session.get('dbModelType') == 'user':
+        return User.query.get(user_id)
+    else:
+        return Owner.query.get(user_id)
 
 
 # DATABASE OBJECTS STRUCTURE #
@@ -197,7 +180,8 @@ class Subscription(db.Model):
 
 
 class USER:
-    id = db.Column(db.Integer, primary_key=True)
+    id = db.Column(db.Integer,
+                   primary_key=True)
     username = db.Column(db.String(15),
                          unique=True,
                          nullable=False,
@@ -210,7 +194,8 @@ class USER:
                           nullable=False,
                           default=False)
     lastSession = db.Column(db.DateTime,
-                            nullable=False, default=datetime.utcnow())
+                            nullable=False,
+                            default=datetime.utcnow())
     firstName = db.Column(db.String(60),
                           nullable=False)
     lastName = db.Column(db.String(60),
@@ -345,6 +330,7 @@ class Pub(db.Model):
 
     def notify(self, eventType, item=None):
         # here we should notify Owner of the incoming request in order to let him accept it or not
+        # item represent notification body object
         print('Owner id : {}'.format(self.owner_id))
         if eventType == 'new-booking':
             pass

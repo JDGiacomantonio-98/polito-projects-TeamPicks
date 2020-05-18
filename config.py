@@ -1,6 +1,8 @@
-from os import path, getenv, environ
+from os import path, getenv
 from datetime import timedelta
+from devkit import configMenu, set_env
 from dotenv import load_dotenv
+
 
 basedir = path.abspath(path.dirname(__file__))
 load_dotenv(path.join(basedir, '.env'))
@@ -39,36 +41,13 @@ class ProdConfig(Config):
 
 
 config = {
-    'd': DevConfig,
-    't': TestConfig,
-    'p': ProdConfig,
-    'def': DevConfig
+    'development': DevConfig,
+    'testing': TestConfig,
+    'production': ProdConfig
 }
 
 
-def set_Config(pm=False):
-    if pm:
-        # print a menu to create different instances of app working with different Configs profiles
-        print('==================')
-        ck = str(input('SELECT APP CONFIG\n'
-                      '==================\n'
-                      '[D]evelopment\n'
-                      '[T]esting\n'
-                      '[P]roduction\n\n'
-                      '[Q]uit factory\n'
-                      'press < Enter > to run Defaults :\t'
-                       )
-                 ).lower()
-        if ck == '':
-            ck = 'def'
-    else:
-        ck = getenv('CONFIG')
-    if ck == 'd' or ck == 'def':
-        environ['FLASK_ENV'] = 'development'
-    elif ck == 't':
-        environ['FLASK_ENV'] = 'testing'
-    elif ck == 'p':
-        environ['FLASK_ENV'] = 'production'
-    else:
-        return None
-    return config[ck]
+def set_Config(select=False):
+    if select:
+        return config[set_env(configMenu())]
+    return config[set_env(selKey='d')]

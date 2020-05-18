@@ -175,7 +175,7 @@ def openProfile(userInfo):
             flash('You profile has been updated!', 'success')
             return redirect(url_for('users.openProfile', userInfo=current_user.username))
         flash('There are some problem with your input: please make correction before resubmitting !', 'danger')
-    return render_template('profilePage.html', title=current_user.firstName + " " + current_user.lastName, imgFile=current_user.get_imgFile(), form=form)
+    return render_template('profilePage.html', title='{} {}'.format(current_user.firstName, current_user.lastName), imgFile=current_user.get_imgFile(), form=form)
 
 
 @users.route('/<ID>/delete-account')

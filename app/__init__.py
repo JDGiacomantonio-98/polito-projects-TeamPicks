@@ -10,8 +10,8 @@ from flask_bcrypt import Bcrypt
 from flask_login import LoginManager
 from flask_mail import Mail
 from flask_moment import Moment
-from manager import db_exist
 from config import set_Config
+from tests import db_tests
 
 db = SQLAlchemy()
 migration = Migrate()
@@ -24,30 +24,28 @@ login_handler.login_message_category = 'info'
 
 mail = Mail()
 clock = Moment()
+unittest = db_tests()
 
 
 @click.command(name='build', help='Create a db file based on config specification.')
-@click.argument('config_key', default='pm')
+@click.argument('config_key', default='sel')
 @with_appcontext
 def db_build(config_key):
-    if config_key == 'pm':
-        current_app.config.from_object(set_Config(pm=True))
+    if config_key == 'sel':
+        current_app.config.from_object(set_Config(select=True))
     elif config_key == 'env':
         current_app.config.from_object(set_Config())
-    # here add an --all argument whose create all db files and models
-    if not db_exist(current_app):
-        print("\nSUCCESS : application ready to run.")
     else:
-        print("\nWARNING : detected an already existing db file for this configuration profile.\n")
+        quit()
     db.create_all()
 
 
 @click.command(name='reset', help='Drops all table in db file used by specified config.')
-@click.argument('config_key', default='pm')
+@click.argument('config_key', default='sel')
 @with_appcontext
 def db_reset(config_key):
-    if config_key == 'pm':
-        current_app.config.from_object(set_Config(pm=True))
+    if config_key == 'sel':
+        current_app.config.from_object(set_Config(select=True))
     elif config_key == 'env':
         current_app.config.from_object(set_Config())
     # here add an --all argument whose create all db files and models
@@ -58,49 +56,43 @@ def db_reset(config_key):
         if c.lower() != 'd':
             print('INFO : no action has been taken.')
             exit(0)
-        db.drop_all()
-        print("\nSUCCESS : all data have been dropped.")
-        # ask if to remove the db file
-    else:
-        if db_exist(current_app):
-            db.drop_all()
-            print("\nSUCCESS : all data have been dropped.")
-            # ask if to remove the db file
-        else:
-            print("\nWARNING : any db file has been detected for this configuration profile.\n"
-                  "\t  The command ended with no action.")
+    db.drop_all()
+    print("\nSUCCESS : all data have been dropped.")
 
 
-def create_app():
+def create_app(config=None):
     app = Flask(__name__)
     try:
-        app.config.from_object(set_Config())
-        if app.config['SECRET_KEY']:
-            print("\n===========================\n"
-                  "RUNNING CONFIG: {}\n{}\n".format(app.config['ENV'], app.config))
-        else:
-            print('\nThe application factory has been closed.')
-            return None
+        app.config.from_object(config)
+        print("RUNNING CONFIG: {}".format(app.config['ENV']))
     except:
         print('\nThe application factory has been closed.')
         return None
     db.init_app(app)
-    migration.init_app(app, db)
-    pswBurner.init_app(app)
-    login_handler.init_app(app)
-    mail.init_app(app)
-    clock.init_app(app)
+    unittest.init_app(app, db)
+    with app.app_context():
+        print('Running tests ...')
+        if unittest.test_db_ready():
+            migration.init_app(app, db)
+            pswBurner.init_app(app)
+            login_handler.init_app(app)
+            mail.init_app(app)
+            clock.init_app(app)
+        else:
+            print('(!) WARNING : some tests have failed while initiation the app. Please check your db connection again.')
+            print('The following cli commands are available to cope with this issue:\n'
+                  '> flask reset\n'
+                  '> flask build\n')
+        from app.errors import errors
+        app.register_blueprint(errors)
 
-    from app.main import main
-    app.register_blueprint(main)
+        from app.main import main
+        app.register_blueprint(main)
 
-    from app.errors import errors
-    app.register_blueprint(errors)
+        from app.users import users
+        app.register_blueprint(users)
 
-    from app.users import users
-    app.register_blueprint(users)
-
-    app.cli.add_command(db_build)
-    app.cli.add_command(db_reset)
+        app.cli.add_command(db_build)
+        app.cli.add_command(db_reset)
 
     return app

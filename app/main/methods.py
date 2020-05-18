@@ -25,10 +25,10 @@ def sendEmail(recipient, templatePath=None, mailTitle=None, token=None, backgrou
 
 
 def send_ConfirmationEmail(recipient, flash_msg=False, background=True):
-    msg = Message('TeamPicks Account -- ' + 'ACCOUNT CONFIRMATION',
+    msg = Message('TeamPicks Account -- ACCOUNT CONFIRMATION',
                   sender='teampicks.help@gmail.com',
                   recipients=[recipient.email])
-    msg.body = render_template('/email-copy/confirm-registration' + '.txt', token=recipient.createToken(), user=recipient)
+    msg.body = render_template('email-copy/confirm-registration.txt', token=recipient.createToken(), user=recipient)
     # _external parameter allow to generate an absolute URL whose works outside app environment
     if background:
         Thread(target=sendInBackground, args=(current_app._get_current_object(), msg)).start()
@@ -39,10 +39,10 @@ def send_ConfirmationEmail(recipient, flash_msg=False, background=True):
 
 
 def send_ResetPswEmail(recipient, flash_msg=False, background=True):
-    msg = Message('TeamPicks Account -- ' + 'PASSWORD RESET',
+    msg = Message('TeamPicks Account -- PASSWORD RESET',
                   sender='teampicks.help@gmail.com',
                   recipients=[recipient.email])
-    msg.body = render_template('/email-copy/reset-psw' + '.txt', token=recipient.createToken(), user=recipient)
+    msg.body = render_template('email-copy/reset-psw.txt', token=recipient.createToken(), user=recipient)
     if background:
         Thread(target=sendInBackground, args=(current_app._get_current_object(), msg)).start()
     else:
