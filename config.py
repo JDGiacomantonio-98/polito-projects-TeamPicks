@@ -1,6 +1,6 @@
 from os import path, getenv
 from datetime import timedelta
-from devkit import configMenu, set_env
+from devkit import config_menu, set_env
 from dotenv import load_dotenv
 
 
@@ -47,7 +47,7 @@ config = {
 }
 
 
-def set_Config(select=False):
+def set_config(select=False):
     if select:
-        return config[set_env(configMenu())]
+        return config[set_env(config_menu())]
     return config[set_env(selKey='d')]

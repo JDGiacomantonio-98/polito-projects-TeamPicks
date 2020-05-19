@@ -2,9 +2,9 @@ Dear {{ user.username }},
 
 To confirm your account please click on the following link:
 
-{{ url_for('users.confirmAccount', token=token, _external=True) }}
+{{ url_for('users.activate', token=token, _external=True) }}
 
 Kindly,
 The TeamPicks Staff
 
-Note: replies to this email address are not monitored.
+Note: replies to this email address will are not being managed

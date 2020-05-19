@@ -1,9 +1,9 @@
 from flask import render_template, url_for, flash, redirect, request, session, abort
 from flask_login import login_user, logout_user, login_required, current_user
 from app.users.methods import save_profilePic, hash_psw, verify_psw, verify_token, confirm_account
-from app.users.forms import registrationForm_user, registrationForm_pub, loginForm, accountDashboardForm, resetPswForm, createGroupForm, resetRequestForm
+from app.users.forms import RegistrationForm_user, RegistrationForm_pub, LoginForm, ProfileDashboardForm, ResetPswForm, CreateGroupForm, ResetRequestForm
 from app.users import users
-from app.main.methods import send_ConfirmationEmail, send_ResetPswEmail
+from app.main.methods import send_confirmation_email, send_pswReset_email
 from app import db
 from app.dbModels import User, Owner, Group
 
@@ -13,14 +13,14 @@ from app.dbModels import User, Owner, Group
 @users.route('/<userType>/<accType>/signup', methods=['GET', 'POST'])
 def registration(userType, accType):
     if current_user.is_authenticated and current_user.confirmed:
-        return render_template('homePage.html')
+        return render_template('home.html')
     if userType == 'user':
-        form = registrationForm_user()
+        form = RegistrationForm_user()
     else:
-        form = registrationForm_pub()
+        form = RegistrationForm_pub()
         form.subsType.data = accType   # used to auto-fill account type
     if request.method == 'GET':
-        return render_template('signUp.html', title='Registration page', form=form, userType=userType)
+        return render_template('sign_up.html', title='Registration page', form=form, userType=userType)
     else:
         if form.validate_on_submit():
             if userType == 'user':
@@ -53,7 +53,7 @@ def registration(userType, accType):
                     newItem.isBookable = True
             db.session.add(newItem)
             db.session.commit()
-            send_ConfirmationEmail(recipient=newItem)
+            send_confirmation_email(recipient=newItem)
             session.clear()
             flash("Hi {}, your profile has been successfully created but is not yet active.".format(form.username.data),
                   'success')
@@ -61,11 +61,11 @@ def registration(userType, accType):
             return redirect(url_for('users.login'))
         elif form.username.data or form.businessName.data:
             flash("Something went wrong with your input, please check again.", 'danger')
-            return render_template('signUp.html', title='Registration page', form=form, userType=userType)
+            return render_template('sign_up.html', title='Registration page', form=form, userType=userType)
 
 
 @users.route('/confirm-account/<token>')
-def confirmAccount(token):
+def activate(token):
     # if user comes from email confirmation link there is no current user to check
     if (not current_user.is_anonymous) and current_user.confirmed:
         flash('You account has already been activated.', 'secondary')
@@ -82,8 +82,8 @@ def confirmAccount(token):
 @users.route('/login', methods=['GET', 'POST'])
 def login():
     if current_user.is_authenticated and current_user.confirmed:
-        return render_template('homePage.html')
-    form = loginForm()
+        return redirect(url_for('main.index'))
+    form = LoginForm()
     if request.method == 'GET':
         return render_template('login.html', title='Login page', form=form)
     else:
@@ -110,7 +110,7 @@ def login():
                     else:
                         return redirect(url_for('main.index'))
                 else:
-                    send_ConfirmationEmail(recipient=current_user)
+                    send_confirmation_email(recipient=current_user)
                     flash("Your account still require activation. Please check your email inbox.", 'warning')
             elif query:
                 flash('Login error : Invalid email or password.', 'danger')
@@ -130,10 +130,10 @@ def logout():
 
 @users.route('/create-your-group')
 @login_required
-def createGroup():
-    form = createGroupForm()
+def create_group():
+    form = CreateGroupForm()
     if request.method == 'GET':
-        return render_template('createGroup.html', form=form, title='create your group')
+        return render_template('create_group.html', form=form, title='create your group')
     if form.validate_on_submit():
         if current_user.has_permission_to('CREATE-GROUP'):
             itm = Group(name=form.name.data)
@@ -143,9 +143,8 @@ def createGroup():
 
 @users.route('/profile/<userInfo>/dashboard', methods=['GET', 'POST'])
 @login_required
-def openProfile(userInfo):
-    form = accountDashboardForm()
-    #if 'user' == session.get('dbModelType'):
+def open_profile(userInfo):
+    form = ProfileDashboardForm()
     if request.method == 'GET':
         if not current_user.confirmed:
             flash('Your profile has been temporally deactivated until you reconfirm it.', 'secondary')
@@ -164,7 +163,7 @@ def openProfile(userInfo):
                 if current_user.email != form.emailAddr.data:
                     current_user.confirmed = False
                     current_user.email = form.emailAddr.data
-                    send_ConfirmationEmail(recipient=current_user, flash_msg=True)
+                    send_confirmation_email(recipient=current_user, flash_msg=True)
                 current_user.img = save_profilePic(form.img.data)
                 current_user.username = form.username.data
                 db.session.commit()
@@ -173,14 +172,14 @@ def openProfile(userInfo):
             else:
                 session['del'] = False
             flash('You profile has been updated!', 'success')
-            return redirect(url_for('users.openProfile', userInfo=current_user.username))
+            return redirect(url_for('users.open_profile', userInfo=current_user.username))
         flash('There are some problem with your input: please make correction before resubmitting !', 'danger')
-    return render_template('profilePage.html', title='{} {}'.format(current_user.firstName, current_user.lastName), imgFile=current_user.get_imgFile(), form=form)
+    return render_template('profile.html', title='{} {}'.format(current_user.firstName, current_user.lastName), imgFile=current_user.get_imgFile(), form=form)
 
 
 @users.route('/<ID>/delete-account')
 @login_required
-def deleteAccount(ID):
+def delete_account(ID):
     # deletion should be authorized only by code and not by manual writing the URL
     if int(ID) == current_user.id and session['del']: #error here
         db.session.delete(current_user)
@@ -195,7 +194,7 @@ def send_resetRequest():
     if current_user.is_authenticated and current_user.confirmed:
         flash('You are logged in already.', 'info')
         return redirect(url_for('main.index'))
-    form = resetRequestForm()
+    form = ResetRequestForm()
     if request.method == 'POST':
         if form.validate_on_submit():
             # send user an email
@@ -203,17 +202,17 @@ def send_resetRequest():
             if not query:
                 query = Owner.query.filter_by(email=form.emailAddr.data).first()
             if query.confirmed:
-                send_ResetPswEmail(recipient=query)
+                send_pswReset_email(recipient=query)
                 flash('An email has been sent to your inbox containing all instructions to reset your password!', 'warning')
                 return redirect(url_for('users.login'))
             else:
                 flash("Your account still require activation. Please check your email inbox.", 'warning')
                 return redirect(url_for('users.login'))
-    return render_template('resetRequest.html', title='Reset your psw', form=form)
+    return render_template('reset_request.html', title='Reset your psw', form=form)
 
 
 @users.route('/pswReset/<token>', methods=['GET', 'POST'])
-def pswReset(token):
+def reset_psw(token):
     if current_user.is_authenticated:
         flash('You are logged in already.', 'info')
         return redirect(url_for('main.index'))
@@ -222,12 +221,12 @@ def pswReset(token):
         flash('The used token is expired or invalid.', 'danger')
         return redirect(url_for('users.send_resetRequest'))
     else:
-        form = resetPswForm()
+        form = ResetPswForm()
         if request.method == 'POST':
             if form.validate_on_submit():
                 user.pswHash = hash_psw(form.psw.data)
                 db.session.commit()
-                login_user(user, remember=False)
-                flash("Hi {}, your password has been successfully reset. Welcome back on board!".format(current_user.username), 'success')
-                return redirect(url_for('users.openProfile', userInfo=current_user.username))
-    return render_template('resetPsw.html', title='Resetting your psw', form=form)
+                flash("Hi {}, your password has been successfully reset. Welcome back on board!".format(user.username), 'success')
+                flash('To assure security on your account we need you to login again.', 'secondary')
+                return redirect(url_for('users.login'))
+    return render_template('psw_reset.html', title='Resetting your psw', form=form)

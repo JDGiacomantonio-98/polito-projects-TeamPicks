@@ -10,8 +10,8 @@ from flask_bcrypt import Bcrypt
 from flask_login import LoginManager
 from flask_mail import Mail
 from flask_moment import Moment
-from config import set_Config
-from tests import db_tests
+from config import set_config
+from tests import DBTester
 
 db = SQLAlchemy()
 migration = Migrate()
@@ -24,7 +24,7 @@ login_handler.login_message_category = 'info'
 
 mail = Mail()
 clock = Moment()
-unittest = db_tests()
+unittest = DBTester()
 
 
 @click.command(name='build', help='Create a db file based on config specification.')
@@ -32,9 +32,9 @@ unittest = db_tests()
 @with_appcontext
 def db_build(config_key):
     if config_key == 'sel':
-        current_app.config.from_object(set_Config(select=True))
+        current_app.config.from_object(set_config(select=True))
     elif config_key == 'env':
-        current_app.config.from_object(set_Config())
+        current_app.config.from_object(set_config())
     else:
         quit()
     db.create_all()
@@ -45,9 +45,9 @@ def db_build(config_key):
 @with_appcontext
 def db_reset(config_key):
     if config_key == 'sel':
-        current_app.config.from_object(set_Config(select=True))
+        current_app.config.from_object(set_config(select=True))
     elif config_key == 'env':
-        current_app.config.from_object(set_Config())
+        current_app.config.from_object(set_config())
     # here add an --all argument whose create all db files and models
     if current_app.config['ENV'] == 'production':
         c = str(input('\nThe data you are trying to erase belongs to a PRODUCTION environment!\n'

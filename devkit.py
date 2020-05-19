@@ -23,7 +23,7 @@ def create_userbase(items=None, test_db=False):
             dummy(single=False, model=userbase[k], items=items)
 
 
-def configMenu():
+def config_menu():
     # print a menu to create different instances of app working with different Configs profiles
     choices = ['', 'd', 't', 'p', 'q']
     print('==================')

@@ -3,7 +3,7 @@ from wtforms import StringField, SubmitField
 from wtforms.validators import DataRequired
 
 
-class trialForm(FlaskForm):
+class TryAppForm(FlaskForm):
     city = StringField('My place is in', validators=[DataRequired()])
 
     submit = SubmitField('Open the gate')

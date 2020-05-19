@@ -1,4 +1,4 @@
-{% extends 'globalLayout.html' %}
+{% extends 'base_template.html' %}
 
 {% block pagecontent %}
     <div class="container">
@@ -27,7 +27,7 @@
                             </a>
                         </li>
                         <li class="nav-item py-1 py-md-0">
-                            <a class="btn btn-outline-info btn-autowidth" href="{{ url_for('main.showPricing') }}" role="button">
+                            <a class="btn btn-outline-info btn-autowidth" href="{{ url_for('main.show_pricing') }}" role="button">
                                 <span>
                                     Register your local activity
                                 </span>
@@ -121,7 +121,7 @@
                     </a>
                 </div>
                 <div class="col-lg-6">
-                    <a class="btn btn-outline-info btn-lg btn-autowidth btn-block" href="{{ url_for('main.showPricing') }}" role="button">
+                    <a class="btn btn-outline-info btn-lg btn-autowidth btn-block" href="{{ url_for('main.show_pricing') }}" role="button">
                         <span>
                             Register your local activity
                         </span>

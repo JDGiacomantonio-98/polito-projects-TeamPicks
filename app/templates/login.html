@@ -1,4 +1,4 @@
-{% extends 'globalLayout.html' %}
+{% extends 'base_template.html' %}
 
 {% block pagecontent %}
     <div class="d-flex justify-content-center">
@@ -42,7 +42,7 @@
                 <small>Don't you have an account yet? <a href="{{ url_for('users.registration', userType='user', accType='free' ) }}">Create it here!</a></small>
             </div>
             <div class="pl-1">
-                <small>Do you own a local activity or pub? <a href="{{ url_for('main.showPricing') }}">Register it here!</a></small>
+                <small>Do you own a local activity or pub? <a href="{{ url_for('main.show_pricing') }}">Register it here!</a></small>
             </div>
         </div>
     </div>

@@ -2,7 +2,7 @@ Hi {{ user.username }}, you received this email because our server received a pa
 
 Click on the following link to reset your password :
 
-{{ url_for('users.pswReset', token=token, _external=True) }}
+{{ url_for('users.reset_psw', token=token, _external=True) }}
 
 If you not recognize this request please ignore it and remove this email from your inbox.
 In this way, no changes will be applied to your profile.
@@ -10,4 +10,4 @@ In this way, no changes will be applied to your profile.
 See ya!
 The TeamPicks staff
 
-Note: replies to this email address are not monitored.
+Note: replies to this email address will are not being managed.

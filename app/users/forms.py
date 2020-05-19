@@ -8,7 +8,7 @@ from app.dbModels import User, Owner, Group
 # it should be checked if the validate_field form method can already return the query result if not empty (!!)
 
 
-class registrationForm_user(FlaskForm):
+class RegistrationForm_user(FlaskForm):
     firstName = StringField('Name :', validators=[DataRequired()], render_kw={'placeholder':'Your firstname'})
     lastName = StringField('Surname :', validators=[DataRequired()], render_kw={'placeholder':'Your lastname'})
     username = StringField('Choose an username :', validators=[DataRequired(), Length(min=2)], render_kw={'placeholder': 'choose an username'})
@@ -31,7 +31,7 @@ class registrationForm_user(FlaskForm):
             raise ValidationError('This email address has been already taken. Choose a different one.')
 
 
-class registrationForm_pub(FlaskForm):
+class RegistrationForm_pub(FlaskForm):
     username = StringField('Business name :', validators=[DataRequired()], render_kw={'placeholder':'Signboard of your business'})
     ownerFirstName = StringField('Owner Firstname :', validators=[DataRequired()], render_kw={'placeholder':'Your firstname'})
     ownerLastName = StringField('Owner Lastname :', validators=[DataRequired()], render_kw={'placeholder':'Your family name'})
@@ -57,7 +57,7 @@ class registrationForm_pub(FlaskForm):
             raise ValidationError('This email address has been already taken. Choose a different one.')
 
 
-class accountDashboardForm(FlaskForm):
+class ProfileDashboardForm(FlaskForm):
     img = FileField('Change profile pic', validators=[FileAllowed(['jpg', 'png'])])
     firstName = StringField('Name :', validators=[DataRequired()])
     lastName = StringField('Surname :', validators=[DataRequired()])
@@ -84,7 +84,7 @@ class accountDashboardForm(FlaskForm):
                 raise ValidationError('This email address has been already taken. Choose a different one.')
 
 
-class loginForm(FlaskForm):
+class LoginForm(FlaskForm):
     credential = StringField('Email address:', validators=[DataRequired(), Length(min=2)], render_kw={'placeholder':'Email address or Username'})
     psw = PasswordField('Password :', validators=[DataRequired(), Length(min=8)], render_kw={'placeholder':'Password'})
     rememberMe = BooleanField('Remember Me!')
@@ -92,7 +92,7 @@ class loginForm(FlaskForm):
     submit = SubmitField('Log me in!')
 
 
-class resetRequestForm(FlaskForm):
+class ResetRequestForm(FlaskForm):
     emailAddr = StringField('Email address:\t', validators=[DataRequired(), Email()], render_kw={'placeholder': 'Email address'})
     submit = SubmitField('Send request')
 
@@ -101,14 +101,14 @@ class resetRequestForm(FlaskForm):
             raise ValidationError('No existing accounts are linked with this email address.')
 
 
-class resetPswForm(FlaskForm):
+class ResetPswForm(FlaskForm):
     psw = PasswordField('Password :', validators=[DataRequired(), Length(min=8)], render_kw={'placeholder': 'New password'})
     confirmPsw = PasswordField('Confirm your Password :', validators=[DataRequired(), EqualTo('psw')], render_kw={'placeholder': 'Confirm your password'})
 
     submit = SubmitField('Reset your password')
 
 
-class createGroupForm(FlaskForm):
+class CreateGroupForm(FlaskForm):
     name = StringField('Name:', validators=[DataRequired(), Length(min=10, max=100)], render_kw={'placeholder': 'your group name'})
 
     submit = SubmitField('Create it now!')

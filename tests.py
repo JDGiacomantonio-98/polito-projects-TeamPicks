@@ -3,7 +3,7 @@ from os import path
 from devkit import create_userbase
 
 
-class db_tests(unittest.TestCase):
+class DBTester(unittest.TestCase):
     def __init__(self, app=None, db=None):
         super().__init__()
         self.app = app

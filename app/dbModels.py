@@ -136,7 +136,7 @@ def dummy(single, model=None, items=100, feedback=True):
 
 
 @login_handler.user_loader
-def loadUser(user_id):
+def load_user(user_id):
     if session.get('dbModelType') == 'user':
         return User.query.get(user_id)
     else:
@@ -228,7 +228,7 @@ class USER:
         else:
             return url_for('static', filename='profile_pics/users/' + self.img)
 
-    def createToken(self, expireInSec=(8 * 60)):
+    def create_token(self, expireInSec=(8 * 60)):
         return timedTokenizer(current_app.config['SECRET_KEY'], expireInSec).dumps({'load': self.id}).decode('utf-8')
 
     def has_permission_to(self, action):

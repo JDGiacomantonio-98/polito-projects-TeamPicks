@@ -1,4 +1,4 @@
-{% extends 'globalLayout.html' %}
+{% extends 'base_template.html' %}
 
 {% block pagecontent %}
     <div class="container">
@@ -178,7 +178,7 @@
             <small>Already have an account? <a href="{{ url_for('users.login') }}">Log in here!</a></small>
             {% if userType == 'user' %}
                 <br>
-                <small>Do you own a local activity or pub? <a href="{{ url_for('main.showPricing') }}">Register it here!</a></small>
+                <small>Do you own a local activity or pub? <a href="{{ url_for('main.show_pricing') }}">Register it here!</a></small>
             {% endif %}
         </div>
     </div>

@@ -53,14 +53,14 @@ def save_profilePic(imgFile):
         fileName, fileExt = path.splitext(imgFile.filename)
         fileName = hexCode + fileExt.lower()
         targetPath = path.join(current_app.root_path, 'static/profile_pics/users', fileName)
-        imgFile = resizeTo(imgFile, size=250)
+        imgFile = resize_to(imgFile, size=250)
         imgFile.save(targetPath)
     else:
         fileName = current_user.img
     return fileName
 
 
-def resizeTo(imgFile, size):
+def resize_to(imgFile, size):
     resizedImg = Image.open(imgFile)
     resizedImg.thumbnail((size, size))
     return resizedImg
