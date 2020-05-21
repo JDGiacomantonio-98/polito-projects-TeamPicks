@@ -93,7 +93,7 @@ def dummy(return_obj=True, model=None, items=1, w_test=False, feedback=True):
             else:
                 itm.sex = 'other'
             itm.img = itm.set_defaultImg()
-            if rand.boolean(chance_of_getting_true=100):
+            if rand.boolean(chance_of_getting_true=70):
                 pub = dummy(model='p', w_test=w_test)
                 itm.associate_pub(pub)
             model = 'owners'
