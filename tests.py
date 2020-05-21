@@ -1,5 +1,8 @@
 import unittest
 from os import path
+
+from sqlalchemy.exc import IntegrityError, OperationalError
+
 from devkit import create_userbase
 
 
@@ -14,6 +17,7 @@ class DBTester(unittest.TestCase):
         self.db = db
 
     def test_db_ready(self):
+        print('testing database ...')
         if self.test_db_exist():
             if self.test_db_connection():
                 return True
@@ -28,13 +32,34 @@ class DBTester(unittest.TestCase):
         return False
 
     def test_db_connection(self):
+        if self.test_db_read():
+            if self.test_db_write():
+                print('CONNECTION ON : {}'.format(self.app.config['SQLALCHEMY_DATABASE_URI']))
+                return True
+        print('(!) ERROR : failed connection')
+        print('(!) INFO  : have you run upgrade() from last migration file?')
+        return False
+
+    @staticmethod
+    def test_db_read():
+        from app.dbModels import User, Owner, Pub
+
+        try:
+            User.query.first()
+            Owner.query.first()
+            Pub.query.first()
+        except OperationalError:
+            return False
+        return True
+
+    def test_db_write(self):
         try:
             create_userbase(test_db=True)
-            print('CONNECTION ON : {}'.format(self.app.config['SQLALCHEMY_DATABASE_URI']))
-            return True
-        except:
-            print('(!) ERROR : failed connection')
+        except IntegrityError:
+            self.test_db_write()
+        except RuntimeError:
             return False
+        return True
 
 
 if __name__ == '__main__':

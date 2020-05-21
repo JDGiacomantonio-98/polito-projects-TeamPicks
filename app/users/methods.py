@@ -1,9 +1,11 @@
+from os import path, remove
+from secrets import token_hex
+
 from flask import current_app
 from flask_login import current_user
 from itsdangerous import TimedJSONWebSignatureSerializer as timedTokenizer
-from os import path, remove
-from secrets import token_hex
 from PIL import Image
+
 from app import db, pswBurner
 from app.dbModels import User, Owner
 

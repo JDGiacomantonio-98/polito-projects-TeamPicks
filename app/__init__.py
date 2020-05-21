@@ -2,6 +2,7 @@
 #    Initialize all needed objects to make app run properly
 
 import click
+
 from flask import Flask, current_app
 from flask.cli import with_appcontext
 from flask_sqlalchemy import SQLAlchemy
@@ -10,6 +11,7 @@ from flask_bcrypt import Bcrypt
 from flask_login import LoginManager
 from flask_mail import Mail
 from flask_moment import Moment
+
 from config import set_config
 from tests import DBTester
 
@@ -71,9 +73,8 @@ def create_app(config=None):
     db.init_app(app)
     unittest.init_app(app, db)
     with app.app_context():
-        print('Running tests ...')
+        print('running tests ...')
         if unittest.test_db_ready():
-            migration.init_app(app, db)
             pswBurner.init_app(app)
             login_handler.init_app(app)
             mail.init_app(app)
@@ -81,8 +82,10 @@ def create_app(config=None):
         else:
             print('(!) WARNING : some tests have failed while initiation the app. Please check your db connection again.')
             print('The following cli commands are available to cope with this issue:\n'
-                  '> flask reset\n'
-                  '> flask build\n')
+                  '* flask reset\n'
+                  '* flask build\n')
+        migration.init_app(app, db)
+
         from app.errors import errors
         app.register_blueprint(errors)
 

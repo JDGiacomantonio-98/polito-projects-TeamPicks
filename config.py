@@ -1,7 +1,10 @@
 from os import path, getenv
 from datetime import timedelta
-from devkit import config_menu, set_env
+
 from dotenv import load_dotenv
+
+from devkit import config_menu, set_env
+
 
 
 basedir = path.abspath(path.dirname(__file__))

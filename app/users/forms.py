@@ -1,24 +1,32 @@
+from flask_login import current_user
 from flask_wtf import FlaskForm, RecaptchaField
 from flask_wtf.file import FileField, FileAllowed
-from flask_login import current_user
 from wtforms import StringField, PasswordField, BooleanField, SubmitField, SelectField, IntegerField, TextAreaField
 from wtforms.validators import DataRequired, Length, EqualTo, Email, ValidationError
+
 from app.dbModels import User, Owner, Group
 
 # it should be checked if the validate_field form method can already return the query result if not empty (!!)
 
 
-class RegistrationForm_user(FlaskForm):
+class SearchItemsForm(FlaskForm):
+    searchedItem = StringField(render_kw={'placeholder': 'Search for a group or a friend here!'})
+
+    submit = SubmitField('Search')
+
+
+class RegistrationForm_base(FlaskForm):
     firstName = StringField('Name :', validators=[DataRequired()], render_kw={'placeholder':'Your firstname'})
     lastName = StringField('Surname :', validators=[DataRequired()], render_kw={'placeholder':'Your lastname'})
     username = StringField('Choose an username :', validators=[DataRequired(), Length(min=2)], render_kw={'placeholder': 'choose an username'})
     city = StringField('You live in :', validators=[DataRequired()], render_kw={'placeholder': 'City you live in'})
     sex = SelectField('Sex', validators=[DataRequired()], choices=[('m', 'male'), ('f', 'female'), ('other', 'none')])
-    emailAddr = StringField('Email address :', validators=[DataRequired(), Email()], render_kw={'placeholder': 'Active email address'})
-    psw = PasswordField('Password :', validators=[DataRequired(), Length(min=8)], render_kw={'placeholder': 'Choose a strong password'})
+    about_me = TextAreaField( render_kw={'placeholder': 'Tell to other about yourself! (in brief)'})
+    email = StringField('Email address :', validators=[DataRequired(), Email()], render_kw={'placeholder': 'Active email address'})
+    psw = PasswordField('Password:', validators=[DataRequired(), Length(min=8)], render_kw={'placeholder': 'Choose a strong password'})
     confirmPsw = PasswordField('Confirm your Password :', validators=[DataRequired(), EqualTo('psw')], render_kw={'placeholder': 'Confirm password'})
 
-    # move here the accept agreement field and make it required
+    accept_terms = BooleanField('I accept all Terms and Condition agreement', validators=[DataRequired()])
 
     submit = SubmitField('Complete registration!')
 
@@ -31,31 +39,16 @@ class RegistrationForm_user(FlaskForm):
             raise ValidationError('This email address has been already taken. Choose a different one.')
 
 
-class RegistrationForm_pub(FlaskForm):
-    username = StringField('Business name :', validators=[DataRequired()], render_kw={'placeholder':'Signboard of your business'})
-    ownerFirstName = StringField('Owner Firstname :', validators=[DataRequired()], render_kw={'placeholder':'Your firstname'})
-    ownerLastName = StringField('Owner Lastname :', validators=[DataRequired()], render_kw={'placeholder':'Your family name'})
-    businessAddress = StringField('Address :', validators=[DataRequired()], render_kw={'placeholder':'address of your business'})
-    city = StringField('You live in :', validators=[DataRequired()], render_kw={'placeholder':'Where your business is located'})
-    businessDescription = TextAreaField('You live in :', validators=[DataRequired()], render_kw={'placeholder':'A brief description of who you are and what you do best'})
-    seatsMax = IntegerField('Total seats you have :', validators=[DataRequired()], render_kw={'placeholder':'---'})
+class RegistrationForm_pub(RegistrationForm_base):
     subsType = SelectField('Type of subscription :', validators=[DataRequired()], choices=[('free', 'Free'), ('basic', 'Basic'), ('premium', 'Premium')])
-    emailAddr = StringField('Email address :', validators=[DataRequired(), Email()], render_kw={'placeholder': 'Active email address'})
-    psw = PasswordField('Password :', validators=[DataRequired(), Length(min=8)], render_kw={'placeholder': 'Choose a strong password'})
-    confirmPsw = PasswordField('Confirm your Password :', validators=[DataRequired(), EqualTo('psw')], render_kw={'placeholder': 'Confirm password'})
 
-    # move here the accept agreement field and make it required
+
+class RegisterPubForm(FlaskForm):
+    businessAddress = StringField('Address :', validators=[DataRequired()], render_kw={'placeholder': 'address of your business'})
+    businessDescription = TextAreaField('You live in :', validators=[DataRequired()], render_kw={'placeholder': 'A brief description of who you are and what you do best'})
+    seatsMax = IntegerField('Total seats you have :', validators=[DataRequired()], render_kw={'placeholder': '---'})
 
     submit = SubmitField('Complete registration!')
-
-    def validate_username(self, username):
-        if User.query.filter_by(username=username.data).first() or Owner.query.filter_by(username=username.data).first():
-            raise ValidationError('This username has been already taken. Choose a different one.')
-
-    def validate_emailAddr(self, emailAddr):
-        if User.query.filter_by(email=emailAddr.data).first() or Owner.query.filter_by(email=emailAddr.data).first():
-            raise ValidationError('This email address has been already taken. Choose a different one.')
-
 
 class ProfileDashboardForm(FlaskForm):
     img = FileField('Change profile pic', validators=[FileAllowed(['jpg', 'png'])])

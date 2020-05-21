@@ -1,26 +1,31 @@
+userbase = {
+    'user': 'u',
+    'owner': 'o'
+}
+
+
 def create_userbase(items=None, test_db=False):
     from app.dbModels import dummy
-    if test_db:
-        items = 1
-    elif items is None:
-        items = (input('Please select how many object will the userbase be composed of :\t'))
-        while not items.isnumeric():
-            print('Input error: only a numeric value can be submitted. Try again.')
+
+    if not test_db:
+        if items is None:
             items = (input('Please select how many object will the userbase be composed of :\t'))
-    elif type(items) != int:
-        while not items.isnumeric():
-            print('Input error: only a numeric value can be submitted. Try again.')
-            items = (input('Please select how many object will the userbase be composed of :\t'))
-        items = int(items)
-    userbase = {
-        'user': 'u',
-        'owner': 'o'
-    }
-    for k in userbase:
-        if test_db:
-            dummy(single=False, model=userbase[k], items=items, feedback=False)
-        else:
-            dummy(single=False, model=userbase[k], items=items)
+            while not items.isnumeric():
+                print('Input error: only a numeric value can be submitted. Try again.')
+                items = (input('Please select how many object will the userbase be composed of :\t'))
+        elif type(items) != int:
+            while not items.isnumeric():
+                print('Input error: only a numeric value can be submitted. Try again.')
+                items = (input('Please select how many object will the userbase be composed of :\t'))
+            items = int(items)
+        for k in userbase:
+            dummy(return_obj=False, model=userbase[k], items=items)
+    else:
+        for k in userbase:
+            try:
+                dummy(return_obj=False, model=userbase[k], w_test=True)
+            except RuntimeError:
+                return None
 
 
 def config_menu():

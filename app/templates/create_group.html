@@ -1,6 +1,13 @@
 {% extends 'base_template.html' %}
 
 {%  block pagecontent %}
-    {{ form.name.label }}
-    {{ form.name }}
+    <div class="row mb-3 shadow rounded" style="width: 850px">
+    <form method="POST" action="#">
+        {{ form.hidden_tag() }}
+        <fieldset>
+            {{ form.name }}
+            {{ form.submit }}
+        </fieldset>
+    </form>
+
 {%  endblock %}

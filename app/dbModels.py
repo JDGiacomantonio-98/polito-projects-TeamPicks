@@ -1,24 +1,26 @@
 # DATABASE OBJECT CLASS SPECIFICATION MODULE : SQLAlchemy builds Object-Oriented Databases
-from flask import session, current_app, url_for
-from flask_login import UserMixin
-from itsdangerous import TimedJSONWebSignatureSerializer as timedTokenizer
 from math import ceil
 from random import randint, random
 from datetime import datetime
+
+from flask import session, current_app, url_for
+from flask_login import UserMixin
+from itsdangerous import TimedJSONWebSignatureSerializer as timedTokenizer
 from faker import Faker
-from sqlalchemy.exc import IntegrityError
+from sqlalchemy.exc import IntegrityError, OperationalError
+
 from app import db, login_handler
 
 # DATABASE GLOBAL FUNCTIONS #
 
 
-def dummy(single, model=None, items=100, feedback=True):
+def dummy(return_obj=True, model=None, items=1, w_test=False, feedback=True):
     from app.users.methods import hash_psw
 
-    if type(single) != bool:
+    if type(return_obj) != bool:
         print('ERROR : single parameter only accepts bool')
         return None
-    if not model:
+    if model is None:
         print('Dummy objects to create : {}\n'.format(items))
         model = str(input('Which type of object do you want to create?\n'
                           '[U]ser\n'
@@ -31,23 +33,22 @@ def dummy(single, model=None, items=100, feedback=True):
     if model == 'q' or model == '':
         print('dummy() has been quited.')
         return None
-    if single:
-        items = 1
-    else:
-        if feedback:
-            print('Please wait while processing dummy units ... (this might take a while)\n')
-            progress = {
-                0.10: 'completed : |*.............|',
-                0.20: 'completed : |***...........| (20%)',
-                0.30: 'completed : |****..........| (30%)',
-                0.50: 'completed : |*******.......| (50%)',
-                0.60: 'completed : |********......| (60%)',
-                0.75: 'completed : |*********.....| (75%)',
-                0.90: 'completed : |************..| (90%)'
-            }
-            errors = 0
-            start = datetime.now()
-            print('completed : |..............|')
+    if w_test:
+        feedback = False
+    if feedback:
+        print('Please wait while processing dummy units ... (this might take a while)\n')
+        progress = {
+            0.10: 'completed : |*.............|',
+            0.20: 'completed : |***...........| (20%)',
+            0.30: 'completed : |****..........| (30%)',
+            0.50: 'completed : |*******.......| (50%)',
+            0.60: 'completed : |********......| (60%)',
+            0.75: 'completed : |*********.....| (75%)',
+            0.90: 'completed : |************..| (90%)'
+        }
+        errors = 0
+        start = datetime.now()
+        print('completed : |..............|')
     rand = Faker()
     i = 0
     while i < items:
@@ -92,8 +93,8 @@ def dummy(single, model=None, items=100, feedback=True):
             else:
                 itm.sex = 'other'
             itm.img = itm.set_defaultImg()
-            if rand.boolean(chance_of_getting_true=70):
-                pub = dummy(single=True, model='p')
+            if rand.boolean(chance_of_getting_true=100):
+                pub = dummy(model='p', w_test=w_test)
                 itm.associate_pub(pub)
             model = 'owners'
         elif model == 'p' or model == 'pubs':
@@ -114,17 +115,29 @@ def dummy(single, model=None, items=100, feedback=True):
             print('We are sorry but this function is still under development!')
             itm = Match()
             model = 'matches'
-        if not single:
+        if not return_obj:
             db.session.add(itm)
             try:
                 db.session.commit()
+                if w_test:
+                    db.session.delete(itm)
+                    db.session.commit()
                 i += 1
             except IntegrityError:
                 db.session.rollback()
-                errors += 1
+                if feedback:
+                    errors += 1
+            except OperationalError as e:
+                print('(!) INFO : Have you run upgrade() from last migration file?')
+                if w_test:
+                    raise RuntimeError
+                else:
+                    return e
+            except BaseException:
+                raise RuntimeError
             if feedback:
                 try:
-                    print(progress[round((i / items), 3)])
+                    print(progress[round((i / items), 2)])
                 except KeyError:
                     pass
         else:
@@ -196,6 +209,9 @@ class USER:
     lastSession = db.Column(db.DateTime,
                             nullable=False,
                             default=datetime.utcnow())
+    member_since = db.Column(db.DateTime,
+                            nullable=False,
+                            default=datetime.utcnow())
     firstName = db.Column(db.String(60),
                           nullable=False)
     lastName = db.Column(db.String(60),
@@ -209,17 +225,18 @@ class USER:
                         unique=False,
                         nullable=False)
 
-    def fingerprint(self):
-        print('INFO :')
+    def __str__(self):
+        fingerprint = 'INFO :\n'
         for attr, value in self.__dict__.items():
-            if not (attr.startswith('_') or attr.isupper()):  # print only public attributes of User class instance
-                print("| {} -->\t{}".format(attr, value))
+            if not (attr.startswith('_') or attr.isupper()):  # retrieve only public attributes of User class instance
+                fingerprint += f"| {attr} -->\t{value}\n"
+        return fingerprint
 
     def set_defaultImg(self):
         if self.sex != 'other':
             return str('def-{}-{}.jpg'.format(self.sex, str(ceil(randint(1, 10) * random()))))
         else:
-            # create Gravatar
+            # create Gravatar instead
             return str('favicon.png')
 
     def get_imgFile(self):
@@ -250,6 +267,9 @@ class User(db.Model, UserMixin, USER):
                                 lazy='dynamic',
                                 cascade='all, delete-orphan')
 
+    def __repr__(self):
+        return f'User {self.id} <{self.username}>'
+
     def send_bookingReq(self, pub, guests):
         if pub.is_available_for(guests):
             tempRes = pub.cache_bookingReq(booked_by=self, guests=guests)
@@ -259,7 +279,8 @@ class User(db.Model, UserMixin, USER):
         pass
 
     def accept_joinReq(self):
-        pass
+        if self.has_permission_to(action='MANAGE_SUBS'):
+            pass
 
 
 class Owner(db.Model, UserMixin, USER):
@@ -272,7 +293,11 @@ class Owner(db.Model, UserMixin, USER):
                                    nullable=False)
     pub = db.relationship('Pub',
                           uselist=False,  # force a one-to-one relationship between owner and his pub
-                          backref='owner')
+                          backref='owner',
+                          cascade='all, delete-orphan')
+
+    def __repr__(self):
+        return f'Owner {self.id} <{self.username}>'
 
     def associate_pub(self, pub):  # pub object comes from form submission
         self.pub = pub

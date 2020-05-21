@@ -1,7 +1,8 @@
 from flask import render_template, url_for, flash, redirect, request, session, abort
 from flask_login import login_user, logout_user, login_required, current_user
+
 from app.users.methods import save_profilePic, hash_psw, verify_psw, verify_token, confirm_account
-from app.users.forms import RegistrationForm_user, RegistrationForm_pub, LoginForm, ProfileDashboardForm, ResetPswForm, CreateGroupForm, ResetRequestForm
+from app.users.forms import RegistrationForm_base, RegistrationForm_pub, LoginForm, ProfileDashboardForm, ResetPswForm, CreateGroupForm, ResetRequestForm, SearchItemsForm
 from app.users import users
 from app.main.methods import send_confirmation_email, send_pswReset_email
 from app import db
@@ -15,7 +16,7 @@ def registration(userType, accType):
     if current_user.is_authenticated and current_user.confirmed:
         return render_template('home.html')
     if userType == 'user':
-        form = RegistrationForm_user()
+        form = RegistrationForm_base()
     else:
         form = RegistrationForm_pub()
         form.subsType.data = accType   # used to auto-fill account type
@@ -30,21 +31,18 @@ def registration(userType, accType):
                     lastName=form.lastName.data,
                     city=form.city.data,
                     sex=form.sex.data,
-                    email=form.emailAddr.data,
+                    email=form.email.data,
                     pswHash=hash_psw(form.confirmPsw.data)
                 )
                 newItem.img = newItem.set_defaultImg()
             else:
                 newItem = Owner(
-                    username=form.username.data,
-                    city=form.city.data,
-                    businessAddress=form.businessAddress.data,
-                    ownerFirstName=form.ownerFirstName.data,
-                    ownerLastName=form.ownerLastName.data,
-                    seatsMax=form.seatsMax.data,
                     subsType=form.subsType.data,
-                    businessDescription=form.businessDescription.data,
-                    email=form.emailAddr.data,
+                    city=form.city.data,
+                    username=form.username.data,
+                    firstName=form.ownerFirstName.data,
+                    lastName=form.ownerLastName.data,
+                    email=form.email.data,
                     pswHash=hash_psw(form.confirmPsw.data)
                 )
                 if newItem.subsType == 'free-acc':
@@ -69,11 +67,12 @@ def activate(token):
     # if user comes from email confirmation link there is no current user to check
     if (not current_user.is_anonymous) and current_user.confirmed:
         flash('You account has already been activated.', 'secondary')
-        return redirect(url_for('main.index'))
+        return redirect(url_for('users.home', username=current_user.username))
     user = confirm_account(token)
     if user:
         flash('Account confirmed successfully. Great, you are good to go now!', 'success')
         login_user(user, remember=False)
+        return redirect(url_for('users.home', username=user.username))
     else:
         flash('The confirmation link is invalid or has expired.', 'danger')
     return redirect(url_for('main.index'))
@@ -128,9 +127,19 @@ def logout():
     return redirect(url_for('main.index'))
 
 
-@users.route('/create-your-group')
+@users.route('/<username>/homepage', methods=['GET', 'POST'])
+def home(username):
+    form = SearchItemsForm()
+    if request.method == 'POST':
+        if form.validate_on_submit():
+            return render_template('search_results.html')
+        return redirect(url_for('users.home', usermame=current_user.username))
+    return render_template('home.html', form=form)
+
+
+@users.route('/<username>/create-your-group', methods=['GET', 'POST'])
 @login_required
-def create_group():
+def create_group(username):
     form = CreateGroupForm()
     if request.method == 'GET':
         return render_template('create_group.html', form=form, title='create your group')
@@ -138,12 +147,12 @@ def create_group():
         if current_user.has_permission_to('CREATE-GROUP'):
             itm = Group(name=form.name.data)
     else:
-        return redirect(url_for('users.createGroup'))
+        return redirect(url_for('users.create_group', username=current_user.username))
 
 
-@users.route('/profile/<userInfo>/dashboard', methods=['GET', 'POST'])
+@users.route('/<username>/profile-dashboard', methods=['GET', 'POST'])
 @login_required
-def open_profile(userInfo):
+def open_profile(username):
     form = ProfileDashboardForm()
     if request.method == 'GET':
         if not current_user.confirmed:
@@ -156,6 +165,7 @@ def open_profile(userInfo):
         else:
             return render_template('pricing.html')
     else:
+        # update profile info if dashboard inputs are valid
         if form.validate_on_submit():
             if form.submit.data:
                 current_user.firstName = form.firstName.data
@@ -181,7 +191,7 @@ def open_profile(userInfo):
 @login_required
 def delete_account(ID):
     # deletion should be authorized only by code and not by manual writing the URL
-    if int(ID) == current_user.id and session['del']: #error here
+    if int(ID) == current_user.id and session['del']:  # error here
         db.session.delete(current_user)
         db.session.commit()
         flash('Your account has been successfully removed. We are sad about that :C', 'secondary')
