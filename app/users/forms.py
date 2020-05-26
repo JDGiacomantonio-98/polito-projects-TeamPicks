@@ -34,21 +34,22 @@ class RegistrationForm_base(FlaskForm):
         if User.query.filter_by(username=username.data).first() or Owner.query.filter_by(username=username.data).first():
             raise ValidationError('This username has been already taken. Choose a different one.')
 
-    def validate_emailAddr(self, emailAddr):
+    def validate_email(self, emailAddr):
         if User.query.filter_by(email=emailAddr.data).first() or Owner.query.filter_by(email=emailAddr.data).first():
             raise ValidationError('This email address has been already taken. Choose a different one.')
 
 
-class RegistrationForm_pub(RegistrationForm_base):
+class RegistrationForm_owner(RegistrationForm_base):
     subsType = SelectField('Type of subscription :', validators=[DataRequired()], choices=[('free', 'Free'), ('basic', 'Basic'), ('premium', 'Premium')])
 
 
-class RegisterPubForm(FlaskForm):
+class RegistrationForm_pub(FlaskForm):
     businessAddress = StringField('Address :', validators=[DataRequired()], render_kw={'placeholder': 'address of your business'})
     businessDescription = TextAreaField('You live in :', validators=[DataRequired()], render_kw={'placeholder': 'A brief description of who you are and what you do best'})
     seatsMax = IntegerField('Total seats you have :', validators=[DataRequired()], render_kw={'placeholder': '---'})
 
     submit = SubmitField('Complete registration!')
+
 
 class ProfileDashboardForm(FlaskForm):
     img = FileField('Change profile pic', validators=[FileAllowed(['jpg', 'png'])])
@@ -86,10 +87,10 @@ class LoginForm(FlaskForm):
 
 
 class ResetRequestForm(FlaskForm):
-    emailAddr = StringField('Email address:\t', validators=[DataRequired(), Email()], render_kw={'placeholder': 'Email address'})
+    email = StringField('Email address:\t', validators=[DataRequired(), Email()], render_kw={'placeholder': 'Email address'})
     submit = SubmitField('Send request')
 
-    def validate_emailAddr(self, emailAddr):
+    def validate_email(self, emailAddr):
         if not(User.query.filter_by(email=emailAddr.data).first() or Owner.query.filter_by(email=emailAddr.data).first()):
             raise ValidationError('No existing accounts are linked with this email address.')
 

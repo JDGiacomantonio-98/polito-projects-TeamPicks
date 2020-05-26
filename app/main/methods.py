@@ -6,6 +6,18 @@ from flask_mail import Message
 from app import mail
 
 
+def check_subs_payment(owner):
+    # draft of a very complex func
+    # check things related with subs payment
+    all_ok = True
+
+    if all_ok:
+        return True
+    else:
+        # notify owner his payment is overdue and block his account
+        pass
+
+
 def send_on_thread(app, msg):
     with app.app_context():
         mail.send(msg)
@@ -19,7 +31,7 @@ def send_email(recipient, templatePath=None, mailTitle=None, token=None, backgro
         msg.body = render_template(templatePath + '.txt', token=token, user=recipient)
     else:
         msg.body = render_template(templatePath + '.txt', user=recipient)
-    # _external parameter allow to generate an absolute URL whose works outside app environment
+    # _external parameter generate an absolute URL whose works outside app environment
     if background:
         Thread(target=send_on_thread, args=(current_app._get_current_object(), msg)).start()
     else:
@@ -31,7 +43,7 @@ def send_confirmation_email(recipient, flash_msg=False, background=True):
                   sender='teampicks.help@gmail.com',
                   recipients=[recipient.email])
     msg.body = render_template('email-copy/confirm-registration.txt', token=recipient.create_token(), user=recipient)
-    # _external parameter allow to generate an absolute URL whose works outside app environment
+    # _external parameter generate an absolute URL whose works outside app environment
     if background:
         Thread(target=send_on_thread, args=(current_app._get_current_object(), msg)).start()
     else:

@@ -2,7 +2,7 @@ from flask import render_template, url_for, flash, redirect, request, session, a
 from flask_login import login_user, logout_user, login_required, current_user
 
 from app.users.methods import save_profilePic, hash_psw, verify_psw, verify_token, confirm_account
-from app.users.forms import RegistrationForm_base, RegistrationForm_pub, LoginForm, ProfileDashboardForm, ResetPswForm, CreateGroupForm, ResetRequestForm, SearchItemsForm
+from app.users.forms import RegistrationForm_base, RegistrationForm_owner, LoginForm, ProfileDashboardForm, ResetPswForm, CreateGroupForm, ResetRequestForm, SearchItemsForm
 from app.users import users
 from app.main.methods import send_confirmation_email, send_pswReset_email
 from app import db
@@ -18,7 +18,7 @@ def registration(userType, accType):
     if userType == 'user':
         form = RegistrationForm_base()
     else:
-        form = RegistrationForm_pub()
+        form = RegistrationForm_owner()
         form.subsType.data = accType   # used to auto-fill account type
     if request.method == 'GET':
         return render_template('sign_up.html', title='Registration page', form=form, userType=userType)
@@ -34,21 +34,17 @@ def registration(userType, accType):
                     email=form.email.data,
                     pswHash=hash_psw(form.confirmPsw.data)
                 )
-                newItem.img = newItem.set_defaultImg()
             else:
                 newItem = Owner(
                     subsType=form.subsType.data,
                     city=form.city.data,
                     username=form.username.data,
-                    firstName=form.ownerFirstName.data,
-                    lastName=form.ownerLastName.data,
+                    firstName=form.firstName.data,
+                    lastName=form.lastName.data,
                     email=form.email.data,
                     pswHash=hash_psw(form.confirmPsw.data)
                 )
-                if newItem.subsType == 'free-acc':
-                    newItem.isBookable = False
-                else:
-                    newItem.isBookable = True
+                newItem.evaluate_subs()
             db.session.add(newItem)
             db.session.commit()
             send_confirmation_email(recipient=newItem)
@@ -163,7 +159,7 @@ def open_profile(username):
             form.username.data = current_user.username
             form.emailAddr.data = current_user.email
         else:
-            return render_template('pricing.html')
+            return render_template('errors/wip.html')
     else:
         # update profile info if dashboard inputs are valid
         if form.validate_on_submit():
@@ -208,9 +204,9 @@ def send_resetRequest():
     if request.method == 'POST':
         if form.validate_on_submit():
             # send user an email
-            query = User.query.filter_by(email=form.emailAddr.data).first()
+            query = User.query.filter_by(email=form.email.data).first()
             if not query:
-                query = Owner.query.filter_by(email=form.emailAddr.data).first()
+                query = Owner.query.filter_by(email=form.email.data).first()
             if query.confirmed:
                 send_pswReset_email(recipient=query)
                 flash('An email has been sent to your inbox containing all instructions to reset your password!', 'warning')

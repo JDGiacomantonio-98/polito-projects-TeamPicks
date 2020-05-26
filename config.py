@@ -6,12 +6,12 @@ from dotenv import load_dotenv
 from devkit import config_menu, set_env
 
 
-
 basedir = path.abspath(path.dirname(__file__))
 load_dotenv(path.join(basedir, '.env'))
 
 
 class Config(object):
+    FLASKY_ADMIN = getenv('FLASKY_ADMIN')
     # needed to protect application from modifying cookies and cross site forgery request attacks
     # generated randomly by secret.token_hex(20)
     SECRET_KEY = getenv('SECRET_KEY')

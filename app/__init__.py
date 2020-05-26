@@ -62,7 +62,7 @@ def db_reset(config_key):
     print("\nSUCCESS : all data have been dropped.")
 
 
-def create_app(config=None):
+def create_app(config=None, db_only=False):
     app = Flask(__name__)
     try:
         app.config.from_object(config)
@@ -71,10 +71,12 @@ def create_app(config=None):
         print('\nThe application factory has been closed.')
         return None
     db.init_app(app)
-    unittest.init_app(app, db)
     with app.app_context():
         print('running tests ...')
+        unittest.init_app(app, db)
         if unittest.test_db_ready():
+            if db_only:
+                return app
             pswBurner.init_app(app)
             login_handler.init_app(app)
             mail.init_app(app)

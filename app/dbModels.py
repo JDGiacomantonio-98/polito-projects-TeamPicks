@@ -1,7 +1,7 @@
 # DATABASE OBJECT CLASS SPECIFICATION MODULE : SQLAlchemy builds Object-Oriented Databases
 from math import ceil
 from random import randint, random
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from flask import session, current_app, url_for
 from flask_login import UserMixin
@@ -33,7 +33,7 @@ def dummy(return_obj=True, model=None, items=1, w_test=False, feedback=True):
     if model == 'q' or model == '':
         print('dummy() has been quited.')
         return None
-    if w_test:
+    if w_test or return_obj:
         feedback = False
     if feedback:
         print('Please wait while processing dummy units ... (this might take a while)\n')
@@ -70,7 +70,7 @@ def dummy(return_obj=True, model=None, items=1, w_test=False, feedback=True):
                 itm.sex = 'f'
             else:
                 itm.sex = 'other'
-            itm.img = itm.set_defaultImg()
+            itm.set_defaultImg()
             model = 'users'
         elif model == 'o' or model == 'owners':
             itm = Owner(username=rand.user_name(),
@@ -83,7 +83,7 @@ def dummy(return_obj=True, model=None, items=1, w_test=False, feedback=True):
                         about_me=rand.text(max_nb_chars=250),
                         city=rand.city(),
                         pswHash=hash_psw('password'),
-                        subsType="{0:b}".format(randint(0, 2)),
+                        subsType=f"{randint(0, 3):02b}",
                         subsExpirationDate=rand.future_date('+90d')
                         )
             if itm.sex:
@@ -92,7 +92,7 @@ def dummy(return_obj=True, model=None, items=1, w_test=False, feedback=True):
                 itm.sex = 'f'
             else:
                 itm.sex = 'other'
-            itm.img = itm.set_defaultImg()
+            itm.set_defaultImg()
             if rand.boolean(chance_of_getting_true=70):
                 pub = dummy(model='p', w_test=w_test)
                 itm.associate_pub(pub)
@@ -158,11 +158,11 @@ def load_user(user_id):
 
 # DATABASE OBJECTS STRUCTURE #
 """
+
 (!) NOTE: there is no need to explicitly define a __init__ method on model classes.
-That’s because SQLAlchemy adds an 
-implicit constructor to all model classes which accepts keyword arguments for all its columns and relationships. If you 
-decide to override the constructor for any reason, make sure to keep accepting **kwargs and call the super constructor 
-with those **kwargs to preserve this behavior
+That’s because SQLAlchemy adds an implicit constructor to all model classes which accepts keyword arguments for all its 
+columns and relationships. If you decide to override the constructor for any reason, make sure to keep accepting **kwargs 
+and call the super constructor with those **kwargs to preserve this behavior
 """
 
 
@@ -186,9 +186,9 @@ class Subscription(db.Model):
 
     id = db.Column(db.Integer,
                    primary_key=True)
-    member_id = db.Column(db.Integer, db.ForeignKey('users.id'), index=True, unique=True, nullable=False)      # user.id foreignKey
+    member_id = db.Column(db.Integer, db.ForeignKey('users.id'), index=True, nullable=False)      # user.id foreignKey
     group_id = db.Column(db.Integer, db.ForeignKey('groups.id'), index=True, nullable=False)        # group.id backref
-    role = db.Column(db.Integer, db.ForeignKey('group_roles.id'), nullable=False)   # user allowed actions in the group
+    role_id = db.Column(db.Integer, db.ForeignKey('group_roles.id'), nullable=False)   # user allowed actions in the group
     member_since = db.Column(db.DateTime, default=datetime.utcnow())  # subscription timestamp
 
 
@@ -233,11 +233,12 @@ class USER:
         return fingerprint
 
     def set_defaultImg(self):
-        if self.sex != 'other':
-            return str('def-{}-{}.jpg'.format(self.sex, str(ceil(randint(1, 10) * random()))))
-        else:
-            # create Gravatar instead
-            return str('favicon.png')
+        if self.img is None:
+            if self.sex != 'other':
+                self.img = f'def-{self.sex}-{str(ceil(randint(1, 10) * random()))}.jpg'
+            else:
+                # create Gravatar instead
+                self.img = 'favicon.png'
 
     def get_imgFile(self):
         if ('def-' in self.img) or (self.img == 'favicon.png'):
@@ -267,15 +268,26 @@ class User(db.Model, UserMixin, USER):
                                 lazy='dynamic',
                                 cascade='all, delete-orphan')
 
+    def __init__(self, **kwargs):
+        super(User, self).__init__(**kwargs)
+        self.set_defaultImg()
+
     def __repr__(self):
         return f'User {self.id} <{self.username}>'
+
+    def join_as_admin(self, group):
+        role = G_Role.query.filter_by(role='admin').first()
+        print(role.id)
+        itm = Subscription(group=group, member=self, role=role)
+        db.session.add(itm)
+        db.session.commit()
 
     def send_bookingReq(self, pub, guests):
         if pub.is_available_for(guests):
             tempRes = pub.cache_bookingReq(booked_by=self, guests=guests)
             print('\nQR code : {}\nconfirmation status : {}'.format(tempRes.QR_code, tempRes.confirmed)) #debug
 
-    def send_joinReq(self, group):
+    def send_joinReq(self, group): # group comes from query in view func
         pass
 
     def accept_joinReq(self):
@@ -289,18 +301,41 @@ class Owner(db.Model, UserMixin, USER):
     subsType = db.Column(db.String,
                          nullable=False,
                          default='free-acc')  # stores hex codes whose refers to different acc-subscriptions
-    subsExpirationDate = db.Column(db.DateTime,
-                                   nullable=False)
+    subsExpirationDate = db.Column(db.DateTime, default=None)
     pub = db.relationship('Pub',
                           uselist=False,  # force a one-to-one relationship between owner and his pub
                           backref='owner',
                           cascade='all, delete-orphan')
+
+    def __init__(self, **kwargs):
+        super(Owner, self).__init__(**kwargs)
+        self.set_defaultImg()
+        if self.member_since is None:
+            self.member_since = datetime.utcnow()
 
     def __repr__(self):
         return f'Owner {self.id} <{self.username}>'
 
     def associate_pub(self, pub):  # pub object comes from form submission
         self.pub = pub
+
+    def evaluate_subs(self):
+        self.evaluate_expirationDate()
+        try:
+            if self.subsType != 'free-acc':
+                self.pub.bookable = True
+        except AttributeError:
+            pass
+
+    def evaluate_expirationDate(self):
+        if self.subsExpirationDate is None:
+            self.subsExpirationDate = self.member_since + timedelta(weeks=4)
+        elif self.subsExpirationDate <= datetime.utcnow():
+
+            from app.main.methods import check_subs_payment
+
+            if check_subs_payment(self):
+                self.subsExpirationDate += timedelta(weeks=4)
 
 
 class Pub(db.Model):
@@ -342,6 +377,13 @@ class Pub(db.Model):
     def get_availability(self):
         return self.seatsMax - self.seatsBooked
 
+    def notify(self, eventType, item=None):
+        # here we should notify Owner of the incoming request in order to let him accept it or not
+        # item represent notification body object
+        print('Owner id : {}'.format(self.owner_id))
+        if eventType == 'new-booking':
+            pass
+
     def is_available_for(self, guests):
         if self.bookable:
             if self.get_availability() >= guests:
@@ -352,13 +394,6 @@ class Pub(db.Model):
         else:
             print("This pub doesn't accepts reservation yet!")
             return False
-
-    def notify(self, eventType, item=None):
-        # here we should notify Owner of the incoming request in order to let him accept it or not
-        # item represent notification body object
-        print('Owner id : {}'.format(self.owner_id))
-        if eventType == 'new-booking':
-            pass
 
     def cache_bookingReq(self, booked_by, guests):
         tempRes = Reservation(made_by=booked_by,
@@ -388,27 +423,59 @@ class Group(db.Model):
                              backref=db.backref('group', lazy='joined'),
                              lazy='dynamic',
                              cascade='all, delete-orphan')  # relationship thought group-subs association table
-    #watchlist = db.Column(db.Boolean)  # stores list of matches the group want to see this week
+    # watchlist = db.Column(db.Boolean)  # stores list of matches the group want to see this week
+
+
+class G_PERMISSIONS:
+    def __init__(self):
+        self.POST = 1
+        self.MODIFY = 2          # modify group topic and image
+        self.MODERATE = 4    # moderate member contents
+        self.SET_FLAGS = 8      # flag the group as 'accepting pub offers'
+        self.MANAGE_SUBS = 16     # add/remove members
+
+    def admin(self):
+        ADMIN = 0
+        for a, v in self.__dict__.items():
+            if a.isupper():
+                ADMIN += v
+        return ADMIN
+
+    def member(self):
+        return self.POST
+
+    def moderator(self):
+        return self.member() + self.MODERATE + self.MODIFY
+
+    def manager(self):
+        return self.member() + self.SET_FLAGS + self.MANAGE_SUBS
 
 
 class G_Role(db.Model):
     __tablename__ = 'group_roles'
 
     id = db.Column(db.Integer, primary_key=True)
-    type = db.Column(db.String, unique=True)
-    default = db.Column(db.Boolean, default=False, index=True)
+    role = db.Column(db.String, unique=True)
+    is_default = db.Column(db.Boolean, default=False, index=True)
     permissions = db.Column(db.Integer, default=0)
     users = db.relationship('Subscription',
-                            foreign_keys=[Subscription.role],
-                            uselist=False,
-                            backref=db.backref('type', lazy='joined')
+                            foreign_keys=[Subscription.role_id],
+                            backref=db.backref('role', lazy='joined')
                             )
 
+    def __init__(self, **kwargs):
+        super(G_Role, self).__init__(**kwargs)
+        if self.permissions is None:
+            self.reset_permission()
 
-class G_PERMISSIONS:
-    MANAGE_SUBS = 1     # add/remove members
-    MODIFY = 2          # modify group topic and image
-    SET_FLAGS = 4      # flag the group as 'accepting pub offers'
+    def add_permission(self, permission):
+        self.permissions += permission
+
+    def remove_permission(self, permission):
+        self.permissions -= permission
+
+    def reset_permission(self):
+        self.permissions = 0
 
 
 class Match(db.Model):
