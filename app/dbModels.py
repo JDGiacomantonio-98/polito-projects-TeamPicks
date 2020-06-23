@@ -21,7 +21,7 @@ def dummy(return_obj=True, model=None, items=1, w_test=False, feedback=True):
         print('ERROR : single parameter only accepts bool')
         return None
     if model is None:
-        print('Dummy objects to create : {}\n'.format(items))
+        print(f'Dummy objects to create : {items}\n')
         model = str(input('Which type of object do you want to create?\n'
                           '[U]ser\n'
                           '[O]wner\n'
@@ -86,13 +86,6 @@ def dummy(return_obj=True, model=None, items=1, w_test=False, feedback=True):
                         subsType=f"{randint(0, 3):02b}",
                         subsExpirationDate=rand.future_date('+90d')
                         )
-            if itm.sex:
-                itm.sex = 'm'
-            elif itm.sex is not None:
-                itm.sex = 'f'
-            else:
-                itm.sex = 'other'
-            itm.set_defaultImg()
             if rand.boolean(chance_of_getting_true=70):
                 pub = dummy(model='p', w_test=w_test)
                 itm.associate_pub(pub)
@@ -143,9 +136,9 @@ def dummy(return_obj=True, model=None, items=1, w_test=False, feedback=True):
         else:
             return itm
     if feedback:
-        print('Completed!\n{} new dummy-{} instances has been successfully created and add to db. ({} errors occurred)'.format(items, model, errors))
-        print('Connection happened on : {}'.format(current_app.config['SQLALCHEMY_DATABASE_URI']))
-        print('Process duration : {}'.format(datetime.now() - start))
+        print(f'Completed!\n{items} new dummy-{model} instances has been successfully created and add to db. ({errors} errors occurred)')
+        print(f'Connection happened on : {current_app.config["SQLALCHEMY_DATABASE_URI"]}')
+        print(f'Process duration : {datetime.now() - start}')
 
 
 @login_handler.user_loader
@@ -170,7 +163,7 @@ class Reservation(db.Model):
     """association table to solve users-to-pubs many-to-many relationship"""
     __tablename__ = 'reservations'
 
-    QR_code = db.Column(db.Integer,  # need to figure out how QR code can be stored
+    code = db.Column(db.Integer,  # need to figure out how QR code can be stored
                         primary_key=True,
                         index=True)
     date = db.Column(db.DateTime, default=datetime.now(), index=True)       # reservation timestamp
@@ -233,12 +226,11 @@ class USER:
         return fingerprint
 
     def set_defaultImg(self):
-        if self.img is None:
-            if self.sex != 'other':
-                self.img = f'def-{self.sex}-{str(ceil(randint(1, 10) * random()))}.jpg'
-            else:
-                # create Gravatar instead
-                self.img = 'favicon.png'
+        if self.sex != 'other':
+            self.img = f'def-{self.sex}-{str(ceil(randint(1, 10) * random()))}.jpg'
+        else:
+            # create Gravatar instead
+            self.img = 'favicon.png'
 
     def get_imgFile(self):
         if ('def-' in self.img) or (self.img == 'favicon.png'):
@@ -283,9 +275,10 @@ class User(db.Model, UserMixin, USER):
         db.session.commit()
 
     def send_bookingReq(self, pub, guests):
+        # information comes from form
         if pub.is_available_for(guests):
             tempRes = pub.cache_bookingReq(booked_by=self, guests=guests)
-            print('\nQR code : {}\nconfirmation status : {}'.format(tempRes.QR_code, tempRes.confirmed)) #debug
+            print(f'\nQR code : {tempRes.code}\nconfirmation status : {tempRes.confirmed}') #debug
 
     def send_joinReq(self, group): # group comes from query in view func
         pass
@@ -337,6 +330,13 @@ class Owner(db.Model, UserMixin, USER):
             if check_subs_payment(self):
                 self.subsExpirationDate += timedelta(weeks=4)
 
+    def confirm_pub_reservation(self, res_id):
+        # res = self.pub.reservations.query.filter_by(code=res_id).first()
+        res = self.pub.reservations.query.all()
+        print(res)
+        res.confirmed = True
+        print(res)
+
 
 class Pub(db.Model):
     __tablename__ = 'pubs'
@@ -380,7 +380,7 @@ class Pub(db.Model):
     def notify(self, eventType, item=None):
         # here we should notify Owner of the incoming request in order to let him accept it or not
         # item represent notification body object
-        print('Owner id : {}'.format(self.owner_id))
+        print(f'Owner id : {self.owner_id}')
         if eventType == 'new-booking':
             pass
 
@@ -390,9 +390,9 @@ class Pub(db.Model):
                 return True
             else:
                 print('Impossible to schedule a reservation for that date.')
-                print('Free tables : {}'.format(self.get_availability()))
+                print(f'Free tables : {self.get_availability()}')
         else:
-            print("This pub doesn't accepts reservation yet!")
+            print("This pub can not accepts reservation yet!")
             return False
 
     def cache_bookingReq(self, booked_by, guests):

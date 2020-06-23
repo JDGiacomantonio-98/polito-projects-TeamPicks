@@ -5,108 +5,191 @@
         {% if request.method=='GET' %}
             {% if not current_user.is_authenticated %}
                 <p>the local date is now set to {{ moment(time).format('LLL') }} and since you charged this page has been passed : {{ moment(time).fromNow(refresh=True) }}</p>
-                <div class="jumbotron mt-3">
-                    <div class="row">
-                        <div class="col-9">
-                            <h1 class="display-4 text-center text-md-left">Hei, welcome on TeamPicks!</h1>
-                            <p class="lead">Your best aggregator for matches and pubs.</p>
+                <div class="row">
+                    <div class="jumbotron w-100" style="margin-top: 2rem;">
+                        <div class="row">
+                            <div class="col-12 col-lg-10 order-2 order-lg-1">
+                                <div class="display-4 text-left mb-0 d-none d-lg-block">Hi, welcome on TeamPicks!</div>
+                                <div class="h1 mb-0 text-center d-lg-none my-lg-0 mt-3">Hi, welcome on TeamPicks!</div>
+                                <p class="lead mb-0 text-center text-lg-left my-lg-0 mb-3">Your best aggregator for matches and pubs.</p>
+                            </div>
+                            <div class="col-12 col-lg-2 order-1 order-lg-2 d-flex justify-content-center justify-content-lg-end">
+                                <img src="{{ url_for('static', filename='app-icons/logo-min.png') }}" class="app-logo" alt="TeamPicks">
+                            </div>
                         </div>
-                        <div class="col-2">
-                            <img src="{{ url_for('static', filename='app-icons/logo-min.png') }}" style="width: 120px; height: 120px">
-                        </div>
-    
+                        <hr class="d-none d-md-block">
+                        <ul class="list-inline mb-0 d-md-flex justify-content-md-between">
+                            <li class="nav-item py-1 py-md-0">
+                                <a class="btn btn-outline-info btn-autowidth" href="{{ url_for('users.registration', userType='user', accType='free') }}" role="button">
+                                    <span>
+                                        Join TeamPicks
+                                    </span>
+                                    <i class="fas fa-users"  data-fa-transform="grow-2 right-4" style="color: black"></i>
+                                </a>
+                            </li>
+                            <li class="nav-item py-1 py-md-0 mr-lg-5 pr-lg-3">
+                                <a class="btn btn-outline-info btn-autowidth" href="{{ url_for('main.show_pricing') }}" role="button">
+                                    <span>
+                                        Register your local activity
+                                    </span>
+                                    <span class="fa-1x">
+                                        <i class="fas fa-plus" data-fa-transform="up-13 right-6" style="color: #000; width: 11px; height: 11px"></i>
+                                        <i class="fas fa-location-arrow" style="color: #000;"></i>
+                                    </span>
+                                </a>
+                            </li>
+                            <li class="nav-item py-1 py-md-0">
+                                <a class="btn btn-outline-info btn-autowidth" href="{{ url_for('users.login') }}" role="button">
+                                    <span>
+                                        Log in
+                                    </span>
+                                    <i class="fas fa-fingerprint" style="width: 18px; height: 18px"></i>
+                                </a>
+                            </li>
+                        </ul>
                     </div>
-                    <hr class="my-3">
-                    <ul class="nav nav-pills nav-fill">
-                        <li class="nav-item py-1 py-md-0">
-                            <a class="btn btn-outline-info btn-autowidth" href="{{ url_for('users.registration', userType='user', accType='free') }}" role="button">
-                                <span>
-                                    Join TeamPicks
-                                </span>
-                                <i class="fas fa-users"  data-fa-transform="grow-2 right-4" style="color: black"></i>
-                            </a>
-                        </li>
-                        <li class="nav-item py-1 py-md-0">
-                            <a class="btn btn-outline-info btn-autowidth" href="{{ url_for('main.show_pricing') }}" role="button">
-                                <span>
-                                    Register your local activity
-                                </span>
-                                <span class="fa-1x">
-                                    <i class="fas fa-plus" data-fa-transform="up-13 right-6" style="color: #000; width: 11px; height: 11px"></i>
-                                    <i class="fas fa-location-arrow" style="color: #000;"></i>
-                                </span>
-                            </a>
-                        </li>
-                        <li class="nav-item py-1 py-md-0">
-                            <a class="btn btn-outline-info btn-autowidth" href="{{ url_for('users.login') }}" role="button">
-                                <span>
-                                    Log in
-                                </span>
-                                <i class="fas fa-fingerprint" style="width: 18px; height: 18px"></i>
-                            </a>
-                        </li>
-                    </ul>
                 </div>
-                <div>
-                    <p class="lead">
-                        <b><strong style="font-size:40px">Search for sports fans</strong></b> filtering by sport, team and city.<br>
-                        <b><strong style="font-size:37px">Build new communities</strong></b> by sharing your passions with sports fans like you.<br>
-                        <b><strong style="font-size:36px">Find a place</strong></b> to watch sport
-                        live streams together!
-                    </p>
+                <div class="row align-items-center my-3">
+                    <div class="col-12 col-lg-4 col-md-3 text-md-left text-center">
+                        <div class="font-weight-bolder h3 mb-0 d-lg-block d-none"> Search for sports fans</div>
+                        <div class="font-weight-bolder h4 mb-0 d-lg-none"> Search for sports fans</div>
+                        <div class="small">filtering by sport, team and city.</div>
+                    </div>
+                    <div class="col-12 col-lg-1 col-md-2 text-center">
+                        <i class="fas fa-long-arrow-alt-right fa-fw fa-3x d-none d-md-block"></i>
+                        <i class="fas fa-long-arrow-alt-down fa-fw fa-3x d-md-none"></i>
+                    </div>
+
+                    <div class="col-12 col-lg-2 col-md-2 text-center">
+                        <div class="font-weight-bolder h3 mb-0 d-lg-block d-none">Find a place</div>
+                        <div class="font-weight-bolder h4 mb-0 d-lg-none">Find a place</div>
+                        <div class="small">to watch sport.</div>
+                    </div>
+
+                    <div class="col-12 col-lg-1 col-md-2 text-center">
+                        <i class="fas fa-long-arrow-alt-left fa-fw fa-3x d-none d-md-block"></i>
+                        <i class="fas fa-long-arrow-alt-up fa-fw fa-3x d-md-none"></i>
+                    </div>
+
+                    <div class="col-12 col-lg-4 col-md-3 text-md-right text-center">
+                        <div class="font-weight-bolder h3 mb-0 d-lg-block d-none">Build new communities</div>
+                        <div class="font-weight-bolder h4 mb-0 d-lg-none">Build new communities</div>
+                        <div class="small">by sharing your passionswith sports fans like you.</div>
+                    </div>
                 </div>
-                <div class="container shadow-lg p-3 mb-5 bg-white rounded">
-                    <form method="POST" action="#" >
+                <div class="row shadow-lg p-3 mb-5 bg-white rounded">
+                    <form method="POST" action="#" class="w-100">
                         {{ form.hidden_tag() }} <!--This adds CSRF (Cross-Site Something) token || it protects the app-->
                         <fieldset>
-                            <div class="form-row d-flex justify-content-between align-items-center pt-2">
-                                <span class="fa-1x col-1 d-flex align-items-end justify-content-end">
-                                    <i class="fas fa-database" data-fa-transform="grow-2 right-15" style="color: grey; width: 40px; height: 40px"></i>
-                                    <i class="fas fa-search" data-fa-transform="up-1 shrink-2 right-8" style="color: cadetblue; width: 42px; height: 42px"></i>
-                                </span>
-                                <div class="col-2 lead d-flex justify-content-center">
-                                    {{ form.city.label(class="col-form-label") }}
+                            <div class="row align-items-center">
+                                <div class="col-12 col-xl-4 col-lg-4 col-md-5 d-flex align-items-center justify-content-center justify-content-md-start my-4 my-md-0">
+                                    <span class="fa-1x d-none d-md-block">
+                                        <i class="fas fa-database" data-fa-transform="grow-2 right-15" style="color: grey; width: 40px; height: 40px"></i>
+                                        <i class="fas fa-search" data-fa-transform="up-1 shrink-2 right-8" style="color: cadetblue; width: 42px; height: 42px"></i>
+                                    </span>
+                                    <span class="d-md-none">
+                                        <i class="fas fa-search" style="color: cadetblue; width: 42px; height: 42px"></i>
+                                    </span>
+                                    <span class="h2 mb-0 ml-5 pl-3 font-weight-light d-none d-xl-block">
+                                        {{ form.city.label(class="col-form-label") }}
+                                    </span>
+                                    <span class="h3 mb-0 ml-3 font-weight-light d-xl-none">
+                                        {{ form.city.label(class="col-form-label") }}
+                                    </span>
                                 </div>
-                                <div class="col-7">
-                                    {{ form.city(class="form-control form-control-lg border border-secondary") }}
+                                <div class="col-12 col-xl-6 col-lg-5 col-md-4">
+                                        {{ form.city(class="form-control form-control-lg border border-secondary") }}
                                 </div>
-                                <div class="col-2">
-                                    {{ form.submit(class="btn btn-lg btn-outline-info") }}
+                                <div class="col-12 col-xl-2 col-lg-3 col-md-3 d-flex justify-content-end my-4 my-md-0">
+                                    {{ form.submit(class="btn btn-lg btn-outline-info w-100") }}
                                 </div>
                             </div>
                         </fieldset>
                     </form>
                 </div>
             {% endif %}
-            <div class="col-12">
-                <div class="container">
-                <div class="card-deck">
-                    <div class="card shadow p-3" style="width: 18rem;">
-                        <img src="{{ url_for('static', filename='match-icon/match-banner.jpg') }}" class="card-img-top" alt="...">
-                        <div class="card-body">
-                          <h5 class="card-title">MILAN vs. INTER</h5>
-                          <p class="card-text">Saturday h 20:30</p>
-                          <a href="#" class="btn btn-info">Look for a Pub</a>
-                        </div>
-                    </div>
-                    <div class="card shadow p-3" style="width: 18rem;">
-                        <img src="{{ url_for('static', filename='match-icon/match-banner.jpg') }}" class="card-img-top" alt="...">
-                        <div class="card-body">
-                            <h5 class="card-title">GENOA vs. JUVENTUS</h5>
-                            <p class="card-text">Saturday h 20:30</p>
-                            <a href="#" class="btn btn-info">Look for a Pub</a>
-                        </div>
-                    </div>
-                   <div class="card shadow p-3" style="width: 18rem;">
-                      <img src="{{ url_for('static', filename='match-icon/match-banner.jpg') }}" class="card-img-top" alt="...">
-                      <div class="card-body">
-                          <h5 class="card-title">MANCHESTER vs. LIVERPOOL</h5>
-                          <p class="card-text">Saturday h 20:30</p>
-                          <a href="#" class="btn btn-info">Look for a Pub</a>
-                      </div>
+                <div class="row">
+                    <div id="carouselExampleControls" class="carousel slide" data-ride="carousel">
+                       <div class="carousel-inner">
+                           <div class="carousel-item active">
+                               <div class="row">
+                                   <div class="col-12 col-lg-4 my-2">
+                                       <div class="card shadow p-3">
+                                            <img src="{{ url_for('static', filename='match-icon/match-banner.jpg') }}" class="card-img-top" alt="...">
+                                            <div class="card-body">
+                                                <h5 class="card-title">GENOA vs. JUVENTUS</h5>
+                                                <p class="card-text">Saturday h 20:30</p>
+                                                <a href="#" class="btn btn-info">Look for a Pub</a>
+                                            </div>
+                                       </div>
+                                   </div>
+                                   <div class="col-12 col-lg-4 my-2">
+                                        <div class="card shadow p-3">
+                                            <img src="{{ url_for('static', filename='match-icon/match-banner.jpg') }}" class="card-img-top" alt="...">
+                                            <div class="card-body">
+                                                <h5 class="card-title">GENOA vs. JUVENTUS</h5>
+                                                <p class="card-text">Saturday h 20:30</p>
+                                                <a href="#" class="btn btn-info">Look for a Pub</a>
+                                            </div>
+                                        </div>
+                                   </div>
+                                   <div class="col-12 col-lg-4 my-2">
+                                        <div class="card shadow p-3">
+                                            <img src="{{ url_for('static', filename='match-icon/match-banner.jpg') }}" class="card-img-top" alt="...">
+                                            <div class="card-body">
+                                                <h5 class="card-title">GENOA vs. JUVENTUS</h5>
+                                                <p class="card-text">Saturday h 20:30</p>
+                                                <a href="#" class="btn btn-info">Look for a Pub</a>
+                                            </div>
+                                        </div>
+                                   </div>
+                               </div>
+                           </div>
+                           <div class="carousel-item">
+                               <div class="row">
+                                   <div class="col-12 col-lg-4 my-2">
+                                       <div class="card shadow p-3">
+                                            <img src="{{ url_for('static', filename='match-icon/match-banner.jpg') }}" class="card-img-top" alt="...">
+                                            <div class="card-body">
+                                                <h5 class="card-title">GENOA vs. JUVENTUS</h5>
+                                                <p class="card-text">Saturday h 20:30</p>
+                                                <a href="#" class="btn btn-info">Look for a Pub</a>
+                                            </div>
+                                       </div>
+                                   </div>
+                                   <div class="col-12 col-lg-4 my-2">
+                                        <div class="card shadow p-3">
+                                            <img src="{{ url_for('static', filename='match-icon/match-banner.jpg') }}" class="card-img-top" alt="...">
+                                            <div class="card-body">
+                                                <h5 class="card-title">GENOA vs. JUVENTUS</h5>
+                                                <p class="card-text">Saturday h 20:30</p>
+                                                <a href="#" class="btn btn-info">Look for a Pub</a>
+                                            </div>
+                                        </div>
+                                   </div>
+                                   <div class="col-12 col-lg-4 my-2">
+                                        <div class="card shadow p-3">
+                                            <img src="{{ url_for('static', filename='match-icon/match-banner.jpg') }}" class="card-img-top" alt="...">
+                                            <div class="card-body">
+                                                <h5 class="card-title">GENOA vs. JUVENTUS</h5>
+                                                <p class="card-text">Saturday h 20:30</p>
+                                                <a href="#" class="btn btn-info">Look for a Pub</a>
+                                            </div>
+                                        </div>
+                                   </div>
+                               </div>
+                           </div>
+                       </div>
+                       <a class="carousel-control-prev" href="#carouselExampleControls" role="button" data-slide="prev">
+                           <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                           <span class="sr-only">Previous</span>
+                       </a>
+                       <a class="carousel-control-next" href="#carouselExampleControls" role="button" data-slide="next">
+                           <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                           <span class="sr-only">Next</span>
+                       </a>
                     </div>
                 </div>
-            </div>
         {% else %}
             <div class="container shadow-lg p-3 mb-5 mt-3 bg-white rounded">
                 <p class="display-4">In {{ city }} already more than {{ pubs }} local activities work with us!</p>
@@ -131,7 +214,6 @@
                          </span>
                     </a>
                 </div>
-            </div>
             </div>
 
         {% endif %}

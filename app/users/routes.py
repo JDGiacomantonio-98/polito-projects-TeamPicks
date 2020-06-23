@@ -49,8 +49,7 @@ def registration(userType, accType):
             db.session.commit()
             send_confirmation_email(recipient=newItem)
             session.clear()
-            flash("Hi {}, your profile has been successfully created but is not yet active.".format(form.username.data),
-                  'success')
+            flash(f"Hi {form.username.data}, your profile has been successfully created but is not yet active.",'success')
             flash('A confirmation email has been sent to you. Open your inbox!', 'warning')
             return redirect(url_for('users.login'))
         elif form.username.data or form.businessName.data:
@@ -98,7 +97,7 @@ def login():
             if query and verify_psw(query.pswHash, form.psw.data):
                 login_user(query, remember=form.rememberMe.data)
                 if current_user.confirmed:
-                    flash("Hi {}, welcome back!".format(query.username), 'success')
+                    flash(f"Hi {query.username}, welcome back!", 'success')
                     nextPage = request.args.get('next')
                     if nextPage:
                         return redirect(nextPage)
@@ -178,9 +177,9 @@ def open_profile(username):
             else:
                 session['del'] = False
             flash('You profile has been updated!', 'success')
-            return redirect(url_for('users.open_profile', userInfo=current_user.username))
+            return redirect(url_for('users.open_profile', username=current_user.username))
         flash('There are some problem with your input: please make correction before resubmitting !', 'danger')
-    return render_template('profile.html', title='{} {}'.format(current_user.firstName, current_user.lastName), imgFile=current_user.get_imgFile(), form=form)
+    return render_template('profile.html', title=f'{current_user.firstName} {current_user.lastName}', imgFile=current_user.get_imgFile(), form=form)
 
 
 @users.route('/<ID>/delete-account')
@@ -232,7 +231,7 @@ def reset_psw(token):
             if form.validate_on_submit():
                 user.pswHash = hash_psw(form.psw.data)
                 db.session.commit()
-                flash("Hi {}, your password has been successfully reset. Welcome back on board!".format(user.username), 'success')
+                flash(f"Hi {user.username}, your password has been successfully reset. Welcome back on board!", 'success')
                 flash('To assure security on your account we need you to login again.', 'secondary')
                 return redirect(url_for('users.login'))
     return render_template('psw_reset.html', title='Resetting your psw', form=form)

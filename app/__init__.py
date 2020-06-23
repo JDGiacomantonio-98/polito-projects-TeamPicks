@@ -66,7 +66,7 @@ def create_app(config=None, db_only=False):
     app = Flask(__name__)
     try:
         app.config.from_object(config)
-        print("RUNNING CONFIG: {}".format(app.config['ENV']))
+        print(f"RUNNING CONFIG: {app.config['ENV']}")
     except:
         print('\nThe application factory has been closed.')
         return None
