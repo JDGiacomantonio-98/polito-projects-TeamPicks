@@ -21,7 +21,7 @@
     </head>
     <body>
         <header class="pb-3">
-            {% if current_user.is_authenticated %}
+            {% if not current_user.is_anonymous %}
                 {% if current_user.confirmed %}
                     {% block navbar %}
                         <nav class="navbar navbar-light pb-1">

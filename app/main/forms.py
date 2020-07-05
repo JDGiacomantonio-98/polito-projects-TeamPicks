@@ -4,7 +4,7 @@ from wtforms.validators import DataRequired
 
 
 class TryAppForm(FlaskForm):
-    city = StringField('My place is in', validators=[DataRequired()])
+	city = StringField('My place is in', validators=[DataRequired()])
 
-    submit = SubmitField('Open the gate')
+	submit = SubmitField('Open the gate')
 

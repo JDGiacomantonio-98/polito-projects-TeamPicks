@@ -121,7 +121,7 @@
                 <button type="button" class="btn btn-secondary" data-dismiss="modal">
                     Cancel
                 </button>
-                  <button type="button" class="btn btn-primary" onclick="window.location.href='{{ url_for('users.delete_account', ID=current_user.id) }}'">
+                  <button type="button" class="btn btn-primary" onclick="window.location.href='{{ url_for('users.delete_account', u_id=current_user.id) }}'">
                       Confirm account deletion
                   </button>
               </div>

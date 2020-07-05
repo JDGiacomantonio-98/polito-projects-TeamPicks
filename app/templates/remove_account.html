@@ -8,18 +8,20 @@
                 <form method="POST" action="#">
                     {{ form.hidden_tag() }} <!--This adds CSRF (Cross-Site Something) token || it protects the app-->
                     <fieldset>
-                        <legend>Reset password</legend>
+                        <legend>Delete account</legend>
                         <div class="row">
                             <div class="col-9 pr-1">
-                                {% if form.email.errors %}
-                                    {{ form.email(class="form-control form-control-sm is-invalid") }}
+                                {% if form.psw.errors %}
+                                    {{ form.psw(class="form-control form-control-sm is-invalid") }}
                                     <div class="invalid-feedback">
-                                        {% for error in form.email.errors %}
-                                            <small><span style="color: red">{{ error }}</span></small>
-                                        {% endfor %}
+                                        <small>
+                                            {% for error in form.psw.errors %}
+                                                <span style="color: red">{{ error }}</span>
+                                            {% endfor %}
+                                        </small>
                                     </div>
                                 {% else %}
-                                    {{ form.email(class="form-control") }}
+                                    {{ form.psw(class="form-control") }}
                                 {%  endif %}
                             </div>
                             <div class="col-3 pl-1">
