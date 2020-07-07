@@ -30,21 +30,20 @@ def find_pub():
 	return render_template('find_pub.html')
 
 
-@main.route('/<callerRoute>/acc-confirmation')
+@main.route('/email-confirmation')
 @login_required
-def send_confirmation(callerRoute):
-	send_confirmation_email(recipient=current_user)
-	if callerRoute == 'profile':
-		return redirect(url_for('users.openProfile', userInfo=current_user.username))
+def send_email_confirmation():
+	send_confirmation_email(recipient=current_user , email_update=True)
+	return redirect(url_for('users.profile', username=current_user.username))
 
 
 @main.route('/search/<query_obj>')
-def display_search_results(query_obj):
+def print_search_results(query_obj):
 	pass
 
 
 @main.route('/contacts')
-def contact():
+def contact_us():
 	return render_template('contact_us.html', title='Let Us Know!', heading='We love to hear from you.')
 
 

@@ -1,26 +1,29 @@
 {% extends 'base_template.html' %}
 
 {% block pagecontent %}
-    <div class="container">
-        <div class="shadow p-3 mb-4 mt-3 bg-white rounded">
+    <div class="container my-4">
+        <div class="shadow p-3 bg-white rounded">
             <!-- POST method even if exposes user data into POST request url, is safe because we implemented CSRF token -->
             <form method="POST" action="#">
                 {{ form.hidden_tag() }} <!--This adds CSRF (Cross-Site Something) token || it protects the app-->
-                <fieldset>
-                    <legend>Registration form</legend>
-                    <div class="form-row">
-                        <div class="col-5 mt-1">
+                    <div class="form-row my-3">
+                        <div class="col-12">
+                            <div class="h3 mb-0">Registration form</div>
+                        </div>
+                    </div>
+                    <div class="form-row my-3">
+                        <div class="col-12 col-lg-5 col-sm-5 my-1">
                             {{ form.firstName(class="form-control form-control-sm") }}
                         </div>
-                        <div class="col-5 mt-1">
+                        <div class="col-12 col-lg-5 col-sm-5 my-1">
                             {{ form.lastName(class="form-control form-control-sm") }}
                         </div>
-                        <div class="col-2 mt-1">
+                        <div class="col-12 col-md-2 col-sm-2 my-1">
                             {{ form.sex(class="form-control form-control-sm") }}
                         </div>
                     </div>
-                    <div class="form-row">
-                        <div class="col-5 mt-3 align-items-baseline">
+                    <div class="form-row my-3">
+                        <div class="col-12 col-lg-5 col-md-6 col-sm-6">
                             {% if form.email.errors %}
                                 {{ form.email(class="form-control form-control-sm is-invalid") }}
                                 <div class="invalid-feedback">
@@ -35,7 +38,7 @@
                             {% endif %}
                             <small class="form-text text-muted pl-1 mt-2">We'll never share your email with anyone else.</small>
                         </div>
-                        <div class="col-5 mt-3 align-items-baseline">
+                        <div class="col-12 col-lg-5 col-md-6 col-sm-6">
                             <div class="input-group input-group-sm mb-2">
                                 <div class="input-group-prepend">
                                     <span class="input-group-text">I am @</span>
@@ -55,19 +58,25 @@
                             </div>
                             <small class="form-text text-muted pl-1">Better pick an epic one!</small>
                         </div>
-                        <div class="col-2 mt-3">
+                        <div class="col-12 col-lg-2 mt-md-0 mt-3">
                             {{ form.city(class="form-control form-control-sm") }}
                         </div>
                     </div>
+                    {% if userType != 'user' %}
                     <div class="form-row">
-                        {% if userType != 'user' %}
-                            <div class="col-5 mt-1">
-                                {{ form.subsType.label }}
-                                {{ form.subsType(class="form-control form-control-sm") }}
-                            </div>
-                        {% endif %}
-                        <div class="col-5">
+                        <div class="col-12">
+                            {{ form.subsType.label }}
+                            {{ form.subsType(class="form-control form-control-sm") }}
+                        </div>
+                    </div>
+                    {% endif %}
+                    <div class="form-row">
+                        <div class="col-12">
                             {{ form.psw.label(class="col-form-label") }}
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="col-12 col-lg-4 my-1">
                             {% if form.psw.errors %}
                                 {{ form.psw(class="form-control form-control-sm is-invalid") }}
                                 <div class="invalid-feedback">
@@ -79,7 +88,7 @@
                                 {{ form.psw(class="form-control form-control-sm") }}
                             {%  endif %}
                         </div>
-                        <div class="col-5 d-flex align-items-end">
+                        <div class="col-12 col-lg-4 my-1">
                             {% if form.confirmPsw.errors %}
                                 {{ form.confirmPsw(class="form-control form-control-sm is-invalid") }}
                                 <div class="invalid-feedback">
@@ -91,27 +100,30 @@
                                 {{ form.confirmPsw(class="form-control form-control-sm  ") }}
                             {%  endif %}
                         </div>
-                        <div class="col-2 d-flex align-items-end">
-                            {{ form.submit(class="btn btn-info btn-sm") }}
+                        <div class="col-12 col-lg-4 my-1">
+                            {{ form.submit(class="btn btn-info btn-sm w-100") }}
                         </div>
                     </div>
-                    <div class="form-check pt-3">
+                    <div class="d-flex align-items-center justify-content-between justify-content-md-start mt-2">
                         <!--
                             <input class="form-check-input" type="checkbox" value="" id="defaultCheck1">
                             <label class="form-check-label" for="defaultCheck1">
                                 <small>I accept all <a href="/static/pdfs/terms-and-conditions-template.pdf" target="_blank">Terms and Condition</a> agreement</small>
                             </label>
                         -->
-                        {{ form.accept_terms }}
-                        <a href="/static/pdfs/terms-and-conditions-template.pdf">
-                            {{ form.accept_terms.label }}
-                        </a>
+                        <div class="small mb-0 mt-2">
+                            <a href="/static/pdfs/terms-and-conditions-template.pdf">
+                                {{ form.accept_terms.label }}
+                            </a>
+                        </div>
+                        <div class="ml-0 ml-md-3">
+                            {{ form.accept_terms }}
+                        </div>
                     </div>
-                </fieldset>
             </form>
         </div>
-        <div class="pl-3">
-            <small>Already have an account? <a href="{{ url_for('users.login') }}">Log in here!</a></small>
+        <div>
+            <small>Already have an account? <a href="{{ url_for('auth.login') }}">Log in here!</a></small>
             {% if userType == 'user' %}
                 <br>
                 <small>Do you own a local activity or pub? <a href="{{ url_for('main.show_pricing') }}">Register it here!</a></small>

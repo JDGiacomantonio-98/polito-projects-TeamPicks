@@ -21,7 +21,7 @@ pswBurner = Bcrypt()
 
 login_handler = LoginManager()
 login_handler.session_protection = 'strong'
-login_handler.login_view = 'users.login'
+login_handler.login_view = 'auth.login'
 login_handler.login_message_category = 'info'
 
 mail = Mail()
@@ -88,14 +88,17 @@ def create_app(config=None, db_only=False):
 				  '* flask build\n')
 		migration.init_app(app, db)
 
-		from app.errors import errors
-		app.register_blueprint(errors)
-
 		from app.main import main
 		app.register_blueprint(main)
 
+		from app.auth import auth
+		app.register_blueprint(auth)
+
 		from app.users import users
 		app.register_blueprint(users)
+
+		from app.errors import errors
+		app.register_blueprint(errors)
 
 		app.cli.add_command(db_build)
 		app.cli.add_command(db_reset)

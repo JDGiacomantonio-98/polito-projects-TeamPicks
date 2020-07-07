@@ -1,8 +1,8 @@
 .idea/*
 __pycache__/
 venv/
-app/static/profile_pics/users/*
-!app/static/profile_pics/users/.keep
+app/static/users/*
+!app/static/users/AVATAR
 .env
 *.db
 *.uml

@@ -1,3 +1,9 @@
+body {
+	height: 100vh;
+}
+
+
+
 @media (min-width: 576px) {
     .jumbotron {
         padding: 2rem 2rem;
@@ -67,10 +73,12 @@
 }
 
 .img-profile {
-	border-color: black;
-	border-radius: 5000px;
-	height: 130px;
-	width: 130px;
+	border-radius: 100%;
+	border: solid 3px #FFF;
+	width: 155px;
+	height: 155px;
+	background-position: center;
+	background-size: cover;
 }
 
 .img-profile-nav {
@@ -79,6 +87,16 @@
 	height: 30px;
 	width: 30px;
 }
+
+
+.img-profile-upload {
+	border: solid 3px #FFF;
+	width: 155px;
+	height: 155px;
+	background-position: center;
+	background-size: cover;
+}
+
 
 img.app-logo {
     width: 120px;

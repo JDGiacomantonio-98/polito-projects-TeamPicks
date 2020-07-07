@@ -25,6 +25,7 @@ class Config(object):
 	MAIL_USERNAME = getenv('MAIL_USERNAME')
 	MAIL_PASSWORD = getenv('MAIL_PASSWORD')
 	MAIL_DEFAULT_SENDER = getenv('MAIL_USERNAME')
+	USERS_UPLOADS_BIN = getenv('USERS_UPLOADS_BIN')
 
 
 class DevConfig(Config):

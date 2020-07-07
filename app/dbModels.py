@@ -2,8 +2,9 @@
 from math import ceil
 from random import randint, random
 from datetime import datetime, timedelta
+from secrets import token_hex
 
-from flask import session, current_app, url_for
+from flask import session, current_app, url_for, flash
 from flask_login import UserMixin
 from itsdangerous import TimedJSONWebSignatureSerializer as timedTokenizer
 from faker import Faker
@@ -16,7 +17,7 @@ from app import db, login_handler
 
 
 def dummy(return_obj=True, model=None, items=1, w_test=False, feedback=True):
-	from app.users.methods import hash_psw
+	from app.auth.methods import hash_psw
 
 	if type(return_obj) != bool:
 		print('ERROR : single parameter only accepts bool')
@@ -56,14 +57,14 @@ def dummy(return_obj=True, model=None, items=1, w_test=False, feedback=True):
 		if model == 'u' or model == 'users':
 			itm = User(username=rand.user_name(),
 					   email=rand.email(),
-					   lastSession=rand.past_date(),
+					   last_active=rand.past_date(),
 					   firstName=rand.first_name(),
 					   lastName=rand.last_name(),
 					   age=randint(16, 90),
 					   sex=rand.null_boolean(),
 					   about_me=rand.text(max_nb_chars=250),
 					   city=rand.city(),
-					   pswHash=hash_psw('password')
+					   hash=hash_psw('password')
 					   )
 			if itm.sex:
 				itm.sex = 'm'
@@ -76,14 +77,14 @@ def dummy(return_obj=True, model=None, items=1, w_test=False, feedback=True):
 		elif model == 'o' or model == 'owners':
 			itm = Owner(username=rand.user_name(),
 						email=rand.email(),
-						lastSession=rand.past_date(),
+						last_active=rand.past_date(),
 						firstName=rand.first_name(),
 						lastName=rand.last_name(),
 						age=randint(18, 90),
 						sex=rand.null_boolean(),
 						about_me=rand.text(max_nb_chars=250),
 						city=rand.city(),
-						pswHash=hash_psw('password'),
+						hash=hash_psw('password'),
 						subsType=f"{randint(0, 3):02b}",
 						subsExpirationDate=rand.future_date('+90d')
 						)
@@ -144,7 +145,7 @@ def dummy(return_obj=True, model=None, items=1, w_test=False, feedback=True):
 
 @login_handler.user_loader
 def load_user(user_id):
-	if session.get('dbModelType') == 'user':
+	if session.get('pull_from') == 'user':
 		return User.query.get(user_id)
 	else:
 		return Owner.query.get(user_id)
@@ -187,10 +188,17 @@ class Subscription(db.Model):
 	member_since = db.Column(db.DateTime, default=datetime.utcnow())  # subscription timestamp
 
 
+class Follow(db.Model):
+	__tablename__ = 'follows'
+	follower_id = db.Column(db.Integer, db.ForeignKey('users.id'), primary_key=True)
+	following_id = db.Column(db.Integer, db.ForeignKey('users.id'), primary_key=True)
+	since_when = db.Column(db.DateTime, default=datetime.utcnow())
+
+
 class USER:
 	id = db.Column(db.Integer,
 				   primary_key=True)
-	username = db.Column(db.String(15),
+	username = db.Column(db.String(10),
 						 unique=True,
 						 nullable=False,
 						 index=True)
@@ -201,24 +209,27 @@ class USER:
 	confirmed = db.Column(db.Boolean,
 						  nullable=False,
 						  default=False)
-	lastSession = db.Column(db.DateTime,
+	last_active = db.Column(db.DateTime,
 							nullable=False,
 							default=datetime.utcnow())
 	member_since = db.Column(db.DateTime,
 							 nullable=False,
 							 default=datetime.utcnow())
+	acc_locked = db.Column(db.Boolean, default=False)
 	firstName = db.Column(db.String(60),
 						  nullable=False)
 	lastName = db.Column(db.String(60),
 						 nullable=False)
 	age = db.Column(db.Integer)
 	sex = db.Column(db.String, default='other')
-	img = db.Column(db.String)  # stores the filename string of the img file
+	profile_img = db.Column(db.String)  # stores the filename string of the img file
 	about_me = db.Column(db.Text(250))
 	city = db.Column(db.String)
-	pswHash = db.Column(db.String(60),  # stores hashed user password
-						unique=False,
-						nullable=False)
+	hash = db.Column(db.String(60),  # stores hashed user password
+					 unique=False,
+					 nullable=False)
+	file_address = db.Column(db.String(20),
+							 unique=True)
 
 	def __str__(self):
 		fingerprint = 'INFO :\n'
@@ -229,22 +240,48 @@ class USER:
 
 	def set_defaultImg(self):
 		if self.sex != 'other':
-			self.img = f'def-{self.sex}-{str(ceil(randint(1, 10) * random()))}.jpg'
+			self.profile_img = f'def-{self.sex}-{str(ceil(randint(1, 10) * random()))}.jpg'
 		else:
 			# create Gravatar instead
-			self.img = 'favicon.png'
+			self.profile_img = 'favicon.png'
 
 	def get_imgFile(self):
-		if ('def-' in self.img) or (self.img == 'favicon.png'):
-			return url_for('static', filename='profile_pics/AVATAR/' + self.img)
-		else:
-			return url_for('static', filename='profile_pics/users/' + self.img)
+		if ('def-' in self.profile_img) or (self.profile_img == 'favicon.png'):
+			return url_for('static', filename=f'users/AVATAR/{self.profile_img}')
+		return url_for('static', filename=f'users/{self.get_file_address()}/{self.profile_img}')
 
 	def create_token(self, expireInSec=(8 * 60)):
 		return timedTokenizer(current_app.config['SECRET_KEY'], expireInSec).dumps({'load': self.id}).decode('utf-8')
 
 	def has_permission_to(self, action):
 		pass
+
+	def is_acc_locked(self):
+		if self.acc_locked:
+			flash('Your account has been temporarly locked because the system detected a brutal attempt to delete it.\nTeampicks has been notified about that.', 'danger')
+		return self.acc_locked
+
+	def set_last_active(self):
+		self.last_active = datetime.utcnow()
+
+	def get_last_active(self):
+		return self.last_active
+
+	def set_file_address(self):
+		if not self.file_address:
+			self.file_address = token_hex(20)
+			fl = False
+			while not fl:
+				try:
+					db.session.commit()
+					fl = True
+				except IntegrityError:
+					db.session.rollback()
+					self.file_address = token_hex(20)
+					fl = False
+
+	def get_file_address(self):
+		return self.file_address
 
 
 class User(db.Model, UserMixin, USER):
@@ -262,10 +299,21 @@ class User(db.Model, UserMixin, USER):
 								   # adds <made_by> parameter to Reservation model : gain complete access user object
 								   lazy='dynamic',
 								   cascade='all, delete-orphan')
+	followed = db.relationship('Follow',
+							   foreign_keys=[Follow.follower_id],
+							   backref=db.backref('follower', lazy='joined'),
+							   lazy='dynamic',
+							   cascade='all, delete-orphan')
+	followers = db.relationship('Follow',
+							   foreign_keys=[Follow.following_id],
+							   backref=db.backref('followed', lazy='joined'),
+							   lazy='dynamic',
+							   cascade='all, delete-orphan')
 
 	def __init__(self, **kwargs):
 		super(User, self).__init__(**kwargs)
 		self.set_defaultImg()
+		self.set_file_address()
 
 	def __repr__(self):
 		return f'User {self.id} <{self.username}>'
@@ -290,6 +338,37 @@ class User(db.Model, UserMixin, USER):
 		if self.has_permission_to(action='MANAGE_SUBS'):
 			pass
 
+	def follow(self, user):
+		if not self.is_following(user):
+			f = Follow(follower=self, followed=user)
+			db.session.add(f)
+			db.session.commit()
+
+	def unfollow(self, user):
+		f = self.is_followed_by(user, return_follow=True)
+		if f[0]:
+			db.session.delete(f[1])
+
+	def is_following(self, user, return_follow=False):
+		if user.id is None:	# to prevent uncommited users to be followed by self
+			if return_follow:
+				return False, None
+			return False
+		f = self.followed.filter_by(followed_id=user.id).first()
+		if return_follow:
+			return f is not None, f # return True if the dynamic query given by followed relathionship returns an item
+		return f is not None
+
+	def is_followed_by(self, user, return_follow=False):
+		if user.id is None:	#to prevent uncommited users to follow self
+			if return_follow:
+				return False, None
+			return False
+		f = self.followers.filter_by(follower_id=user.id).first()
+		if return_follow:
+			return f is not None, f  # return True if the dynamic query given by followers relathionship returns an item
+		return f is not None
+
 
 class Owner(db.Model, UserMixin, USER):
 	__tablename__ = 'owners'
@@ -305,9 +384,10 @@ class Owner(db.Model, UserMixin, USER):
 
 	def __init__(self, **kwargs):
 		super(Owner, self).__init__(**kwargs)
-		self.set_defaultImg()
 		if self.member_since is None:
 			self.member_since = datetime.utcnow()
+		self.set_defaultImg()
+		self.set_file_address()
 
 	def __repr__(self):
 		return f'Owner {self.id} <{self.username}>'
