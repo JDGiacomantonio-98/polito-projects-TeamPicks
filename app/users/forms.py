@@ -1,7 +1,7 @@
 from flask_login import current_user
 from flask_wtf import FlaskForm, RecaptchaField
 from flask_wtf.file import FileField, FileAllowed
-from wtforms import StringField, PasswordField, SubmitField, TextAreaField
+from wtforms import StringField, PasswordField, SubmitField, TextAreaField, MultipleFileField
 from wtforms.validators import DataRequired, Length, Email, ValidationError
 
 from app.dbModels import User, Owner, Group
@@ -49,6 +49,15 @@ class UploadProfileImgForm(FlaskForm):
 	about_me = TextAreaField('About me', validators=[Length(max=250)])
 	upload_img = SubmitField('upload', render_kw={'class': 'btn btn-outline-dark btn-sm'})
 	modify_about_me = SubmitField('modify', render_kw={'class': 'btn btn-outline-dark btn-sm'})
+
+
+class UploadProfileCarouselForm(FlaskForm):
+	images = MultipleFileField('Your best moments', validators=[FileAllowed(['jpeg', 'jpg', 'png'])])
+	upload_carousel = SubmitField('upload new')
+
+	def validate_images(self, images):
+		if len(self.images.data) > 8:
+			raise ValidationError('You can upload up-to 8 images')
 
 
 class DeleteAccountForm(FlaskForm):

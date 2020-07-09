@@ -3,9 +3,9 @@ from datetime import datetime
 from flask import render_template, url_for, flash, redirect, request, abort, make_response
 from flask_login import logout_user, login_required, current_user
 
-from app.users.methods import upload_profilePic
+from app.users.methods import upload_profilePic, upload_carousel
 from app.auth.methods import lock_account
-from app.users.forms import ProfileDashboardForm, UploadProfileImgForm, CreateGroupForm, SearchItemsForm, DeleteAccountForm
+from app.users.forms import ProfileDashboardForm, UploadProfileImgForm, CreateGroupForm, SearchItemsForm, DeleteAccountForm, UploadProfileCarouselForm
 from app.users import users
 from app.main.methods import send_confirmation_email
 from app.main.forms import TryAppForm
@@ -39,6 +39,7 @@ def home(username):
 def profile(username):
 	pr_u = User.query.filter_by(username=username).first()
 	form_img = UploadProfileImgForm()
+	form_carousel = UploadProfileCarouselForm()
 	if current_user.id == pr_u.id:
 		form_info = ProfileDashboardForm()
 		if request.method == 'POST':
@@ -49,7 +50,7 @@ def profile(username):
 					flash('You profile has been updated!', 'success')
 					return redirect(url_for('users.profile', username=current_user.username))
 				flash('There are some problem with your input: please make correction before resubmitting !', 'danger')
-				return render_template('profile.html', title=f'{current_user.firstName} {current_user.lastName}', is_viewer=(current_user.id != pr_u.id), user=pr_u, imgFile=pr_u.get_imgFile(), form_info=form_info, form_img=form_img)
+				return render_template('profile.html', title=f'{current_user.firstName} {current_user.lastName}', is_viewer=(current_user.id != pr_u.id), user=pr_u, imgFile=pr_u.get_imgFile(), form_info=form_info, form_img=form_img, groups=pr_u.groups.count())
 			if form_img.modify_about_me.data:
 				if form_img.validate():
 					current_user.about_me = form_img.about_me.data
@@ -57,7 +58,7 @@ def profile(username):
 					flash('You profile has been updated!', 'success')
 					return redirect(url_for('users.profile', username=current_user.username))
 				flash('There are some problem with your input: please make correction before resubmitting !', 'danger')
-				return render_template('profile.html', title=f'{current_user.firstName} {current_user.lastName}', is_viewer=(current_user.id != pr_u.id), user=pr_u, imgFile=pr_u.get_imgFile(), form_info=form_info, form_img=form_img)
+				return render_template('profile.html', title=f'{current_user.firstName} {current_user.lastName}', is_viewer=(current_user.id != pr_u.id), user=pr_u, imgFile=pr_u.get_imgFile(), form_info=form_info, form_img=form_img, groups=pr_u.groups.count())
 			if form_info.submit.data:
 				if form_info.validate():
 					if current_user.email != form_info.email.data:
@@ -72,13 +73,18 @@ def profile(username):
 					return redirect(url_for('users.profile', username=current_user.username))
 				flash('There are some problem with your input: please make correction before resubmitting !', 'danger')
 				form_img.about_me.data = current_user.about_me
-				return render_template('profile.html', title=f'{current_user.firstName} {current_user.lastName}', is_viewer=(current_user.id != pr_u.id), user=pr_u, imgFile=pr_u.get_imgFile(), form_info=form_info, form_img=form_img)
+				return render_template('profile.html', title=f'{current_user.firstName} {current_user.lastName}', is_viewer=(current_user.id != pr_u.id), user=pr_u, imgFile=pr_u.get_imgFile(), form_info=form_info, form_img=form_img, groups=pr_u.groups.count())
+			if form_carousel.upload_carousel.data:
+				if form_carousel.validate():
+					upload_carousel(form_carousel.images.data)
+					flash('You profile has been updated!', 'success')
+					return redirect(url_for('users.profile', username=current_user.username))
 		form_info.firstName.data = current_user.firstName
 		form_info.lastName.data = current_user.lastName
 		form_info.username.data = current_user.username
 		form_info.email.data = current_user.email
 		form_img.about_me.data = current_user.about_me
-		resp = make_response(render_template('profile.html', title=f'{current_user.firstName} {current_user.lastName}', is_viewer=(current_user.id != pr_u.id), user=pr_u, imgFile=pr_u.get_imgFile(), form_info=form_info, form_img=form_img))
+		resp = make_response(render_template('profile.html', title=f'{current_user.firstName} {current_user.lastName}', is_viewer=(current_user.id != pr_u.id), user=pr_u, imgFile=pr_u.get_imgFile(), form_info=form_info, form_img=form_img, form_carousel=form_carousel, groups=pr_u.groups.count()))
 		resp.headers['X-UA-Compatible'] = 'IE=Edge,chrome=1'
 		resp.headers['Cache-Control'] = 'public, max-age=0'
 		return resp
@@ -89,11 +95,11 @@ def profile(username):
 		# 	form.lastName.data = pr_u.lastName
 		# 	form.username.data = pr_u.username
 		# 	form.email.data = pr_u.email
-		return render_template('profile.html', title=f'{pr_u.firstName} {pr_u.lastName}', is_viewer=(current_user.id != pr_u.id), user=pr_u, imgFile=pr_u.get_imgFile(), form_img=form_img)
+		return render_template('profile.html', title=f'{pr_u.firstName} {pr_u.lastName}', is_viewer=(current_user.id != pr_u.id), user=pr_u, imgFile=pr_u.get_imgFile(), form_img=form_img, form_carousel=form_carousel, groups=pr_u.groups.count())
 		# else:
 		# 	return render_template('errors/wip.html', title='coming soon!')
 	flash('Your profile has been temporally deactivated until you reconfirm it.', 'secondary')
-	return render_template('profile.html', title=f'{current_user.firstName} {current_user.lastName}', is_viewer=(current_user.id != pr_u.id), user=pr_u, imgFile=current_user.get_imgFile(), form_img=form_img)
+	return render_template('profile.html', title=f'{current_user.firstName} {current_user.lastName}', is_viewer=(current_user.id != pr_u.id), user=pr_u, imgFile=current_user.get_imgFile(), form_img=form_img, groups=pr_u.groups.count())
 
 
 @users.route('/delete/<u_id>', methods=['GET', 'POST'])

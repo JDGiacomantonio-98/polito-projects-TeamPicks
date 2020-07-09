@@ -216,6 +216,8 @@ class USER:
 							 nullable=False,
 							 default=datetime.utcnow())
 	acc_locked = db.Column(db.Boolean, default=False)
+	file_address = db.Column(db.String(20),
+							 unique=True)
 	firstName = db.Column(db.String(60),
 						  nullable=False)
 	lastName = db.Column(db.String(60),
@@ -228,8 +230,6 @@ class USER:
 	hash = db.Column(db.String(60),  # stores hashed user password
 					 unique=False,
 					 nullable=False)
-	file_address = db.Column(db.String(20),
-							 unique=True)
 
 	def __str__(self):
 		fingerprint = 'INFO :\n'
@@ -354,7 +354,7 @@ class User(db.Model, UserMixin, USER):
 			if return_follow:
 				return False, None
 			return False
-		f = self.followed.filter_by(followed_id=user.id).first()
+		f = self.followed.filter_by(following_id=user.id).first()
 		if return_follow:
 			return f is not None, f # return True if the dynamic query given by followed relathionship returns an item
 		return f is not None

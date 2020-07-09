@@ -58,17 +58,29 @@
                                 {%  endif %}
                                 <div class="row">
                                     <div class="col-12 col-lg-6">
-                                        <span class="font-weight-bold">followers </span> <span class="text-monospace">{{ current_user.followers.count() }}</span>
+                                        <span class="font-weight-bold">followers </span> <span class="text-monospace">{{ user.followers.count() }}</span>
                                     </div>
                                     <div class="col-12 col-lg-6">
-                                        <span class="font-weight-bold">following </span> <span class="text-monospace">{{ current_user.followed.count() }}</span>
+                                        <span class="font-weight-bold">following </span> <span class="text-monospace">{{ user.followed.count() }}</span>
                                     </div>
                                 </div>
                                 <div class="row">
                                     <div class="col-12">
-                                        <span>currently member of </span> {{ user.groups.count() }} <span> groups</span>
+                                        <span>currently member of </span> {{ groups }}
+                                        {% if groups == 1 %}
+                                            <span> group</span>
+                                        {% else %}
+                                            <span> groups</span>
+                                        {% endif %}
                                     </div>
                                 </div>
+                            {% if not is_viewer %}  
+                                <div class="row">
+                                    <div class="col-12">
+                                        <span>{{ user.reservations.count() }} </span> <span> pending reservations</span>
+                                    </div>
+                                </div>
+                            {% endif %}
                             </div>
                         </div>
                         <div class="mr-3 mt-3">
@@ -104,70 +116,68 @@
                     </div>
                     <div class="col-12 col-md-7">
                         {% if not is_viewer %}
-                            <form method="POST" action="#" enctype="multipart/form-data">
-                                {{ form_info.hidden_tag() }} <!--This adds CSRF (Cross-Site Injection attacks) token || it protects the app-->
-                                <div class="row">
-                                    <div class="col-12 d-flex align-items-center justify-content-left">
-                                        <span data-toggle="tooltip" data-placement="top" title="change your info here">
-                                            <div class="text-center h3 text-monospace" style="letter-spacing: 6px">DASHBOARD</div>
-                                        </span>
-                                    </div>
+                            <div class="row mb-4">
+                                <form method="POST" action="#" enctype="multipart/form-data">
+                                    {{ form_info.hidden_tag() }} <!--This adds CSRF (Cross-Site Injection attacks) token || it protects the app-->
+                                    <div class="row">
+                                        <div class="col-12 d-flex align-items-center justify-content-left">
+                                            <span data-toggle="tooltip" data-placement="top" title="change your info here">
+                                                <div class="text-center h3 text-monospace" style="letter-spacing: 6px">DASHBOARD</div>
+                                            </span>
+                                        </div>
+                                            <div class="col-12 col-md-6">
+                                                <div class="form-group">
+                                                    {{ form_info.firstName.label }}
+                                                    {{ form_info.firstName }}
+                                                </div>
+                                            </div>
                                         <div class="col-12 col-md-6">
                                             <div class="form-group">
-                                                {{ form_info.firstName.label }}
-                                                {{ form_info.firstName }}
+                                                {{ form_info.lastName.label }}
+                                                {{ form_info.lastName }}
                                             </div>
                                         </div>
-                                    <div class="col-12 col-md-6">
-                                        <div class="form-group">
-                                            {{ form_info.lastName.label }}
-                                            {{ form_info.lastName }}
+                                        <div class="col-12 col-md-6">
+                                            <div class="form-group">
+                                                {{ form_info.username.label }}
+                                                {{ form_info.username }}
+                                                {% if form_info.username.errors %}
+                                                    {% for e in form_info.username.errors %}
+                                                        <div>
+                                                            <span style="color: red"><small>{{ e }}</small></span>
+                                                        </div>
+                                                    {% endfor %}
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                        <div class="col-12 col-md-6">
+                                            <div class="form-group overflow-hidden">
+                                                {{ form_info.email.label }}
+                                                {{ form_info.email }}
+                                                {% if form_info.email.errors %}
+                                                    {% for e in form_info.email.errors %}
+                                                        <div>
+                                                            <span style="color: red"><small>{{ e }}</small></span>
+                                                        </div>
+                                                    {% endfor %}
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                        <div class="col-12 d-flex align-items-center justify-content-between">
+                                            {{ form_info.submit }}
+                                            {{ form_info.delete }}
                                         </div>
                                     </div>
-                                    <div class="col-12 col-md-6">
-                                        <div class="form-group">
-                                            {{ form_info.username.label }}
-                                            {{ form_info.username }}
-                                            {% if form_info.username.errors %}
-                                                {% for e in form_info.username.errors %}
-                                                    <div>
-                                                        <span style="color: red"><small>{{ e }}</small></span>
-                                                    </div>
-                                                {% endfor %}
-                                            {% endif %}
-                                        </div>
-                                    </div>
-                                    <div class="col-12 col-md-6">
-                                        <div class="form-group overflow-hidden">
-                                            {{ form_info.email.label }}
-                                            {{ form_info.email }}
-                                            {% if form_info.email.errors %}
-                                                {% for e in form_info.email.errors %}
-                                                    <div>
-                                                        <span style="color: red"><small>{{ e }}</small></span>
-                                                    </div>
-                                                {% endfor %}
-                                            {% endif %}
-                                        </div>
-                                    </div>
-                                    <div class="col-12 d-flex align-items-center justify-content-between">
-                                        {{ form_info.submit }}
-                                        {{ form_info.delete }}
-                                    </div>
-                                </div>
-                            </form>
+                                </form>
+                            </div>
+                            <div class="row">
+                                <form method="POST" action="#" enctype="multipart/form-data">
+                                    {{ form_carousel.hidden_tag() }}
+                                    {{ form_carousel.images }}
+                                    {{ form_carousel.upload_carousel }}
+                                </form>
+                            </div>
                         {% else %}
-{#                            <div class="row">#}
-{#                                <div class="col-3">#}
-{#                                    <span class="font-weight-bold">followers </span> <span class="text-monospace">{{ current_user.followers.count() }}</span>#}
-{#                                </div>#}
-{#                                <div class="col-3">#}
-{#                                    <span class="font-weight-bold">following </span> <span class="text-monospace">{{ current_user.followed.count() }}</span>#}
-{#                                </div>#}
-{#                                <div class="col-6">#}
-{#                                    <span>currently member of </span> {{ user.groups.count() }} <span> groups</span>#}
-{#                                </div>#}
-{#                            </div>#}
                             <div class="row">
                                 <span class="font-weight-bold mr-2">Last time active </span> {{ moment(user.get_last_active()).fromNow(refresh=True) }}
                             </div>
