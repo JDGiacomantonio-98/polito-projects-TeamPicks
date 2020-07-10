@@ -51,7 +51,7 @@ def create_userbase(items=None, test_db=False):
 	else:
 		for k in userbase:
 			try:
-				dummy(return_obj=False, model=userbase[k], w_test=True)
+				dummy(return_obj=False, model=userbase[k], db_w_test=True)
 			except RuntimeError:
 				return None
 

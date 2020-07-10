@@ -17,7 +17,7 @@ from app import db, login_handler
 # DATABASE GLOBAL FUNCTIONS #
 
 
-def dummy(return_obj=True, model=None, items=1, w_test=False, feedback=True):
+def dummy(return_obj=True, model=None, items=1, db_w_test=False, feedbacks=True):
 	from app.auth.methods import hash_psw
 
 	if type(return_obj) != bool:
@@ -33,12 +33,11 @@ def dummy(return_obj=True, model=None, items=1, w_test=False, feedback=True):
 						  '[M]atch\n\n'
 						  '[Q]uit\n'
 						  'select here : ')).lower()
-	if model == 'q' or model == '':
+	if model in ('q', ''):
 		print('dummy() has been quited.')
 		return None
-	if w_test or return_obj:
-		feedback = False
-	if feedback:
+	feedbacks = not(db_w_test or return_obj)
+	if feedbacks:
 		print('Please wait while processing dummy units ... (this might take a while)\n')
 		progress = {
 			0.10: 'completed : |*.............|',
@@ -55,7 +54,7 @@ def dummy(return_obj=True, model=None, items=1, w_test=False, feedback=True):
 	rand = Faker()
 	i = 0
 	while i < items:
-		if model == 'u' or model == 'users':
+		if model in ('u', 'users'):
 			itm = User(username=rand.user_name(),
 					   email=rand.email(),
 					   last_active=rand.past_date(),
@@ -67,15 +66,17 @@ def dummy(return_obj=True, model=None, items=1, w_test=False, feedback=True):
 					   city=rand.city(),
 					   hash=hash_psw('password')
 					   )
-			if itm.sex:
-				itm.sex = 'm'
-			elif itm.sex is not None:
-				itm.sex = 'f'
-			else:
+			if itm.sex is None:
 				itm.sex = 'other'
+			elif itm.sex:
+				itm.sex = 'm'
+			else:
+				itm.sex = 'f'
 			itm.set_defaultImg()
+			if rand.boolean(chance_of_getting_true=35):
+				itm.confirmed = True
 			model = 'users'
-		elif model == 'o' or model == 'owners':
+		elif model in ('o', 'owners'):
 			itm = Owner(username=rand.user_name(),
 						email=rand.email(),
 						last_active=rand.past_date(),
@@ -90,10 +91,12 @@ def dummy(return_obj=True, model=None, items=1, w_test=False, feedback=True):
 						subsExpirationDate=rand.future_date('+90d')
 						)
 			if rand.boolean(chance_of_getting_true=70):
-				pub = dummy(model='p', w_test=w_test)
+				pub = dummy(model='p', db_w_test=db_w_test)
 				itm.associate_pub(pub)
+			if rand.boolean(chance_of_getting_true=35):
+				itm.confirmed = True
 			model = 'owners'
-		elif model == 'p' or model == 'pubs':
+		elif model in ('p', 'pubs'):
 			seatsMax = randint(0, 200)
 			itm = Pub(address=rand.address(),
 					  bookable=rand.boolean(chance_of_getting_true=50),
@@ -103,7 +106,7 @@ def dummy(return_obj=True, model=None, items=1, w_test=False, feedback=True):
 			if itm.bookable:
 				itm.seatsBooked = seatsMax - randint(0, seatsMax)
 			model = 'pubs'
-		elif model == 'g' or model == 'groups':
+		elif model in ('g', 'groups'):
 			itm = Group(name=rand.sentence(nb_words=8))
 			model = 'groups'
 		elif model == 'm' or model == 'matches':
@@ -114,32 +117,52 @@ def dummy(return_obj=True, model=None, items=1, w_test=False, feedback=True):
 			db.session.add(itm)
 			try:
 				db.session.commit()
-				if w_test:
+				if model == 'users':
+					u_mass = User.query.count()
+					if u_mass > 1:
+						for _ in range(1, randint(1, u_mass)):
+							# follow some users
+							u = User.query.get(randint(1, u_mass))
+							if not itm.is_following(u):
+								itm.follow(u)
+					if rand.boolean(chance_of_getting_true=60):
+						# send reservations requests
+						u_mass = Owner.query.count()
+						if u_mass > 1:
+							for _ in range(1, randint(1, 7)):
+								o = Owner.query.get(randint(1, u_mass))
+								if o.pub is not None:
+									itm.send_bookingReq(pub=o.pub, guests=randint(1, 6))
+					if rand.boolean(chance_of_getting_true=35):
+						# join group
+						for _ in range(1, randint(1, 3)):
+							g = Group(name=f'{rand.text(max_nb_chars=15)}')
+							itm.join_as_admin(g)
+				if db_w_test:
 					db.session.delete(itm)
 					db.session.commit()
 				i += 1
 			except IntegrityError:
 				db.session.rollback()
-				if feedback:
+				if feedbacks:
 					errors += 1
 			except OperationalError as e:
 				print('(!) INFO : Have you run upgrade() from last migration file?')
-				if w_test:
+				if db_w_test:
 					raise RuntimeError
 				else:
 					return e
 			except BaseException:
 				raise RuntimeError
-			if feedback:
+			if feedbacks:
 				try:
 					print(progress[round((i / items), 2)])
 				except KeyError:
 					pass
 		else:
 			return itm
-	if feedback:
-		print(
-			f'Completed!\n{items} new dummy-{model} instances has been successfully created and add to db. ({errors} errors occurred and have been corrected)')
+	if feedbacks:
+		print(f'Completed!\n\n{items} new dummy-{model} instances has been successfully created and add to db. ({errors} errors occurred and have been corrected)')
 		print(f'Connection happened on : {current_app.config["SQLALCHEMY_DATABASE_URI"]}')
 		print(f'Process duration : {datetime.now() - start}')
 
@@ -253,10 +276,13 @@ class USER:
 
 	def get_imgCarousel(self):
 		carousel = []
-		for f in listdir(f'{current_app.config["USERS_UPLOADS_BIN"]}\{self.get_file_address()}'):
-			if 'P' not in f:
-				carousel.append(url_for('static', filename=f'users/{self.get_file_address()}/{f}'))
-		return carousel
+		try:
+			for f in listdir(f'{current_app.config["USERS_UPLOADS_BIN"]}\{self.get_file_address()}'):
+				if 'P' not in f:
+					carousel.append(url_for('static', filename=f'users/{self.get_file_address()}/{f}'))
+			return carousel
+		except FileNotFoundError:
+			return []
 
 	def create_token(self, expireInSec=(8 * 60)):
 		return timedTokenizer(current_app.config['SECRET_KEY'], expireInSec).dumps({'load': self.id}).decode('utf-8')
@@ -328,16 +354,15 @@ class User(db.Model, UserMixin, USER):
 
 	def join_as_admin(self, group):
 		role = G_Role.query.filter_by(role='admin').first()
-		print(role.id)
-		itm = Subscription(group=group, member=self, role=role)
-		db.session.add(itm)
+		# print(role.id)
+		db.session.add(Subscription(group=group, member=self, role=role))
 		db.session.commit()
 
 	def send_bookingReq(self, pub, guests):
 		# information comes from form
 		if pub.is_available_for(guests):
 			tempRes = pub.cache_bookingReq(booked_by=self, guests=guests)
-			print(f'\nQR code : {tempRes.code}\nconfirmation status : {tempRes.confirmed}')  # debug
+			# print(f'\nQR code : {tempRes.code}\nconfirmation status : {tempRes.confirmed}')  # debug
 
 	def send_joinReq(self, group):  # group comes from query in view func
 		pass
@@ -348,8 +373,7 @@ class User(db.Model, UserMixin, USER):
 
 	def follow(self, user):
 		if not self.is_following(user):
-			f = Follow(follower=self, followed=user)
-			db.session.add(f)
+			db.session.add(Follow(follower=self, followed=user))
 			db.session.commit()
 
 	def unfollow(self, user):
@@ -364,7 +388,7 @@ class User(db.Model, UserMixin, USER):
 			return False
 		f = self.followed.filter_by(following_id=user.id).first()
 		if return_follow:
-			return f is not None, f # return True if the dynamic query given by followed relathionship returns an item
+			return f is not None, f 	# return True if the dynamic query given by followed relathionship returns an item
 		return f is not None
 
 	def is_followed_by(self, user, return_follow=False):
@@ -471,7 +495,7 @@ class Pub(db.Model):
 	def notify(self, eventType, item=None):
 		# here we should notify Owner of the incoming request in order to let him accept it or not
 		# item represent notification body object
-		print(f'Owner id : {self.owner_id}')
+		# print(f'Owner id : {self.owner_id}')
 		if eventType == 'new-booking':
 			pass
 
@@ -480,10 +504,11 @@ class Pub(db.Model):
 			if self.get_availability() >= guests:
 				return True
 			else:
-				print('Impossible to schedule a reservation for that date.')
-				print(f'Free tables : {self.get_availability()}')
+				# print('Impossible to schedule a reservation for that date.')
+				# print(f'Free tables : {self.get_availability()}')
+				return False
 		else:
-			print("This pub can not accepts reservation yet!")
+			# print("This pub can not accepts reservation yet!")
 			return False
 
 	def cache_bookingReq(self, booked_by, guests):

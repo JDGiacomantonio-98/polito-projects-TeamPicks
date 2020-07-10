@@ -1,11 +1,11 @@
 == REQUIREMENT VERSION LOG ====================|
 filename : requirements/req-common.txt
 Last update date : 20/06/10 (yy/mm/dd)
------------------------------------------------|
+************************************************|
 
 == INSTALLATION ON NEW MACHINES =======================================================================================|
 
-WARNING : THIS PROJECT HAS BEEN DEVELOPED WITH VERSION 3.8 OF PYTHON. (Download link: https://www.python.org/downloads/)
+WARNING : THIS PROJECT HAS BEEN DEVELOPED WITH VERSION 3.8 OF PYTHON. (Download here: https://www.python.org/downloads/)
 
 To recreate an exact working replica of python3.x venv used during development, follow the instruction below.
 
@@ -27,8 +27,11 @@ You can now run the following commands to complete the procedure and automatical
 	    (venv) $ pip install -r requirements/req-common.txt
 	    (venv) $ pip install -r requirements/req-dev.txt
 
-If any package raise you any exception please downgrade requirements to stable-only package version by using the following
-commands in your terminal :
+You are ready to go!
+
+Some additional information:
+*) If any package raise you any exception please downgrade requirements to stable-only package version by using the
+following commands in your terminal :
 
 	    $ venv\Scripts\activate
 	    (venv) $ pip uninstall -r requirements/req-common.txt
@@ -36,27 +39,52 @@ commands in your terminal :
 	    (venv) $ pip install -r requirements/req-common-stable.txt
 	    (venv) $ pip install -r requirements/req-dev-stable.txt
 
-To update all existing used packages to their latest versions, please run the following commands in your terminal:
+*) To update all existing used packages to their latest versions, please run the following commands in your terminal:
 
 	    $ venv\Scripts\activate
 	    (venv) pip install --upgrade -r requirements/req-common.txt
 	    (venv) pip install --upgrade -r requirements/req-dev.txt
 
-To create or update a package-log file named 'requirements.txt' of all currently used modules by app, run the
+*) To create or update a package-log file named 'requirements.txt' of all currently used modules by app, run the
 following command in your terminal :
 
 	    (venv) $ pip freeze >requirements/req-common.txt
 
-To factory reset your (venv) to only original python distribution libraries of your main python interpreter, run the following
-commands in your terminal :
+*) To factory reset your (venv) to only original python distribution libraries of your main python interpreter, run the
+following commands in your terminal :
 
 	    (venv) $ pip uninstall -r requirements/req-common.txt
 	    (venv) $ pip uninstall -r requirements/req-dev.txt
 
-To switch your (venv) off :
+*) To turn your (venv) off :
 
 	    $ venv\Scripts\deactivate
-_______________________________________________________________________________________________________________________|
+***********************************************************************************************************************|
+
+== DUMMY POPULATE DATABASES ===========================================================================================|
+
+The TeamPicks project comes bundled with a very handy developers' toolkit : check it out in the "devkit.py" file.
+
+Here you find the create_userbase() func. This is the way to quickly (and automatically) populate a brand new local database
+(e.g. sqlite). Of course this step is crucial in order to let the developer (you) to fully understand how TeamPicks work
+right now and what still has to be done. create_userbase() directly invoke the dummy() func. This latter one is exactly
+where new user/owner/pub/groups and so on gets created. Even if more advanced configurations can be used, the basic
+use-case for create_userbase() func is as follow:
+
+		(venv) $ flask shell
+			( tests will run ... continue if you do not get any error )
+		(venv) $ from devkit import create_userbase
+		(venv) $ create_userbase(items=int("int_of_target_user_population"))
+
+Done!Now start the flask server and browse the app taking the role of one of this puppies by logging in with the following
+credentials:
+
+		username ->     < choose_one_from_db >
+		password ->     "password"
+
+Of course nothing prevents you to create your own account on the platform.
+
+***********************************************************************************************************************|
 
 == CLI COMMANDS =======================================================================================================|
 To quickly create new db files capable of plugging-in correctly with all config profiles, the following click commands are
@@ -68,9 +96,9 @@ available :
 If not specified, commands will print a menu where to choose which config profile to load.
 Use 'env' argument in order to let < reset > and < build > commands look in sys environment variables for config profile to
 load.
-_______________________________________________________________________________________________________________________|
+************************************************************************************************************************|
 
-************************************************************************************************************************
+
 === COMMITS LOG FROM PREVIOUS GITHUB FOLDER ===========================================================================|
 Tot n of commits before moving : 18
 
@@ -104,4 +132,5 @@ v0.2.1
 
 v0.2
     - TeamGATE app is now structured as a python package
-_______________________________________________________________________________________________________________________|
+
+************************************************************************************************************************|

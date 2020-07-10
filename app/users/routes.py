@@ -29,7 +29,9 @@ def home(username):
 	form = SearchItemsForm()
 	if request.method == 'POST':
 		if form.validate_on_submit():
-			return render_template('search_results.html')
+			u = User.query.filter_by(username=form.searchedItem.data).first_or_404()
+			return redirect(url_for('users.profile', username=u.username))
+			# return render_template('search_results.html')
 		return redirect(url_for('users.home', username=current_user.username))
 	return render_template('home.html', form=form, title='home')
 
