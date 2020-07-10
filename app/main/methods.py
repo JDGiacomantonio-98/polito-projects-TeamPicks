@@ -41,6 +41,7 @@ def cherryPick_user(pull_from, u_id):
 		u = Owner.query.get(u_id)
 	return u, pull_from
 
+
 def check_subs_payment(owner):
 	# draft of a very complex func
 	# check things related with subs payment

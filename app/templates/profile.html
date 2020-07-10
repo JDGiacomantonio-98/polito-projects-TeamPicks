@@ -22,7 +22,7 @@
                                                 </div>
                                             {% endfor %}
                                         {% endif %}
-                                        {{ form_img.upload_img }}
+                                        <div class="text-monospace">{{ form_img.upload_img }}</div>
                                     </form>
                                 {% endif %}
                             </div>
@@ -88,13 +88,11 @@
                                 <form method="POST" class='mt-2' action="#" enctype="multipart/form-data">
                                     {{ form_img.hidden_tag() }} <!--This adds CSRF (Cross-Site Injection attacks) token || it protects the app-->
                                     <div>
-                                        <div class="font-weight-bold">
-                                            {{ form_img.about_me.label }}
-                                        </div>
-                                        <div>
+                                        <span class="font-weight-bold">{{ form_img.about_me.label }}</span>
+                                        <div class='text-muted text-monospace text-justify pb-3'>
                                             {{ form_img.about_me._value() }}
                                         </div>
-                                        <div>
+                                        <div class='text-monospace'>
                                             {{ form_img.modify_about_me }}
                                         </div>
                                     </div>
@@ -102,10 +100,8 @@
                             {% else %}
                                 <form method="GET" class='mt-2' action="#" enctype="multipart/form-data">
                                     {{ form_img.hidden_tag() }} <!--This adds CSRF (Cross-Site Injection attacks) token || it protects the app-->
-                                    <div class="">
-                                        <div>
-                                            {{ form_img.about_me.label }}
-                                        </div>
+                                    <div>
+                                        <span class='font-weight-bold'>{{ form_img.about_me.label }}</span>
                                         <div class='text-muted text-monospace text-justify'>
                                             {{ form_img.about_me._value() }}
                                         </div>
@@ -163,32 +159,40 @@
                                                 {% endif %}
                                             </div>
                                         </div>
-                                        <div class="col-12 d-flex align-items-center justify-content-between">
+                                        <div class="col-12 d-flex align-items-center justify-content-between text-monospace">
                                             {{ form_info.submit }}
                                             {{ form_info.delete }}
                                         </div>
                                     </div>
                                 </form>
                             </div>
-                            <div class="row">
-                                <form method="POST" action="#" enctype="multipart/form-data">
-                                    {{ form_carousel.hidden_tag() }}
+                            <form class='row' method="POST" action="#" enctype="multipart/form-data">
+                                {{ form_carousel.hidden_tag() }}
+                                <div class="col-3 pl-0">
+                                    <span class="font-weight-bold">{{ form_carousel.images.label }}</span>
+                                </div>
+                                <div class="col-6 pl-2">
                                     {{ form_carousel.images }}
+                                </div>
+                                <div class="col-3 d-flex justify-content-end pr-0 text-monospace">
                                     {{ form_carousel.upload_carousel }}
-                                </form>
-                            </div>
+                                </div>
+                            </form>
                         {% else %}
                             <div class="row">
                                 <span class="font-weight-bold mr-2">Last time active </span> {{ moment(user.get_last_active()).fromNow(refresh=True) }}
                             </div>
-                                {% for r in range(0,2) %}
-                                    <div class="row border shadow mt-2 d-flex justify-content-between">
-                                        {% for i in range(0,4) %}
-                                            <div class="img-profile-upload shadow-lg mr-0" style="background-image: url('{{ imgFile }}')"></div>
-                                        {% endfor %}
-                                    </div>
-                            {% endfor %}
                         {% endif %}
+                        <div class="row border shadow mt-2 d-flex justify-content-between">
+                            {% for i in range(0,4) %}
+                                <div class="img-profile-upload shadow-lg mr-0" style="background-image: url('{{ carousel[i] }}')"></div>
+                            {% endfor %}
+                        </div>
+                        <div class="row border shadow mt-2 d-flex justify-content-between">
+                            {% for i in range(4,8) %}
+                                <div class="img-profile-upload shadow-lg mr-0" style="background-image: url('{{ carousel[i] }}')"></div>
+                            {% endfor %}
+                        </div>
                     </div>
                 </div>
             </div>

@@ -1,4 +1,5 @@
 # DATABASE OBJECT CLASS SPECIFICATION MODULE : SQLAlchemy builds Object-Oriented Databases
+from os import listdir
 from math import ceil
 from random import randint, random
 from datetime import datetime, timedelta
@@ -249,6 +250,13 @@ class USER:
 		if ('def-' in self.profile_img) or (self.profile_img == 'favicon.png'):
 			return url_for('static', filename=f'users/AVATAR/{self.profile_img}')
 		return url_for('static', filename=f'users/{self.get_file_address()}/{self.profile_img}')
+
+	def get_imgCarousel(self):
+		carousel = []
+		for f in listdir(f'{current_app.config["USERS_UPLOADS_BIN"]}\{self.get_file_address()}'):
+			if 'P' not in f:
+				carousel.append(url_for('static', filename=f'users/{self.get_file_address()}/{f}'))
+		return carousel
 
 	def create_token(self, expireInSec=(8 * 60)):
 		return timedTokenizer(current_app.config['SECRET_KEY'], expireInSec).dumps({'load': self.id}).decode('utf-8')
