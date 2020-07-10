@@ -1,54 +1,69 @@
 == REQUIREMENT VERSION LOG ====================|
-filename : requirements/req-common-stable.txt
-Last update date : 20/05/02
+filename : requirements/req-common.txt
+Last update date : 20/06/10 (yy/mm/dd)
 -----------------------------------------------|
 
 == INSTALLATION ON NEW MACHINES =======================================================================================|
-To recreate an exact working replica of python3.x venv used during development, run the following commands in your
-terminal :
 
-    $ python -m venv venv
-    $ venv\Scripts\activate
-    (venv) $ pip install -r requirements/req-common.txt
-    (venv) $ pip install -r requirements/req-dev.txt
+WARNING : THIS PROJECT HAS BEEN DEVELOPED WITH VERSION 3.8 OF PYTHON. (Download link: https://www.python.org/downloads/)
 
-If any package raise any exception please downgrade requirements to stable-only package version by using the following
+To recreate an exact working replica of python3.x venv used during development, follow the instruction below.
+
+If you currently have installed on your machines multiple version of the interpreter, please select v.3 to create the
+virtual environment. To do this, run this command in your terminal:
+
+		$ python3 -m venv venv
+
+otherwise, if python3 is the only version you use of the interpreter, run the following command instead:
+
+		$ python -m venv venv
+
+The former commands will create a folder called 'venv' inside your current working directory. 'venv' will host all
+TeamPicks dependencies without messing up with (or damaging) your machine global python interpreter.
+
+You can now run the following commands to complete the procedure and automatically install all needed dependencies:
+
+	    $ venv\Scripts\activate
+	    (venv) $ pip install -r requirements/req-common.txt
+	    (venv) $ pip install -r requirements/req-dev.txt
+
+If any package raise you any exception please downgrade requirements to stable-only package version by using the following
 commands in your terminal :
 
-    $ venv\Scripts\activate
-    (venv) $ pip uninstall -r requirements/req-common.txt
-    (venv) $ pip uninstall -r requirements/req-dev.txt
-    (venv) $ pip install -r requirements/req-common-stable.txt
-    (venv) $ pip install -r requirements/req-dev-stable.txt
+	    $ venv\Scripts\activate
+	    (venv) $ pip uninstall -r requirements/req-common.txt
+	    (venv) $ pip uninstall -r requirements/req-dev.txt
+	    (venv) $ pip install -r requirements/req-common-stable.txt
+	    (venv) $ pip install -r requirements/req-dev-stable.txt
 
 To update all existing used packages to their latest versions, please run the following commands in your terminal:
 
-    $ venv\Scripts\activate
-    (venv) pip install --upgrade -r requirements/req-common.txt
-    (venv) pip install --upgrade -r requirements/req-dev.txt
+	    $ venv\Scripts\activate
+	    (venv) pip install --upgrade -r requirements/req-common.txt
+	    (venv) pip install --upgrade -r requirements/req-dev.txt
 
 To create or update a package-log file named 'requirements.txt' of all currently used modules by app, run the
 following command in your terminal :
 
-    (venv) $ pip freeze >requirements/req-common.txt
+	    (venv) $ pip freeze >requirements/req-common.txt
 
-To factory reset your venv to only original python distribution libraries of your main python interpreter, run the following
+To factory reset your (venv) to only original python distribution libraries of your main python interpreter, run the following
 commands in your terminal :
 
-    (venv) $ pip uninstall -r requirements/req-common.txt
-    (venv) $ pip uninstall -r requirements/req-dev.txt
+	    (venv) $ pip uninstall -r requirements/req-common.txt
+	    (venv) $ pip uninstall -r requirements/req-dev.txt
 
-To switch your venv off :
+To switch your (venv) off :
 
-    $ venv\Scripts\deactivate
+	    $ venv\Scripts\deactivate
 _______________________________________________________________________________________________________________________|
 
 == CLI COMMANDS =======================================================================================================|
 To quickly create new db files capable of plugging-in correctly with all config profiles, the following click commands are
 available :
 
-    (venv) $ flask reset [config_key]
-    (venv) $ flask build [config_key]
+	    (venv) $ flask reset [config_key]
+	    (venv) $ flask build [config_key]
 
 If not specified, commands will print a menu where to choose which config profile to load.
 Use 'env' argument in order to let < reset > and < build > commands look in sys environment variables for config profile to
