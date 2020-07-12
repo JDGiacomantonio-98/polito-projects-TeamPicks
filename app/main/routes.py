@@ -13,7 +13,7 @@ from app.dbModels import Owner
 def index():
 	if current_user.is_anonymous:
 		form = TryAppForm()
-		if request.method == 'POST':
+		if request.method == 'POST' and form.submit.data:
 			pubs = Owner.query.filter_by(city=form.city.data).count()
 			return render_template('landing.html', city=form.city.data, pubs=pubs)
 		return render_template('landing.html', form=form, time=datetime.utcnow())
@@ -23,11 +23,6 @@ def index():
 @main.route('/pricing')
 def show_pricing():
 	return render_template('pricing.html', title='Pricing')
-
-
-@main.route('/find-a-pub')
-def find_pub():
-	return render_template('find_pub.html')
 
 
 @main.route('/email-confirmation')

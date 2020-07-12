@@ -22,10 +22,10 @@ def registration(userType, accType):
 		if form.validate_on_submit():
 			if userType == 'user':
 				newItem = User(
-					username=form.username.data,
-					firstName=form.firstName.data,
+					username=form.username.data.lower(),
+					firstName=form.firstName.data.lower(),
 					lastName=form.lastName.data,
-					city=form.city.data,
+					city=form.city.data.lower(),
 					sex=form.sex.data,
 					email=form.email.data,
 					hash=hash_psw(form.confirmPsw.data)
@@ -33,10 +33,10 @@ def registration(userType, accType):
 			else:
 				newItem = Owner(
 					subsType=form.subsType.data,
-					city=form.city.data,
+					city=form.city.data.lower(),
 					username=form.username.data,
-					firstName=form.firstName.data,
-					lastName=form.lastName.data,
+					firstName=form.firstName.data.lower(),
+					lastName=form.lastName.data.lower(),
 					email=form.email.data,
 					hash=hash_psw(form.confirmPsw.data)
 				)
@@ -77,13 +77,17 @@ def login():
 	form = LoginForm()
 	if request.method == 'POST':
 		if form.validate_on_submit():
-			if request.cookies.get('login_trace'):
-				trace = request.cookies.get('login_trace').split('%')
-				if form.credential.data in (trace[1], trace[2]):
-					query = cherryPick_user(pull_from=trace[0], u_id=trace[3])
+			try:
+				if session['trace']:
+					trace = session['trace'].split('%')
+					if form.credential.data in (trace[1], trace[2]):
+						query = cherryPick_user(pull_from=trace[0], u_id=trace[3])
+					else:
+						session.pop('trace')
+						query = find_user(form.credential.data)
 				else:
 					query = find_user(form.credential.data)
-			else:
+			except KeyError:
 				query = find_user(form.credential.data)
 			if query[0]:
 				if query[0].is_acc_locked():
@@ -102,9 +106,8 @@ def login():
 						flash("Your account still require activation. Please check your email inbox.", 'warning')
 						return redirect(url_for('auth.login'))
 				flash('Login error : Invalid email or password.', 'danger')
-				resp = make_response(render_template('login.html', title='Login page', form=form))
-				resp.set_cookie('login_trace', f'{query[1]}%{query[0].username}%{query[0].email}%{query[0].id}', max_age=30)
-				return resp
+				session['trace'] = f'{query[1]}%{query[0].username}%{query[0].email}%{query[0].id}'
+				return render_template('login.html', title='Login page', form=form)
 			flash("The provided credential are not linked to any existing account. Please try something else.", 'secondary')
 			return render_template('login.html', title='Login page', form=form)
 		return render_template('login.html', title='Login page', form=form)

@@ -1,16 +1,18 @@
 from datetime import datetime
+from shutil import rmtree
+from string import capwords
 
-from flask import render_template, url_for, flash, redirect, request, abort, make_response
+from flask import render_template, url_for, flash, redirect, request, abort, make_response, session, g
 from flask_login import logout_user, login_required, current_user
 
 from app.users.methods import upload_profilePic, upload_carousel
 from app.auth.methods import lock_account
 from app.users.forms import ProfileDashboardForm, UploadProfileImgForm, CreateGroupForm, SearchItemsForm, DeleteAccountForm, UploadProfileCarouselForm
 from app.users import users
-from app.main.methods import send_confirmation_email
+from app.main.methods import send_confirmation_email, handle_userBin
 from app.main.forms import TryAppForm
 from app import db
-from app.dbModels import User, Owner, Group
+from app.dbModels import User, Owner, Group, Pub
 
 
 @users.before_app_request
@@ -31,7 +33,7 @@ def home(username):
 		if form.validate_on_submit():
 			u = User.query.filter_by(username=form.searchedItem.data).first_or_404()
 			return redirect(url_for('users.profile', username=u.username))
-			# return render_template('search_results.html')
+			# return render_template('search_pub.html')
 		return redirect(url_for('users.home', username=current_user.username))
 	return render_template('home.html', form=form, title='home')
 
@@ -79,18 +81,22 @@ def profile(username):
 					return redirect(url_for('users.profile', username=current_user.username))
 				flash('There are some problem with your input: please make correction before resubmitting !', 'danger')
 				form_img.about_me.data = current_user.about_me
-				return render_template('profile.html', title=f'{current_user.firstName} {current_user.lastName}', is_viewer=(current_user.id != pr_u.id), user=pr_u, imgFile=pr_u.get_imgFile(), carousel=pr_u.get_imgCarousel(), form_info=form_info, form_img=form_img, form_carousel=form_carousel, groups=pr_u.groups.count())
+				return render_template('profile.html', title=f'{current_user.firstName} {current_user.lastName}',
+									   is_viewer=(current_user.id != pr_u.id), user=pr_u, imgFile=pr_u.get_imgFile(),
+									   carousel=pr_u.get_imgCarousel(), form_info=form_info, form_img=form_img, form_carousel=form_carousel, groups=pr_u.groups.count())
 			if form_carousel.upload_carousel.data:
 				if form_carousel.validate():
 					upload_carousel(form_carousel.images.data)
 					flash('You profile has been updated!', 'success')
 					return redirect(url_for('users.profile', username=current_user.username))
-		form_info.firstName.data = current_user.firstName
-		form_info.lastName.data = current_user.lastName
+		form_info.firstName.data = capwords(current_user.firstName)
+		form_info.lastName.data = capwords(current_user.lastName)
 		form_info.username.data = current_user.username
 		form_info.email.data = current_user.email
-		form_img.about_me.data = current_user.about_me
-		resp = make_response(render_template('profile.html', title=f'{current_user.firstName} {current_user.lastName}', is_viewer=(current_user.id != pr_u.id), user=pr_u, imgFile=pr_u.get_imgFile(), carousel=pr_u.get_imgCarousel(), form_info=form_info, form_img=form_img, form_carousel=form_carousel, groups=pr_u.groups.count()))
+		form_img.about_me.data = current_user.about_me.capitalize()
+		resp = make_response(render_template('profile.html', title=f'{current_user.firstName} {current_user.lastName}',
+											 is_viewer=(current_user.id != pr_u.id), user=pr_u, imgFile=pr_u.get_imgFile(),
+											 carousel=pr_u.get_imgCarousel(), form_info=form_info, form_img=form_img, form_carousel=form_carousel, groups=pr_u.groups.count()))
 		resp.headers['X-UA-Compatible'] = 'IE=Edge,chrome=1'
 		resp.headers['Cache-Control'] = 'public, max-age=0'
 		return resp
@@ -101,39 +107,46 @@ def profile(username):
 		# 	form.lastName.data = pr_u.lastName
 		# 	form.username.data = pr_u.username
 		# 	form.email.data = pr_u.email
-		return render_template('profile.html', title=f'{current_user.firstName} {current_user.lastName}', is_viewer=(current_user.id != pr_u.id), user=pr_u, imgFile=pr_u.get_imgFile(), carousel=pr_u.get_imgCarousel(), form_img=form_img, form_carousel=form_carousel, groups=pr_u.groups.count())
+		return render_template('profile.html', title=f'{current_user.firstName} {current_user.lastName}',
+							   is_viewer=(current_user.id != pr_u.id), user=pr_u, imgFile=pr_u.get_imgFile(),
+							   carousel=pr_u.get_imgCarousel(), form_img=form_img, form_carousel=form_carousel, groups=pr_u.groups.count())
 		# else:
 		# 	return render_template('errors/wip.html', title='coming soon!')
 	flash('Your profile has been temporally deactivated until you reconfirm it.', 'secondary')
-	return render_template('profile.html', title=f'{current_user.firstName} {current_user.lastName}', is_viewer=(current_user.id != pr_u.id), user=pr_u, imgFile=pr_u.get_imgFile(), carousel=pr_u.get_imgCarousel(), form_img=form_img, form_carousel=form_carousel, groups=pr_u.groups.count())
+	return render_template('profile.html', title=f'{current_user.firstName} {current_user.lastName}',
+						   is_viewer=(current_user.id != pr_u.id), user=pr_u, imgFile=pr_u.get_imgFile(),
+						   carousel=pr_u.get_imgCarousel(), form_img=form_img, form_carousel=form_carousel, groups=pr_u.groups.count())
 
 
 @users.route('/delete/<u_id>', methods=['GET', 'POST'])
 @login_required
 def delete_account(u_id, ATTEMPTS=3):
-	# deletion should be authorized only by code and not by manual writing the URL
-	if int(u_id) == current_user.id:
+	if int(u_id) == current_user.id: 	# deletion is authorized only by code and not by manual writing the URL
 		if not current_user.is_acc_locked():
 			form = DeleteAccountForm()
-			resp = make_response(render_template('remove_account.html', form=form, title=':C'))
-			if request.cookies.get('del_attempt') is None:
-				resp.set_cookie('del_attempt', str(1))
 			if request.method == 'POST':
+				session['del-attempt'] += 1
 				if form.validate_on_submit():
+					rmtree(handle_userBin(current_user.get_file_address()))
 					db.session.delete(current_user)
 					db.session.commit()
 					logout_user()
 					flash('Your account has been successfully removed. We are sad about that :C', 'secondary')
-					resp = make_response(render_template('landing.html', form=TryAppForm(), time=datetime.utcnow()))
-					resp.delete_cookie('del_attempt')
-					return resp
-				elif ATTEMPTS - int(request.cookies.get('del_attempt')) != 0:
-					resp.set_cookie('del_attempt', str(int(request.cookies.get('del_attempt')) + 1))
-				else:
-					lock_account(current_user)
-					logout_user()
-				return resp
-			return resp
+					session.clear()
+					return redirect(url_for('main.index'))
+				if ATTEMPTS - session['del-attempt'] != 0:
+					flash(f'{ATTEMPTS - session["del-attempt"]} attempts remaining', 'danger')
+					return render_template('delete_account.html', form=form, title=':C')
+				lock_account(current_user)
+				logout_user()
+				# notify teampicks staff by email
+				flash('Your account has been temporarly locked because the system detected a brutal attempt to delete it.\nTeampicks has been notified about that.', 'danger')
+				return redirect(url_for('main.index'))
+			try:
+				session['del-attempt']
+			except KeyError:
+				session['del-attempt'] = 0
+			return render_template('delete_account.html', form=form, title=':C')
 		logout_user()
 		return redirect(url_for('main.index'))
 	abort(403)
@@ -151,3 +164,15 @@ def create_group(username):
 			return redirect(url_for('users.create_group', username=current_user.username))
 	return render_template('create_group.html', form=form, title='your new group')
 
+
+@users.route('/pub/<int:p_id>')
+@login_required
+def visit_pub_profile(p_id):
+	p = Pub.query.get(p_id)
+	return render_template('pub_page.html', pub=p)
+
+
+@users.route('/find-pubs')
+@login_required
+def search_pub():
+	return render_template('search_pub.html', pubs=Pub.query.filter(Pub.owner.has(city=current_user.city)).all())

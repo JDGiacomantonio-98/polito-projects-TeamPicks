@@ -2,13 +2,12 @@ body {
 	height: 100vh;
 }
 
-
-
 @media (min-width: 576px) {
     .jumbotron {
         padding: 2rem 2rem;
     }
 }
+
 @media screen and (min-width: 320px) and (max-width: 374px) {
 	.btn-autowidth {
 		width: 100%;
@@ -89,7 +88,7 @@ body {
 }
 
 
-.img-profile-upload {
+.img-profile-dash {
 	border: solid 3px #FFF;
 	width: 155px;
 	height: 155px;
@@ -97,6 +96,13 @@ body {
 	background-size: cover;
 }
 
+.img-profile-search {
+	border: solid 3px #FFF;
+	width: 60px;
+	height: 60px;
+	background-position: center;
+	background-size: cover;
+}
 
 img.app-logo {
     width: 120px;

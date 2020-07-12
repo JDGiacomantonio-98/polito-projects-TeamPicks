@@ -1,0 +1,39 @@
+{% extends 'base_template.html' %}
+
+{% block pagecontent %}
+    <div class="container">
+        <div class="row shadow">
+            <div class="col-6">
+                big img here
+            </div>
+            <div class="col-6">
+                <div class="row">
+                    <div class="col-6">
+                        img
+                    </div>
+                    <div class="col-6">
+                        img
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-6">
+                        img
+                    </div>
+                    <div class="col-6">
+                        img
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="media d-flex align-content-between">
+        <div class="col-5 pl-0">
+            <div class="img-profile shadow-lg mr-0" style="background-image: url('{{ p.owner.imgFile }}')"></div>
+            {% if True %}
+
+            {% else %}
+
+            {% endif %}
+        </div>
+    </div>
+{% endblock pagecontent %}

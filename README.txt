@@ -5,7 +5,7 @@ Last update date : 20/06/10 (yy/mm/dd)
 
 == INSTALLATION ON NEW MACHINES =======================================================================================|
 
-WARNING : THIS PROJECT HAS BEEN DEVELOPED WITH VERSION 3.8 OF PYTHON. (Download here: https://www.python.org/downloads/)
+WARNING: THIS PROJECT HAS BEEN DEVELOPED WITH VERSION 3.8 OF PYTHON. (Download it here: https://www.python.org/downloads/)
 
 To recreate an exact working replica of python3.x venv used during development, follow the instruction below.
 
@@ -30,6 +30,7 @@ You can now run the following commands to complete the procedure and automatical
 You are ready to go!
 
 Some additional information:
+
 *) If any package raise you any exception please downgrade requirements to stable-only package version by using the
 following commands in your terminal :
 
@@ -59,6 +60,7 @@ following commands in your terminal :
 *) To turn your (venv) off :
 
 	    $ venv\Scripts\deactivate
+
 ***********************************************************************************************************************|
 
 == DUMMY POPULATE DATABASES ===========================================================================================|
@@ -76,7 +78,7 @@ use-case for create_userbase() func is as follow:
 		(venv) $ from devkit import create_userbase
 		(venv) $ create_userbase(items=int("int_of_target_user_population"))
 
-Done!Now start the flask server and browse the app taking the role of one of this puppies by logging in with the following
+Done! Now start the flask server and browse the app taking the role of one of this puppies by logging in with the following
 credentials:
 
 		username ->     < choose_one_from_db >
@@ -96,6 +98,7 @@ available :
 If not specified, commands will print a menu where to choose which config profile to load.
 Use 'env' argument in order to let < reset > and < build > commands look in sys environment variables for config profile to
 load.
+
 ************************************************************************************************************************|
 
 

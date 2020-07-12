@@ -66,13 +66,6 @@ def dummy(return_obj=True, model=None, items=1, db_w_test=False, feedbacks=True)
 					   city=rand.city(),
 					   hash=hash_psw('password')
 					   )
-			if itm.sex is None:
-				itm.sex = 'other'
-			elif itm.sex:
-				itm.sex = 'm'
-			else:
-				itm.sex = 'f'
-			itm.set_defaultImg()
 			if rand.boolean(chance_of_getting_true=35):
 				itm.confirmed = True
 			model = 'users'
@@ -90,11 +83,11 @@ def dummy(return_obj=True, model=None, items=1, db_w_test=False, feedbacks=True)
 						subsType=f"{randint(0, 3):02b}",
 						subsExpirationDate=rand.future_date('+90d')
 						)
+			if rand.boolean(chance_of_getting_true=35):
+				itm.confirmed = True
 			if rand.boolean(chance_of_getting_true=70):
 				pub = dummy(model='p', db_w_test=db_w_test)
 				itm.associate_pub(pub)
-			if rand.boolean(chance_of_getting_true=35):
-				itm.confirmed = True
 			model = 'owners'
 		elif model in ('p', 'pubs'):
 			seatsMax = randint(0, 200)
@@ -113,6 +106,8 @@ def dummy(return_obj=True, model=None, items=1, db_w_test=False, feedbacks=True)
 			print('We are sorry but this function is still under development!')
 			itm = Match()
 			model = 'matches'
+		else:
+			return None
 		if not return_obj:
 			db.session.add(itm)
 			try:
@@ -263,11 +258,20 @@ class USER:
 		return fingerprint
 
 	def set_defaultImg(self):
-		if self.sex != 'other':
-			self.profile_img = f'def-{self.sex}-{str(ceil(randint(1, 10) * random()))}.jpg'
+		if (type(self.sex) is bool) or (self.sex is None):
+			if self.sex:
+				self.sex = 'm'
+			elif self.sex is None:
+				self.sex = 'other'
+			else:
+				self.sex = 'f'
+			self.set_defaultImg()
 		else:
-			# create Gravatar instead
-			self.profile_img = 'favicon.png'
+			if self.sex != 'other':
+				self.profile_img = f'def-{self.sex}-{str(ceil(randint(1, 10) * random()))}.jpg'
+			else:
+				# create Gravatar instead
+				self.profile_img = 'favicon.png'
 
 	def get_imgFile(self):
 		if ('def-' in self.profile_img) or (self.profile_img == 'favicon.png'):

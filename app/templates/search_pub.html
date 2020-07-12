@@ -1,0 +1,12 @@
+{% extends'base_template.html' %}
+
+{% block pagecontent %}
+    <div class="container">
+        {% for p in pubs %}
+            <div class="row">
+                <div class="img-profile-search shadow-lg mr-0" style="background-image: url('{{ p.owner.get_imgFile() }}')"></div> owner: {{ p.owner.firstName }} location:{{ p.owner.city }} seats available: {{ p.get_availability() }}
+            </div>
+        {% endfor %}
+    </div>
+
+{% endblock pagecontent %}

@@ -20,11 +20,23 @@ class RegistrationForm_base(FlaskForm):
 
 	submit = SubmitField('Complete registration!')
 
+	def validate_firstName(self, firstName):
+		self.firstName.data = firstName.lower()
+
+	def validate_lastName(self, lastName):
+		self.lastName.data = lastName.lower()
+
 	def validate_username(self, username):
 		if len(self.username.data) > 15:
 			raise ValidationError('Choose a shorter username (max length: 15chars)')
 		if User.query.filter_by(username=username.data).first() or Owner.query.filter_by(username=username.data).first():
 			raise ValidationError('This username has been already taken. Choose a different one.')
+
+	def validate_city(self, city):
+		self.city.data = city.lower()
+
+	def validate_about_me(self, about_me):
+		self.about_me.data = about_me.lower()
 
 	def validate_email(self, email):
 		if User.query.filter_by(email=email.data).first() or Owner.query.filter_by(email=email.data).first():
