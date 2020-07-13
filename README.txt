@@ -1,6 +1,6 @@
 == REQUIREMENT VERSION LOG ====================|
 filename : requirements/req-common.txt
-Last update date : 20/06/10 (yy/mm/dd)
+Last update date : 20/13/10 (yy/mm/dd)
 ************************************************|
 
 == INSTALLATION ON NEW MACHINES =======================================================================================|
@@ -12,26 +12,32 @@ To recreate an exact working replica of python3.x venv used during development, 
 If you currently have installed on your machines multiple version of the interpreter, please select v.3 to create the
 virtual environment. To do this, run this command in your terminal:
 
-		$ python3 -m venv venv
+		(1)  $ python3 -m venv venv
 
 otherwise, if python3 is the only version you use of the interpreter, run the following command instead:
 
-		$ python -m venv venv
+	    (1*) $ python -m venv venv
 
 The former commands will create a folder called 'venv' inside your current working directory. 'venv' will host all
 TeamPicks dependencies without messing up with (or damaging) your machine global python interpreter.
 
 You can now run the following commands to complete the procedure and automatically install all needed dependencies:
 
-	    $ venv\Scripts\activate
-	    (venv) $ pip install -r requirements/req-common.txt
-	    (venv) $ pip install -r requirements/req-dev.txt
+		Windows machines:
+		(2)    $ venv\Scripts\activate
 
-You are ready to go!
+		Macintosh machines:
+		(2*)   $ source venv/bin/activate
+
+		then:
+		(3)    (venv) $ pip install -r requirements/req-common.txt
+		(4)    (venv) $ pip install -r requirements/req-dev.txt
+
+You are ready to go! (we hope)
 
 Some additional information:
 
-*) If any package raise you any exception please downgrade requirements to stable-only package version by using the
+(!) If any package raise you any exception please downgrade requirements to stable-only package version by using the
 following commands in your terminal :
 
 	    $ venv\Scripts\activate
@@ -40,24 +46,24 @@ following commands in your terminal :
 	    (venv) $ pip install -r requirements/req-common-stable.txt
 	    (venv) $ pip install -r requirements/req-dev-stable.txt
 
-*) To update all existing used packages to their latest versions, please run the following commands in your terminal:
+(!) To update all existing used packages to their latest versions, please run the following commands in your terminal:
 
 	    $ venv\Scripts\activate
 	    (venv) pip install --upgrade -r requirements/req-common.txt
 	    (venv) pip install --upgrade -r requirements/req-dev.txt
 
-*) To create or update a package-log file named 'requirements.txt' of all currently used modules by app, run the
+(!) To create or update a package-log file named 'requirements.txt' of all currently used modules by app, run the
 following command in your terminal :
 
-	    (venv) $ pip freeze >requirements/req-common.txt
+	    (venv) $ pip freeze >requirements/req-common-stable.txt
 
-*) To factory reset your (venv) to only original python distribution libraries of your main python interpreter, run the
+(!) To factory reset your (venv) to only original python distribution libraries of your main python interpreter, run the
 following commands in your terminal :
 
 	    (venv) $ pip uninstall -r requirements/req-common.txt
 	    (venv) $ pip uninstall -r requirements/req-dev.txt
 
-*) To turn your (venv) off :
+(!) To turn your (venv) off :
 
 	    $ venv\Scripts\deactivate
 
@@ -73,8 +79,7 @@ right now and what still has to be done. create_userbase() directly invoke the d
 where new user/owner/pub/groups and so on gets created. Even if more advanced configurations can be used, the basic
 use-case for create_userbase() func is as follow:
 
-		(venv) $ flask shell
-			( tests will run ... continue if you do not get any error )
+		(venv) $ flask shell    ( tests will run ... continue if you do not get any error )
 		(venv) $ from devkit import create_userbase
 		(venv) $ create_userbase(items=int("int_of_target_user_population"))
 

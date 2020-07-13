@@ -11,9 +11,9 @@ from app.auth.methods import verify_psw
 
 
 class SearchItemsForm(FlaskForm):
-	searchedItem = StringField(render_kw={'placeholder': 'Search for a group or a friend here!'})
+	searchedItem = StringField(render_kw={'placeholder': 'Search for a group or a friend here!', 'class': 'form-control w-100'})
 
-	submit = SubmitField('Search')
+	submit = SubmitField('Search', render_kw={'class': 'btn btn-outline-info'})
 
 
 class ProfileDashboardForm(FlaskForm):
@@ -51,7 +51,8 @@ class ProfileDashboardForm(FlaskForm):
 
 class UploadProfileImgForm(FlaskForm):
 	img = FileField('update your profile image', validators=[FileAllowed(['jpeg', 'jpg', 'png'])])
-	about_me = TextAreaField('About me', validators=[Length(max=250)])
+	about_me = TextAreaField('About me', validators=[Length(max=250)], render_kw={'class': 'form-control',
+																				 'rows': '12'})
 	upload_img = SubmitField('upload', render_kw={'class': 'btn btn-outline-dark btn-sm'})
 	modify_about_me = SubmitField('modify', render_kw={'class': 'btn btn-outline-dark btn-sm'})
 

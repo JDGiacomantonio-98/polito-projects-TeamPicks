@@ -93,7 +93,10 @@ def profile(username):
 		form_info.lastName.data = capwords(current_user.lastName)
 		form_info.username.data = current_user.username
 		form_info.email.data = current_user.email
-		form_img.about_me.data = current_user.about_me.capitalize()
+		if current_user.about_me:
+			form_img.about_me.data = current_user.about_me.capitalize()
+		else:
+			form_img.about_me.data = ''
 		resp = make_response(render_template('profile.html', title=f'{current_user.firstName} {current_user.lastName}',
 											 is_viewer=(current_user.id != pr_u.id), user=pr_u, imgFile=pr_u.get_imgFile(),
 											 carousel=pr_u.get_imgCarousel(), form_info=form_info, form_img=form_img, form_carousel=form_carousel, groups=pr_u.groups.count()))
@@ -167,12 +170,40 @@ def create_group(username):
 
 @users.route('/pub/<int:p_id>')
 @login_required
-def visit_pub_profile(p_id):
+def visit_pub(p_id):
 	p = Pub.query.get(p_id)
 	return render_template('pub_page.html', pub=p)
 
 
-@users.route('/find-pubs')
+@users.route('/find-pubs', methods=['GET', 'POST'])
 @login_required
 def search_pub():
-	return render_template('search_pub.html', pubs=Pub.query.filter(Pub.owner.has(city=current_user.city)).all())
+	form = SearchItemsForm()
+	def_pubs = []
+	for p in Pub.query.filter(Pub.owner.has(city=current_user.city)).all():
+		if p.bookable:
+			def_pubs.append(p)
+	if request.method == 'POST':
+		p = Pub.query.filter_by(name=form.searchedItem.data).first_or_404()
+		return render_template('search_pub.html', form=form, def_pubs=def_pubs, query_pub=p)
+	return render_template('search_pub.html', form=form, def_pubs=def_pubs)
+
+
+@users.route('/follow/<int:u_id>')
+@login_required
+def follow(u_id):
+	u = User.query.get(u_id)
+	if not current_user.is_following(u):
+		current_user.follow(u)
+		flash(f'You are now following{u.username}', 'success')
+	return redirect(url_for('users.profile', username=u.username))
+
+
+@users.route('/unfollow/<int:u_id>')
+@login_required
+def unfollow(u_id):
+	u = User.query.get(u_id)
+	if current_user.is_following(u):
+		current_user.unfollow(u)
+		flash(f'You are not following {u.username} anymore.', 'danger')
+	return redirect(url_for('users.profile', username=u.username))

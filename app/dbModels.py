@@ -58,12 +58,12 @@ def dummy(return_obj=True, model=None, items=1, db_w_test=False, feedbacks=True)
 			itm = User(username=rand.user_name(),
 					   email=rand.email(),
 					   last_active=rand.past_date(),
-					   firstName=rand.first_name(),
-					   lastName=rand.last_name(),
+					   firstName=rand.first_name().lower(),
+					   lastName=rand.last_name().lower(),
 					   age=randint(16, 90),
 					   sex=rand.null_boolean(),
-					   about_me=rand.text(max_nb_chars=250),
-					   city=rand.city(),
+					   about_me=rand.text(max_nb_chars=250).lower(),
+					   city=rand.city().lower(),
 					   hash=hash_psw('password')
 					   )
 			if rand.boolean(chance_of_getting_true=35):
@@ -73,12 +73,12 @@ def dummy(return_obj=True, model=None, items=1, db_w_test=False, feedbacks=True)
 			itm = Owner(username=rand.user_name(),
 						email=rand.email(),
 						last_active=rand.past_date(),
-						firstName=rand.first_name(),
-						lastName=rand.last_name(),
+						firstName=rand.first_name().lower(),
+						lastName=rand.last_name().lower(),
 						age=randint(18, 90),
 						sex=rand.null_boolean(),
-						about_me=rand.text(max_nb_chars=250),
-						city=rand.city(),
+						about_me=rand.text(max_nb_chars=250).lower(),
+						city=rand.city().lower(),
 						hash=hash_psw('password'),
 						subsType=f"{randint(0, 3):02b}",
 						subsExpirationDate=rand.future_date('+90d')
@@ -91,11 +91,12 @@ def dummy(return_obj=True, model=None, items=1, db_w_test=False, feedbacks=True)
 			model = 'owners'
 		elif model in ('p', 'pubs'):
 			seatsMax = randint(0, 200)
-			itm = Pub(address=rand.address(),
+			itm = Pub(name=rand.text(max_nb_chars=25),
+					  address=rand.address(),
 					  bookable=rand.boolean(chance_of_getting_true=50),
 					  seatsMax=seatsMax,
 					  rating=randint(0, 5),
-					  description=rand.text(max_nb_chars=500))
+					  description=rand.text(max_nb_chars=500).lower())
 			if itm.bookable:
 				itm.seatsBooked = seatsMax - randint(0, seatsMax)
 			model = 'pubs'
@@ -131,7 +132,7 @@ def dummy(return_obj=True, model=None, items=1, db_w_test=False, feedbacks=True)
 					if rand.boolean(chance_of_getting_true=35):
 						# join group
 						for _ in range(1, randint(1, 3)):
-							g = Group(name=f'{rand.text(max_nb_chars=15)}')
+							g = Group(name=rand.text(max_nb_chars=15))
 							itm.join_as_admin(g)
 				if db_w_test:
 					db.session.delete(itm)
@@ -381,9 +382,10 @@ class User(db.Model, UserMixin, USER):
 			db.session.commit()
 
 	def unfollow(self, user):
-		f = self.is_followed_by(user, return_follow=True)
+		f = self.is_following(user, return_follow=True)
 		if f[0]:
 			db.session.delete(f[1])
+			db.session.commit()
 
 	def is_following(self, user, return_follow=False):
 		if user.id is None:	# to prevent uncommited users to be followed by self
@@ -462,6 +464,8 @@ class Pub(db.Model):
 
 	id = db.Column(db.Integer, primary_key=True)
 	owner_id = db.Column(db.Integer, db.ForeignKey('owners.id'))
+	name = db.Column(db.String(80),
+					 nullable=False)
 	address = db.Column(db.String,
 						nullable=False)
 	bookable = db.Column(db.Boolean,

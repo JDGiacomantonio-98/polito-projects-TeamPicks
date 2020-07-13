@@ -25,15 +25,16 @@
                 </div>
             </div>
         </div>
-    </div>
-    <div class="media d-flex align-content-between">
-        <div class="col-5 pl-0">
-            <div class="img-profile shadow-lg mr-0" style="background-image: url('{{ p.owner.imgFile }}')"></div>
-            {% if True %}
+        <div class="media d-flex align-content-between">
+            <div class="col-5 pl-0">
+                <div class="img-profile shadow-lg mr-0" style="background-image: url('{{ pub.owner.get_imgFile() }}')"></div>
+                {% if True %}
 
-            {% else %}
+                {% else %}
 
-            {% endif %}
+                {% endif %}
+            </div>
         </div>
     </div>
+
 {% endblock pagecontent %}

@@ -16,11 +16,15 @@ body {
 		display: flex;
 	}
 
-
     img.app-logo {
         width: 100px !important;
         height: 100px !important;
     }
+
+	.navbar-light .navbar-toggler {
+
+    	padding: 0 !important;
+	}
 }
 
 @media screen and (min-width: 375px) and (max-width: 424px) {
@@ -71,6 +75,15 @@ body {
     border-top: 0 !important;
 }
 
+nav {
+  border-bottom: 1px solid darkgrey;
+}
+
+.navbar-light .navbar-toggler {
+
+    border-color: transparent !important;
+}
+
 .img-profile {
 	border-radius: 100%;
 	border: solid 3px #FFF;
@@ -85,6 +98,8 @@ body {
 	border-radius: 5000px;
 	height: 30px;
 	width: 30px;
+	background-position: center;
+	background-size: cover;
 }
 
 
