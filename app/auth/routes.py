@@ -1,7 +1,7 @@
 from flask import render_template, url_for, flash, redirect, request, session, make_response
 from flask_login import login_user, logout_user, current_user
 
-from app.auth.methods import hash_psw, verify_psw, verify_token, confirm_account
+from app.auth.methods import hash_psw, verify_psw, verify_token, confirm_account, lock_account
 from app.auth.forms import RegistrationForm_base, RegistrationForm_owner, LoginForm, ResetPswForm, ResetRequestForm
 from app.auth import auth
 from app.main.methods import send_confirmation_email, send_pswReset_email, find_user, cherryPick_user
@@ -71,7 +71,7 @@ def activate(token, email_update):
 
 
 @auth.route('/login', methods=['GET', 'POST'])
-def login():
+def login(ATTEMPTS=5):
 	if current_user.is_authenticated and current_user.confirmed:
 		return redirect(url_for('users.home', username=current_user.username))
 	form = LoginForm()
@@ -79,11 +79,19 @@ def login():
 		if form.validate_on_submit():
 			try:
 				if session['trace']:
+					try:
+						session['log-attempt']
+					except KeyError:
+						session['log-attempt'] = 0
 					trace = session['trace'].split('%')
 					if form.credential.data in (trace[1], trace[2]):
 						query = cherryPick_user(pull_from=trace[0], u_id=trace[3])
 					else:
 						session.pop('trace')
+						try:
+							session.pop('log-attempt')
+						except KeyError:
+							session['log-attempt'] = 0
 						query = find_user(form.credential.data)
 				else:
 					query = find_user(form.credential.data)
@@ -105,12 +113,18 @@ def login():
 						send_confirmation_email(recipient=current_user)
 						flash("Your account still require activation. Please check your email inbox.", 'warning')
 						return redirect(url_for('auth.login'))
-				flash('Login error : Invalid email or password.', 'danger')
-				session['trace'] = f'{query[1]}%{query[0].username}%{query[0].email}%{query[0].id}'
-				return render_template('login.html', title='Login page', form=form)
+				session['log-attempt'] += 1
+				if ATTEMPTS - session['log-attempt'] != 0:
+					if ATTEMPTS - session['log-attempt'] <= 3:
+						flash(f'{ATTEMPTS - session["log-attempt"]} attempts remaining', 'danger')
+					flash('Login error : Invalid email or password.', 'danger')
+					session['trace'] = f'{query[1]}%{query[0].username}%{query[0].email}%{query[0].id}'
+					return render_template('login.html', title='Login page', form=form)
+				lock_account(query[0])
 			flash("The provided credential are not linked to any existing account. Please try something else.", 'secondary')
 			return render_template('login.html', title='Login page', form=form)
 		return render_template('login.html', title='Login page', form=form)
+	session.clear()
 	return render_template('login.html', title='Login page', form=form)
 
 

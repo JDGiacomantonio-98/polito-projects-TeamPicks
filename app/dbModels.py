@@ -102,16 +102,16 @@ def dummy(return_obj=True, model=None, items=1, db_w_test=False, feedbacks=True)
 				itm.associate_pub(pub)
 			model = 'owners'
 		elif model in ('p', 'pubs'):
-			seatsMax = randint(0, 200)
+			seats_max = randint(0, 200)
 			itm = Pub(name=faker.text(max_nb_chars=25),
 					  address=faker.street_address().lower(),
 					  bookable=faker.boolean(chance_of_getting_true=50),
 					  phone_num=faker.phone_number(),
-					  seatsMax=seatsMax,
+					  seats_max=seats_max,
 					  rating=randint(0, 5),
 					  description=faker.text(max_nb_chars=500).lower())
 			if itm.bookable:
-				itm.seatsBooked = seatsMax - randint(0, seatsMax)
+				itm.seats_booked = seats_max - randint(0, seats_max)
 			model = 'pubs'
 		elif model in ('g', 'groups'):
 			itm = Group(name=faker.sentence(nb_words=8))
@@ -482,18 +482,19 @@ class Pub(db.Model):
 
 	id = db.Column(db.Integer, primary_key=True)
 	owner_id = db.Column(db.Integer, db.ForeignKey('owners.id'))
-	name = db.Column(db.String(80),
+	name = db.Column(db.String(50),
 					 nullable=False)
 	address = db.Column(db.String,
 						nullable=False)
 	bookable = db.Column(db.Boolean,
-						 nullable=False)
+						 nullable=False,
+						 default=False)
 	phone_num = db.Column(db.String(20))
-	seatsMax = db.Column(db.Integer,
-						 nullable=False)
-	seatsBooked = db.Column(db.Integer,
-							nullable=False,
-							default=0)
+	seats_max = db.Column(db.Integer,
+						  nullable=False)
+	seats_booked = db.Column(db.Integer,
+							 nullable=False,
+							 default=0)
 	rating = db.Column(db.Integer,
 					   nullable=False,
 					   default=0)
@@ -507,6 +508,10 @@ class Pub(db.Model):
 								   lazy='dynamic',
 								   cascade='all, delete-orphan')
 
+	def __init__(self, **kwargs):
+		super(Pub, self).__init__(**kwargs)
+
+
 	def get_address(self):
 		return self.address
 
@@ -517,7 +522,7 @@ class Pub(db.Model):
 		return self.description
 
 	def get_availability(self):
-		return self.seatsMax - self.seatsBooked
+		return self.seats_max - self.seats_booked
 
 	def notify(self, eventType, item=None):
 		# here we should notify Owner of the incoming request in order to let him accept it or not
@@ -548,7 +553,7 @@ class Pub(db.Model):
 		return tempRes
 
 	def book_for(self, guests):
-		self.seatsBooked += guests
+		self.seats_booked += guests
 
 
 class Group(db.Model):

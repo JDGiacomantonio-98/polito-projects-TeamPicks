@@ -1,0 +1,24 @@
+{% extends 'base_template.html' %}
+
+{% block navbar %}
+    {% if pull_from == 'user' %}
+        {% include 'user_nav.html' %}
+    {% else %}
+        {% include 'owner_nav.html' %}
+    {% endif %}
+{% endblock navbar %}
+
+{% block pagecontent %}
+    {{ form.name.label }}
+    {{ form.name }}
+    {{ form.address.label }}
+    {{ form.address }}
+    {{ form.phone_num.label }}
+    {{ form.phone_num}}
+    {{ form.seats_max.label }}
+    {{ form.seats_max }}
+    {{ form.description.label }}
+    {{ form.description }}
+
+    {{ form.submit }}
+{% endblock pagecontent %}

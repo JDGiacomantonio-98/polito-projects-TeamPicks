@@ -1,7 +1,7 @@
 from flask_login import current_user
 from flask_wtf import FlaskForm, RecaptchaField
 from flask_wtf.file import FileField, FileAllowed
-from wtforms import StringField, PasswordField, SubmitField, TextAreaField, MultipleFileField
+from wtforms import StringField, PasswordField, SubmitField, TextAreaField, MultipleFileField, IntegerField
 from wtforms.validators import DataRequired, Length, Email, ValidationError
 
 from app.dbModels import User, Owner, Group
@@ -71,7 +71,7 @@ class UploadProfileCarouselForm(FlaskForm):
 
 class DeleteAccountForm(FlaskForm):
 	psw = PasswordField('', validators=[DataRequired(), Length(min=8)], render_kw={'placeholder': 'password'})
-	submit = SubmitField('Remove my account :(')
+	confirm_delete = SubmitField('Permanently delete my account')
 
 	def validate_psw(self, psw):
 		if not verify_psw(current_user.hash, psw.data):
@@ -86,3 +86,13 @@ class CreateGroupForm(FlaskForm):
 	def validate_name(self, name):
 		if Group.query.filter_by(name=name).first():
 			raise ValidationError('Ouch! you need to be more creative : this group already exist, choose another name.')
+
+
+class CreatePubForm(FlaskForm):
+	name = StringField('Your amazing pub name :', validators=[DataRequired(), Length(max=50)])
+	address = StringField('Street address :', validators=[DataRequired()])
+	phone_num = StringField('Phone number :', validators=[DataRequired(), Length(min=10, max=20)])
+	seats_max = IntegerField('Please select your maximum amount of seats :')
+	description = TextAreaField('A brief description of your pub', render_kw={'placeholder': 'what do you do the best ? Tell it here to your customers!'})
+
+	submit = SubmitField('Create pub')

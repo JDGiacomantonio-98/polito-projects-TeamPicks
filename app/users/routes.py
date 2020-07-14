@@ -6,7 +6,7 @@ from flask_login import logout_user, login_required, current_user
 
 from app.users.methods import upload_profilePic, upload_carousel
 from app.auth.methods import lock_account
-from app.users.forms import ProfileDashboardForm, UploadProfileImgForm, CreateGroupForm, SearchItemsForm, DeleteAccountForm, UploadProfileCarouselForm
+from app.users.forms import ProfileDashboardForm, UploadProfileImgForm, CreateGroupForm, SearchItemsForm, DeleteAccountForm, UploadProfileCarouselForm, CreatePubForm
 from app.users import users
 from app.main.methods import send_confirmation_email, handle_userBin
 from app import db
@@ -36,16 +36,16 @@ def home(username):
 			if session['pull_from'] == 'user':
 				u = User.query.filter_by(username=form.searchedItem.data).first()
 				if u is None:
-					return render_template('home.html', form=form, title='home', def_pubs=def_pubs, u=u)
+					return render_template('home.html', form=form, title='home', def_pubs=def_pubs, u=u, pull_from=session['pull_from'])
 				session['q'] = u.id # avoids redundant queries in the profile page
 				return redirect(url_for('users.profile', username=u.username))
 			u = Owner.query.filter_by(username=form.searchedItem.data).first()
 			if u is None:
-				return render_template('home.html', form=form, title='home', def_pubs=def_pubs, u=u)
+				return render_template('home.html', form=form, title='home', def_pubs=def_pubs, u=u, pull_from=session['pull_from'])
 			session['q'] = u.id # avoids redundant queries in the profile page
 			return redirect(url_for('users.profile', username=u.username))
 		return redirect(url_for('users.home', username=current_user.username))
-	return render_template('home.html', form=form, title='home', def_pubs=def_pubs)
+	return render_template('home.html', form=form, title='home', def_pubs=def_pubs, pull_from=session['pull_from'])
 
 
 @users.route('/<username>/profile-dashboard', methods=['GET', 'POST'])
@@ -136,7 +136,7 @@ def profile(username):
 			resp = make_response(render_template('profile.html', pull_from=session['pull_from'], title=f'{current_user.firstName} {current_user.lastName}',
 												is_viewer=(current_user.id != profile_u.id), user=current_user, imgFile=current_user.get_imgFile(),
 												carousel=current_user.get_imgCarousel(), reservations=current_user.pub.reservations.count(),
-												form_info=form_info, form_img=form_img, form_carousel=form_carousel))
+												form_info=form_info, form_img=form_img, form_carousel=form_carousel, form_delete=form_delete))
 		else:
 			resp = make_response(render_template('profile.html', pull_from=session['pull_from'], title=f'{current_user.firstName} {current_user.lastName}',
 												is_viewer=(current_user.id != profile_u.id), user=current_user, imgFile=current_user.get_imgFile(),
@@ -163,7 +163,7 @@ def profile(username):
 
 @users.route('/delete/<u_id>', methods=['GET', 'POST'])
 @login_required
-def delete_account(u_id, ATTEMPTS=3):
+def delete_account(u_id, ATTEMPTS=10):
 	if int(u_id) == current_user.id: 	# deletion is authorized only by code and not by manual writing the URL
 		if not current_user.is_acc_locked():
 			form = DeleteAccountForm()
@@ -178,8 +178,9 @@ def delete_account(u_id, ATTEMPTS=3):
 					session.clear()
 					return redirect(url_for('main.index'))
 				if ATTEMPTS - session['del-attempt'] != 0:
-					flash(f'{ATTEMPTS - session["del-attempt"]} attempts remaining', 'danger')
-					return render_template('delete_account.html', form=form, title=':C')
+					if ATTEMPTS - session['del-attempt'] <= 3:
+						flash(f'{ATTEMPTS - session["del-attempt"]} attempts remaining', 'danger')
+					return render_template('delete_account.html', form=form, title='are you sure about that?', pull_from=session['pull_from'])
 				lock_account(current_user)
 				logout_user()
 				# notify teampicks staff by email
@@ -189,7 +190,7 @@ def delete_account(u_id, ATTEMPTS=3):
 				session['del-attempt']
 			except KeyError:
 				session['del-attempt'] = 0
-			return render_template('delete_account.html', form=form, title=':C')
+			return render_template('delete_account.html', form=form, title=':C', pull_from=session['pull_from'])
 		logout_user()
 		return redirect(url_for('main.index'))
 	abort(403)
@@ -205,7 +206,26 @@ def create_group(username):
 				itm = Group(name=form.name.data)
 		else:
 			return redirect(url_for('users.create_group', username=current_user.username))
-	return render_template('create_group.html', form=form, title='your new group')
+	return render_template('create_group.html', form=form, title='your new group', pull_from=session['pull_from'])
+
+
+@users.route('/<username>/create-new-pub')
+@login_required
+def create_pub(username):
+	if session['pull_from'] == 'user':
+		return redirect(url_for('users.home', username=current_user.username))
+	form = CreatePubForm()
+	if request.method == 'POST':
+		p = Pub(name=form.name.data,
+				address=form.address.data,
+				phone_num=form.phone_num.data,
+				seats_max=form.seats_max.data,
+				description=form.description.data
+				)
+		db.session.add(p)
+		db.session.commit()
+		current_user.associate_pub(p)
+	return render_template('create_pub.html', form=form, pull_from=session['pull_from'])
 
 
 @users.route('/pub/<int:p_id>')
@@ -214,7 +234,7 @@ def visit_pub(p_id):
 	p = Pub.query.get(p_id)
 	carousel = p.owner.get_imgCarousel()
 	grid = len(carousel)
-	return render_template('pub_page.html', pub=p, carousel=carousel, grid=grid)
+	return render_template('pub_page.html', pub=p, carousel=carousel, grid=grid, pull_from=session['pull_from'])
 
 
 @users.route('/find-pubs', methods=['GET', 'POST'])
@@ -227,8 +247,8 @@ def search_pub():
 			def_pubs.append(p)
 	if request.method == 'POST':
 		p = Pub.query.filter_by(name=form.searchedItem.data).first()
-		return render_template('search_pub.html', form=form, def_pubs=def_pubs, query_pub=p)
-	return render_template('search_pub.html', form=form, def_pubs=def_pubs)
+		return render_template('search_pub.html', form=form, def_pubs=def_pubs, query_pub=p, pull_from=session['pull_from'])
+	return render_template('search_pub.html', form=form, def_pubs=def_pubs, pull_from=session['pull_from'])
 
 
 @users.route('/follow/<int:u_id>')

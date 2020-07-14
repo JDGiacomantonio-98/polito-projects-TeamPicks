@@ -1,0 +1,97 @@
+<nav class="navbar navbar-light pb-1">
+    <div class="container">
+        <a class="navbar-brand mb-0 h1" href="{{ url_for('main.index') }}">
+        <img src="{{ url_for('static', filename='/app-icons/logo-min.png') }}" width="30" height="30" class="d-inline-block align-top" alt="Website Logo">
+        TeamPicks
+        </a>
+        <button class="navbar-toggler d-md-none ml-auto" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="btn-group order-md-2">
+            <button type="button" class="btn btn-primary-outline btn-sm">
+                <a class="nav-link active text-dark p-0 p-md-2" href="{{ url_for('users.profile', username=current_user.username) }}">
+                    <span class="px-2 d-none d-lg-inline-flex">Profile |</span>
+{#                                            <div class="img-profile-nav" style="background-image: url('{{ current_user.get_imgFile() }}')"></div>#}
+                    <img class="img-profile-nav profile-thumbnail" src="{{ current_user.get_imgFile() }}" alt='user profile image'>
+                </a>
+            </button>
+            <button type="button" class="btn btn-primary-outline btn-sm dropdown-toggle dropdown-toggle-split" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                <span class="sr-only">Toggle Dropdown</span>
+            </button>
+            <div class="dropdown-menu">
+                <a class="dropdown-item" href="#">Action</a>
+                <a class="dropdown-item text-dark d-flex align-items-center justify-content-between" href="{{ url_for('errors.error_wip', caller_route='chat') }}">
+                    Chats <i class="far fa-comments fa-fw" style="color: green;"></i>
+                </a>
+                <a class="text-dark dropdown-item d-flex align-items-center justify-content-between" href="{{ url_for('auth.logout') }}">
+                    Log Out <i class="fas fa-power-off fa-fw" style="color: red;"></i>
+                </a>
+            </div>
+        </div>
+        <div class="collapse navbar-collapse" id="navbarSupportedContent">
+           <div class="media">
+                <div class="media-body">
+                    <a class="nav-link active text-dark pl-1" href="{{ url_for('users.search_pub') }}">
+                        Find Pubs
+                    </a>
+                </div>
+                <a class="align-self-center mr-3" href="{{ url_for('users.search_pub') }}">
+                    <i class="fas fa-map-marked-alt" style="color: darkslategrey; width: 20px; height: 20px" ></i>
+                </a>
+           </div>
+           <div class="media">
+                <div class="media-body">
+                    <a class="nav-link active text-dark pl-1" href="{{ url_for('errors.error_wip', caller_route='booking-manager') }}">
+                        Booking manager
+                    </a>
+                </div>
+                <a class="align-self-center mr-3" href="{{ url_for('errors.error_wip', caller_route='booking-manager') }}">
+                    <i class="fas fa-calendar-check" style="color: darkslategrey; width: 20px; height: 20px"></i>
+                </a>
+           </div>
+           <div class="media">
+                <div class="media-body">
+                    <a class="nav-link active text-dark pl-1" href="{{ url_for('errors.error_wip', caller_route='chat') }}">
+                        Chats
+                    </a>
+                </div>
+                <a class="align-self-center mr-3" href="{{ url_for('errors.error_wip', caller_route='chat') }}">
+                    <i class="far fa-comments" style="color: darkslategrey; width: 25px; height: 30px"></i>
+                </a>
+            </div>
+        </div>
+        <div class="row justify-content-between d-md-flex d-none">
+            <div class="media">
+                <div class="media-body">
+                    <a class="nav-link active text-dark " href="{{ url_for('users.search_pub') }}">
+                        Find Pubs
+                    </a>
+                </div>
+                <a class="align-self-center mr-3" href="{{ url_for('users.search_pub') }}">
+                    <i class="fas fa-map-marked-alt" style="color: darkslategrey; width: 20px; height: 20px" ></i>
+                </a>
+            </div>
+            <div class="media">
+                <div class="media-body">
+                    <a class="nav-link active text-dark" href="{{ url_for('errors.error_wip', caller_route='booking-manager') }}">
+                        Booking manager
+                    </a>
+                </div>
+                <a class="align-self-center mr-3" href="{{ url_for('errors.error_wip', caller_route='booking-manager') }}">
+                    <i class="fas fa-calendar-check" style="color: darkslategrey; width: 20px; height: 20px"></i>
+                </a>
+            </div>
+            <div class="media">
+                <div class="media-body">
+                    <a class="nav-link active text-dark" href="{{ url_for('errors.error_wip', caller_route='chat') }}">
+                        Chats
+                    </a>
+                </div>
+                <a class="align-self-center mr-3" href="{{ url_for('errors.error_wip', caller_route='chat') }}">
+                    <i class="far fa-comments" style="color: darkslategrey; width: 25px; height: 30px"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+</nav>

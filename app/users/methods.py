@@ -12,7 +12,7 @@ def upload_profilePic(imgFile):
 		fileName = current_user.profile_img
 		return fileName
 	if current_user.profile_img not in ('def_', 'favicon'):
-		bin_url = handle_userBin(current_user.get_file_address())
+		bin_url = handle_userBin(current_user.get_file_address(), absolute_url=True)
 		try:
 			remove(f'{bin_url}{current_user.profile_img}')
 		except FileNotFoundError:

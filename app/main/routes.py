@@ -41,8 +41,3 @@ def print_search_results(query_obj):
 def contact_us():
 	return render_template('contact_us.html', title='Let Us Know!', heading='We love to hear from you.')
 
-
-@main.route('/<callerPage>/work-in-progress')
-def show_wip(callerPage):
-	return render_template('errors/wip.html')
-

@@ -1,5 +1,13 @@
 {% extends 'base_template.html' %}
 
+{% block navbar %}
+    {% if pull_from == 'user' %}
+        {% include 'user_nav.html' %}
+    {% else %}
+        {% include 'owner_nav.html' %}
+    {% endif %}
+{% endblock navbar %}
+
 {%  block pagecontent %}
     <div class="row mb-3 shadow rounded" style="width: 850px">
     <form method="POST" action="#">

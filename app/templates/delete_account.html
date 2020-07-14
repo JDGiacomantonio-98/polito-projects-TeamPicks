@@ -1,36 +1,65 @@
 {% extends 'base_template.html' %}
 
+{% block navbar %}
+    {% if pull_from == 'user' %}
+        {% include 'user_nav.html' %}
+    {% else %}
+        {% include 'owner_nav.html' %}
+    {% endif %}
+{% endblock navbar %}
+
 {% block pagecontent %}
-    <div class="container">
-        <div class="d-flex justify-content-center">
-            <div class="shadow p-3 mb-3 mt-3 bg-white rounded" style="width: 555px">
-            <!-- POST method even if exposes user data into POST request url, is safe because we implemented CSRF token -->
-                <form method="POST" action="#">
-                    {{ form.hidden_tag() }} <!--This adds CSRF (Cross-Site Something) token || it protects the app-->
-                    <fieldset>
-                        <legend>Delete account</legend>
-                        <div class="row">
-                            <div class="col-9 pr-1">
-                                {% if form.psw.errors %}
-                                    {{ form.psw(class="form-control form-control-sm is-invalid") }}
-                                    <div class="invalid-feedback">
-                                        <small>
-                                            {% for error in form.psw.errors %}
-                                                <span style="color: red">{{ error }}</span>
-                                            {% endfor %}
-                                        </small>
-                                    </div>
-                                {% else %}
-                                    {{ form.psw(class="form-control") }}
-                                {%  endif %}
-                            </div>
-                            <div class="col-3 pl-1">
-                                {{ form.submit(class="btn btn-outline-danger") }}
-                            </div>
+    <div class="container d-flex align-items-start justify-content-center mt-4" style="height: 80vh">
+        <!-- POST method even if exposes user data into POST request url, is safe because we implemented CSRF token -->
+        <div class="border border-light shadow-sm px-3 py-3 bg-white rounded">
+            <div class="text-monospace">This action cannot be redeemed.</div>
+            <form method="POST" action="#" class="w-100">
+                {{ form.hidden_tag() }} <!--This adds CSRF (Cross-Site Something) token || it protects the app-->
+                <div class="col-12 px-0 py-2">
+                    {% if form.psw.errors %}
+                        {{ form.psw(class="form-control form-control-sm is-invalid") }}
+                        <div class="invalid-feedback">
+                            <small>
+                                {% for e in form.psw.errors %}
+                                    <span style="color: red">{{ e }}</span>
+                                {% endfor %}
+                            </small>
                         </div>
-                    </fieldset>
-                </form>
-            </div>
+                    {% else %}
+                        <div>{{ form.psw(class="form-control") }}</div>
+                    {%  endif %}
+                </div>
+                  <div class="mb-2">
+                      <div class="pl-0 text-monospace">
+                          {{ form.confirm_delete(class="btn btn-sm btn-outline-danger w-100") }}
+                      </div>
+                  </div>
+            </form>
         </div>
     </div>
 {%  endblock pagecontent %}
+        {#            <form method="POST" action="#" class="w-100">#}
+{#                {{ form.hidden_tag() }} <!--This adds CSRF (Cross-Site Something) token || it protects the app-->#}
+{#                <div class="row">#}
+{#                    <div class="col-12 py-2 d-flex justify-content-start ">#}
+{#                        <div class="h4 mb-0">Delete your account</div>#}
+{#                    </div>#}
+{#                    <div class="col-12 col-md-6 py-2">#}
+{#                        {% if form.psw.errors %}#}
+{#                            {{ form.psw(class="form-control form-control-sm is-invalid") }}#}
+{#                            <div class="invalid-feedback">#}
+{#                                <small>#}
+{#                                    {% for error in form.psw.errors %}#}
+{#                                        <span style="color: red">{{ error }}</span>#}
+{#                                    {% endfor %}#}
+{#                                </small>#}
+{#                            </div>#}
+{#                        {% else %}#}
+{#                            {{ form.psw(class="form-control") }}#}
+{#                        {%  endif %}#}
+{#                    </div>#}
+{#                    <div class="col-12 col-md-6 py-2">#}
+{#                        {{ form.submit(class="btn btn-outline-danger w-100") }}#}
+{#                    </div>#}
+{#                </div>#}
+{#                </form>#}

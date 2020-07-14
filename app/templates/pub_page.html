@@ -1,91 +1,99 @@
 {% extends 'base_template.html' %}
 
+{% block navbar %}
+    {% if pull_from == 'user' %}
+        {% include 'user_nav.html' %}
+    {% else %}
+        {% include 'owner_nav.html' %}
+    {% endif %}
+{% endblock navbar %}
+
 {% block pagecontent %}
     <div class="container">
         <div class="mb-3">
-            <div class="border row mx-1">
+            <div class="row no-gutters">
                 {% if grid == 0 %}
                     <div class="col-12">
                         <iframe class='w-100 h-100' src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d22551.15162500506!2d7.635232462821528!3d45.04737381226959!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x478620b85cabc337%3A0xd97006264fbdaf1b!2sPolytechnic%20of%20Turin!5e0!3m2!1sen!2sit!4v1594720242102!5m2!1sen!2sit" width="600" height="450" frameborder="0" style="border:0;" allowfullscreen="" aria-hidden="false" tabindex="0"></iframe>
                     </div>
                 {% elif grid == 1 %}
                     <div class="col-12">
-                         <div class="img-profile-dash shadow-sm mr-0" style="background-image: url('{{ carousel[0] }}')"></div>
+                         <div class="img-pub-page shadow-sm mr-0" style="background-image: url('{{ carousel[0] }}')"></div>
                     </div>
                 {% else %}
                     <div class="col-6">
                         {% if grid in (4, 6, 8) %}
                             <div class="row">
-                                <div class="img-profile-dash shadow-sm mr-0" style="background-image: url('{{ carousel[0] }}')"></div>
+                                <div class="img-pub-page shadow-sm mr-0" style="background-image: url('{{ carousel[0] }}')"></div>
                             </div>
                             <div class="row">
-                                <div class="img-profile-dash shadow-sm mr-0" style="background-image: url('{{ carousel[1] }}')"></div>
+                                <div class="img-pub-page shadow-sm mr-0" style="background-image: url('{{ carousel[1] }}')"></div>
                             </div>
                         {% else %}
-                            <div class="img-profile-dash shadow-sm mr-0" style="background-image: url('{{ carousel[0] }}')"></div>
+                            <div class="img-pub-page shadow-sm mr-0 h-100" style="background-image: url('{{ carousel[0] }}')"></div>
                         {% endif %}
                     </div>
                     {% if grid in (3, 5, 6) %}
                         <div class="col-3">
                             {% if grid in (5, 6) %}
                                 <div class="row">
-                                    <div class="img-profile-dash shadow-sm mr-0" style="background-image: url('{{ carousel[1] }}')"></div>
+                                    <div class="img-pub-page shadow-sm mr-0" style="background-image: url('{{ carousel[1] }}')"></div>
                                 </div>
                                 <div class="row">
-                                    <div class="img-profile-dash shadow-sm mr-0" style="background-image: url('{{ carousel[2] }}')"></div>
+                                    <div class="img-pub-page shadow-sm mr-0" style="background-image: url('{{ carousel[2] }}')"></div>
                                 </div>
                             {% else %}
-                                <div class="img-profile-dash shadow-sm mr-0" style="background-image: url('{{ carousel[1] }}')"></div>
+                                <div class="img-pub-page shadow-sm mr-0" style="background-image: url('{{ carousel[1] }}')"></div>
                             {% endif %}
                         </div>
                         <div class="col-3">
                             {% if grid in (5, 6) %}
                                 <div class="row">
-                                    <div class="img-profile-dash shadow-sm mr-0" style="background-image: url('{{ carousel[3] }}')"></div>
+                                    <div class="img-pub-page shadow-sm mr-0" style="background-image: url('{{ carousel[3] }}')"></div>
                                 </div>
                                 <div class="row">
-                                    <div class="img-profile-dash shadow-sm mr-0" style="background-image: url('{{ carousel[4] }}')"></div>
+                                    <div class="img-pub-page shadow-sm mr-0" style="background-image: url('{{ carousel[4] }}')"></div>
                                 </div>
                             {% else %}
-                                <div class="img-profile-dash shadow-sm mr-0" style="background-image: url('{{ carousel[2] }}')"></div>
+                                <div class="img-pub-page shadow-sm mr-0" style="background-image: url('{{ carousel[2] }}')"></div>
                             {% endif %}
                         </div>
                     {% elif grid in (2, 4) %}
                         <div class="col-6">
                             {% if grid == 4 %}
                                 <div class="row">
-                                    <div class="img-profile-dash shadow-sm mr-0" style="background-image: url('{{ carousel[2] }}')"></div>
+                                    <div class="img-pub-page shadow-sm mr-0" style="background-image: url('{{ carousel[2] }}')"></div>
                                 </div>
                                 <div class="row">
-                                    <div class="img-profile-dash shadow-sm mr-0" style="background-image: url('{{ carousel[3] }}')"></div>
+                                    <div class="img-pub-page shadow-sm mr-0" style="background-image: url('{{ carousel[3] }}')"></div>
                                 </div>
                             {% else %}
-                                    <div class="img-profile-dash shadow-sm mr-0" style="background-image: url('{{ carousel[1] }}')"></div>
+                                    <div class="img-pub-page shadow-sm mr-0" style="background-image: url('{{ carousel[1] }}')"></div>
                             {% endif %}
                         </div>
                     {% else %}
                         <div class="col-2">
                             <div class="row">
-                                <div class="img-profile-dash shadow-sm mr-0" style="background-image: url('{{ carousel[2] }}')"></div>
+                                <div class="img-pub-page shadow-sm mr-0" style="background-image: url('{{ carousel[2] }}')"></div>
                             </div>
                             <div class="row">
-                                <div class="img-profile-dash shadow-sm mr-0" style="background-image: url('{{ carousel[4] }}')"></div>
-                            </div>
-                        </div>
-                        <div class="col-2">
-                            <div class="row">
-                                <div class="img-profile-dash shadow-sm mr-0" style="background-image: url('{{ carousel[3] }}')"></div>
-                            </div>
-                            <div class="row">
-                                <div class="img-profile-dash shadow-sm mr-0" style="background-image: url('{{ carousel[5] }}')"></div>
+                                <div class="img-pub-page shadow-sm mr-0" style="background-image: url('{{ carousel[4] }}')"></div>
                             </div>
                         </div>
                         <div class="col-2">
                             <div class="row">
-                                <div class="img-profile-dash shadow-sm mr-0" style="background-image: url('{{ carousel[6] }}')"></div>
+                                <div class="img-pub-page shadow-sm mr-0" style="background-image: url('{{ carousel[3] }}')"></div>
                             </div>
                             <div class="row">
-                                <div class="img-profile-dash shadow-sm mr-0" style="background-image: url('{{ carousel[7] }}')"></div>
+                                <div class="img-pub-page shadow-sm mr-0" style="background-image: url('{{ carousel[5] }}')"></div>
+                            </div>
+                        </div>
+                        <div class="col-2">
+                            <div class="row">
+                                <div class="img-pub-page shadow-sm mr-0" style="background-image: url('{{ carousel[6] }}')"></div>
+                            </div>
+                            <div class="row">
+                                <div class="img-pub-page shadow-sm mr-0" style="background-image: url('{{ carousel[7] }}')"></div>
                             </div>
                         </div>
                     {% endif %}
@@ -129,9 +137,11 @@
                 </div>
             </div>
             <div class="col-6">
-                more info here
+                <div>
+                    <i class="fas fa-phone-alt fa-sm mr-2"></i>
+                    <span>{{ pub.phone_num }}</span>
+                </div>
             </div>
-        </div>
         <div class="row ml-1 my-3">
             <div class="col-6 text-monospace text-muted text-justify">
                 {{ pub.description }}

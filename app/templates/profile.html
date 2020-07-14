@@ -1,8 +1,16 @@
 {% extends 'base_template.html' %}
 
+{% block navbar %}
+    {% if pull_from == 'user' %}
+        {% include 'user_nav.html' %}
+    {% else %}
+        {% include 'owner_nav.html' %}
+    {% endif %}
+{% endblock navbar %}
+
 {% block pagecontent %}
     <div class="container">
-        <div class="row py-3">
+        <div class="row">
             <div class="col-12">
                 <div class="row align-items-top py-3">
                     <div class="col-12 col-md-5">
@@ -110,7 +118,7 @@
                                     {% if pull_from == 'user' %}
                                         <div class="row">
                                             <div class="col-12">
-                                                <span class="font-weight-bold">{{ reservations }} pending</span>
+                                                <span class="font-weight-bold">{{ reservations }} </span><span>pending</span>
                                                 {% if reservations == 1 %}
                                                     <span>reservation</span>
                                                 {% else %}
@@ -149,7 +157,7 @@
                                         <div>Still <span class="font-weight-bold">{{ user.pub.get_availability() }}</span> free tables</div>
                                     {% else %}
                                         <div class="font-weight-bold">no pub registred yet!</div>
-                                        <a class='text-monospace' href="#">register it here!</a>
+                                        <a class='text-monospace' href="{{ url_for('users.create_pub', username=user.username) }}">register it here!</a>
                                     {% endif %}
                                 {% elif pull_from != 'user' %}
                                     {% if user.pub != None %}
@@ -287,32 +295,36 @@
             </div>
         </div>
 
-        <!-- Remove account modal -->
-
-        <div class="modal fade" id="delete-account-backdrop" data-backdrop="static" tabindex="-1" role="dialog" aria-labelledby="staticBackdropLabel" aria-hidden="true">
-          <div class="modal-dialog" role="document">
-            <div class="modal-content">
-              <div class="modal-header">
-                <h5 class="modal-title" id="exampleModalLabel">Modal title</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                  <span aria-hidden="true">&times;</span>
-                </button>
-              </div>
-              <div class="modal-body">
-                  <p>
-                      Are you sure you want to continue with this action?<br>This action cannot be redeemed.
-                  </p>
-              </div>
-              <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-dismiss="modal">
-                    Cancel
-                </button>
-                  <button type="button" class="btn btn-primary" onclick="window.location.href='{{ url_for('users.delete_account', u_id=current_user.id) }}'">
-                      Confirm account deletion
-                  </button>
+        {% if not is_viewer %}
+            <!-- Remove account modal -->
+            <div class="modal fade" id="delete-account-backdrop" data-backdrop="static" tabindex="-1" role="dialog" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+              <div class="modal-dialog" role="document" style="width: 25%">
+                <div class="modal-content">
+                  <div class="modal-header">
+                      <div class="col-12 d-flex align-item-center pl-0">
+                          <div class="h4 mb-0">Delete your account</div>
+                          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                          </button>
+                      </div>
+                  </div>
+                  <div class="modal-body pb-1">
+                    <div class="text-monospace">
+                        <div>Are you sure you want to continue ?</div>
+                    </div>
+                    <div>
+                      <div class="my-2 d-flex justify-content-start">
+                          <button type="button" class="btn btn-sm btn-outline-danger mr-2" onclick="window.location.href='{{ url_for('users.delete_account', u_id=current_user.id) }}'">
+                              Go ahead
+                          </button>
+                        <button type="button" class="btn btn-sm btn-secondary" data-dismiss="modal">
+                            Cancel
+                        </button>
+                      </div>
+                    </div>
+                </div>
               </div>
             </div>
-          </div>
-        </div>
+        {% endif %}
     </div>
 {% endblock pagecontent %}
