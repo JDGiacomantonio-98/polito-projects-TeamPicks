@@ -1,21 +1,33 @@
 from os import path, mkdir, getcwd
 from threading import Thread
 
-from flask import render_template, current_app, flash
+from flask import render_template, current_app, flash, session
 from flask_mail import Message
 
 from app import mail
 from app.dbModels import User, Owner
 
 
-def handle_userBin(hex_address):
-	url = f'{current_app.config["USERS_UPLOADS_BIN"]}\\{hex_address}'
-	if not path.isdir(url):
+def handle_userBin(hex_address, absolute_url=False, single_slash=False):
+	if session['pull_from'] == 'user':
+		rel_url = f'{current_app.config["USERS_UPLOADS_BIN"]}\\{hex_address}'
+	else:
+		rel_url = f'{current_app.config["PUBS_UPLOADS_BIN"]}\\{hex_address}'
+	abs_url = f'{getcwd()}\\app\\{rel_url}'
+	if not path.isdir(abs_url):
 		try:
-			mkdir(url)
+			mkdir(abs_url)
 		except OSError as e:
 			print(e)
-	return f'{url}\\'
+	if absolute_url:
+		if single_slash:
+			abs_url = abs_url.replace('\\', '/')
+			return f'{abs_url}/'
+		return f'{abs_url}\\'
+	if single_slash:
+		rel_url = rel_url.replace('\\', '/')
+		return f'{rel_url}/'
+	return f'{rel_url}\\'
 
 
 def find_user(credential, email_only=False):

@@ -2,19 +2,23 @@
 
 {% block pagecontent %}
     <div class="container">
-        {% if form %}
-            <div class="row mt-3">
-                <div class="col-12 col-md-6 offset-md-3 px-1">
-                    <form method="POST" action="#" class="w-100">
-                        {{ form.hidden_tag() }}
-                        <div class="d-flex align-items-center form-group">
-                            <div class="w-100 mr-2">{{ form.searchedItem }}</div>
-                            <div>{{ form.submit }}</div>
-                        </div>
-                    </form>
-                </div>
+        <div class="row pt-1">
+            <div class="col-12 col-md-6 offset-md-3 px-1">
+                <form method="POST" action="#" class="w-100">
+                    {{ form.hidden_tag() }}
+                    <div class="d-flex align-items-center form-group">
+                        <div class="w-100 mr-2">{{ form.searchedItem }}</div>
+                        <div>{{ form.submit }}</div>
+                    </div>
+                </form>
+                {% if request.method == 'POST' and u == None %}
+                    <div class="ml-2 pb-2">
+                        <span class ="text-muted text-monospace">Nothing found</span>
+                        <i class ="far fa-frown" ></i>
+                    </div>
+                {% endif %}
             </div>
-        {% endif %}
+        </div>
         <div class="row">
             <div class="col-12 col-md-3 p-1">
                 <div class="card mb-4 shadow shadow rounded" style="height: 600px">
@@ -54,7 +58,53 @@
                   <div class="card-header">
                     <h4 class="my-0 font-weight-normal">Hot Pubs</h4>
                   </div>
-                  <div class="card-body">
+                  <div class="card-body px-2 pt-2">
+                      {% for p in def_pubs %}
+                          <a href="{{ url_for('users.visit_pub', p_id=p.id) }}">
+                              <div class="border shadow-sm my-3 pb-1">
+                                  <div class="row">
+                                    <div class="pl-3">
+                                        <div class="img-profile-search" style="background-image: url('{{ p.owner.get_imgFile() }}')"></div>
+                                    </div>
+                                  </div>
+                                  <div class="media d-flex align-items-center px-1">
+                                    <div class="col-1 d-flex justify-content-center">
+                                        <a href="{{ url_for('users.visit_pub', p_id=p.id) }}">
+                                          <div class="img-profile-nav" style="background-image: url('{{ p.owner.get_imgFile() }}')"></div>
+                                        </a>
+                                    </div>
+                                    <div class="col-11">
+                                      <div>{{ p.name }}</div>
+                                        <div class="row">
+                                            <div class="col-6 pr-0">
+                                                <div>
+                                                  <span>
+                                                    {% for s in range(0, p.rating ) %}
+                                                        <i class="fas fa-star fa-sm" style="color: goldenrod"></i>
+                                                    {% endfor %}
+                                                    {% for s in range(0, 5 - p.rating ) %}
+                                                        <i class="far fa-star fa-xs" style="color: lightslategrey"></i>
+                                                    {% endfor %}
+                                                  </span>
+                                                </div>
+                                            </div>
+                                            <div class="col-6">
+                                                {% if p.bookable %}
+                                                    <div class="text-monospace font-weight-light">
+                                                        {% if p.is_available_for(1) %}
+                                                            <span class="badge badge-success">Available</span>
+                                                        {% else %}
+                                                            <span class="badge badge-danger">full</span>
+                                                        {% endif %}
+                                                    </div>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                              </div>
+                          </a>
+                      {% endfor %}
                   </div>
                     <div class="card-footer d-flex justify-content-center">
                         <button type="button" class="btn btn-lg btn-outline-primary" onclick="window.location.href='{{ url_for('users.search_pub') }}'">

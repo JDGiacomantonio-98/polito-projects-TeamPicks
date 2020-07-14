@@ -1,7 +1,6 @@
 from os import path, remove, listdir, rename
 
 
-from flask import current_app
 from flask_login import current_user
 from PIL import Image
 
@@ -28,7 +27,7 @@ def upload_profilePic(imgFile):
 def upload_carousel(files):
 	if files is None:
 		return
-	bin_url = handle_userBin(current_user.get_file_address())
+	bin_url = handle_userBin(current_user.get_file_address(), absolute_url=True)
 	bin_f = listdir(bin_url)
 	if len(bin_f) + len(files) > 9:
 		for i in range(len(bin_f)-1, len(bin_f) - len(files) - 2, -1):

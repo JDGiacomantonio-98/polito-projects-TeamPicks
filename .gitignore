@@ -1,8 +1,9 @@
 .idea/*
 __pycache__/
 venv/
+!app/static/avatar
 app/static/users/*
-!app/static/users/AVATAR
+app/static/pubs/*
 .env
 *.db
 *.uml

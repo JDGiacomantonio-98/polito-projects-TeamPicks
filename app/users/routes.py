@@ -1,4 +1,3 @@
-from datetime import datetime
 from shutil import rmtree
 from string import capwords
 
@@ -10,7 +9,6 @@ from app.auth.methods import lock_account
 from app.users.forms import ProfileDashboardForm, UploadProfileImgForm, CreateGroupForm, SearchItemsForm, DeleteAccountForm, UploadProfileCarouselForm
 from app.users import users
 from app.main.methods import send_confirmation_email, handle_userBin
-from app.main.forms import TryAppForm
 from app import db
 from app.dbModels import User, Owner, Group, Pub
 
@@ -29,22 +27,53 @@ def home(username):
 	if current_user.username != username:
 		return redirect(url_for('users.home', username=current_user.username))
 	form = SearchItemsForm()
+	def_pubs = []
+	for p in Pub.query.filter(Pub.owner.has(city=current_user.city)).all():
+		if p.bookable:
+			def_pubs.append(p)
 	if request.method == 'POST':
 		if form.validate_on_submit():
-			u = User.query.filter_by(username=form.searchedItem.data).first_or_404()
+			if session['pull_from'] == 'user':
+				u = User.query.filter_by(username=form.searchedItem.data).first()
+				if u is None:
+					return render_template('home.html', form=form, title='home', def_pubs=def_pubs, u=u)
+				session['q'] = u.id # avoids redundant queries in the profile page
+				return redirect(url_for('users.profile', username=u.username))
+			u = Owner.query.filter_by(username=form.searchedItem.data).first()
+			if u is None:
+				return render_template('home.html', form=form, title='home', def_pubs=def_pubs, u=u)
+			session['q'] = u.id # avoids redundant queries in the profile page
 			return redirect(url_for('users.profile', username=u.username))
-			# return render_template('search_pub.html')
 		return redirect(url_for('users.home', username=current_user.username))
-	return render_template('home.html', form=form, title='home')
+	return render_template('home.html', form=form, title='home', def_pubs=def_pubs)
 
 
 @users.route('/<username>/profile-dashboard', methods=['GET', 'POST'])
 @login_required
 def profile(username):
-	pr_u = User.query.filter_by(username=username).first()
+	if current_user.username == username:
+		profile_u = current_user
+		try:
+			session.pop('q')
+		except KeyError:
+			pass
+	else:
+		try:
+			if session['pull_from'] == 'user':
+				profile_u = User.query.get(int(session['q']))
+			else:
+				profile_u = Owner.query.get(int(session['q']))
+		except KeyError:
+			if session['pull_from'] == 'user':
+				profile_u = User.query.filter_by(username=username).first()
+			else:
+				profile_u = Owner.query.filter_by(username=username).first()
+	if profile_u is None:
+		flash('This user do not exist!', 'warning')
+		return redirect(url_for('users.home', username=current_user.username))
 	form_img = UploadProfileImgForm()
 	form_carousel = UploadProfileCarouselForm()
-	if current_user.id == pr_u.id:
+	if current_user.id == profile_u.id:
 		form_info = ProfileDashboardForm()
 		if request.method == 'POST':
 			if form_img.upload_img.data:
@@ -54,9 +83,9 @@ def profile(username):
 					flash('You profile has been updated!', 'success')
 					return redirect(url_for('users.profile', username=current_user.username))
 				flash('There are some problem with your input: please make correction before resubmitting !', 'danger')
-				return render_template('profile.html', title=f'{current_user.firstName} {current_user.lastName}',
-									   is_viewer=(current_user.id != pr_u.id), user=pr_u, imgFile=pr_u.get_imgFile(),
-									   carousel=current_user.get_imgCarousel(), form_info=form_info, form_img=form_img, groups=pr_u.groups.count())
+				return render_template('profile.html', pull_from=session['pull_from'], title=f'{current_user.firstName} {current_user.lastName}',
+									   is_viewer=(current_user.id != profile_u.id), user=current_user, imgFile=current_user.get_imgFile(),
+									   carousel=current_user.get_imgCarousel(), groups=current_user.groups.count(), form_info=form_info, form_img=form_img)
 			if form_img.modify_about_me.data:
 				if form_img.validate():
 					current_user.about_me = form_img.about_me.data
@@ -64,9 +93,10 @@ def profile(username):
 					flash('You profile has been updated!', 'success')
 					return redirect(url_for('users.profile', username=current_user.username))
 				flash('There are some problem with your input: please make correction before resubmitting !', 'danger')
-				return render_template('profile.html', title=f'{current_user.firstName} {current_user.lastName}',
-									   is_viewer=(current_user.id != pr_u.id), user=pr_u, imgFile=pr_u.get_imgFile(),
-									   carousel=current_user.get_imgCarousel(), form_info=form_info, form_img=form_img, groups=pr_u.groups.count())
+				return render_template('profile.html', pull_from=session['pull_from'], title=f'{current_user.firstName} {current_user.lastName}',
+									   is_viewer=(current_user.id != profile_u.id), user=current_user, imgFile=current_user.get_imgFile(),
+									   carousel=current_user.get_imgCarousel(), groups=current_user.groups.count(), form_info=form_info, form_img=form_img)
+			# if has changed something in the dashboard
 			if form_info.submit.data:
 				if form_info.validate():
 					if current_user.email != form_info.email.data:
@@ -81,9 +111,9 @@ def profile(username):
 					return redirect(url_for('users.profile', username=current_user.username))
 				flash('There are some problem with your input: please make correction before resubmitting !', 'danger')
 				form_img.about_me.data = current_user.about_me
-				return render_template('profile.html', title=f'{current_user.firstName} {current_user.lastName}',
-									   is_viewer=(current_user.id != pr_u.id), user=pr_u, imgFile=pr_u.get_imgFile(),
-									   carousel=pr_u.get_imgCarousel(), form_info=form_info, form_img=form_img, form_carousel=form_carousel, groups=pr_u.groups.count())
+				return render_template('profile.html', pull_from=session['pull_from'], title=f'{current_user.firstName} {current_user.lastName}',
+									   is_viewer=(current_user.id != profile_u.id), user=profile_u, imgFile=profile_u.get_imgFile(),
+									   carousel=profile_u.get_imgCarousel(), form_info=form_info, form_img=form_img, form_carousel=form_carousel, groups=profile_u.groups.count())
 			if form_carousel.upload_carousel.data:
 				if form_carousel.validate():
 					upload_carousel(form_carousel.images.data)
@@ -97,28 +127,38 @@ def profile(username):
 			form_img.about_me.data = current_user.about_me.capitalize()
 		else:
 			form_img.about_me.data = ''
-		resp = make_response(render_template('profile.html', title=f'{current_user.firstName} {current_user.lastName}',
-											 is_viewer=(current_user.id != pr_u.id), user=pr_u, imgFile=pr_u.get_imgFile(),
-											 carousel=pr_u.get_imgCarousel(), form_info=form_info, form_img=form_img, form_carousel=form_carousel, groups=pr_u.groups.count()))
+		if session['pull_from'] == 'user':
+			resp = make_response(render_template('profile.html', pull_from=session['pull_from'], title=f'{current_user.firstName} {current_user.lastName}',
+											 	is_viewer=(current_user.id != profile_u.id), user=current_user, imgFile=current_user.get_imgFile(),
+											 	carousel=current_user.get_imgCarousel(), reservations=current_user.reservations.count(), groups=current_user.groups.count(),
+												form_info=form_info, form_img=form_img, form_carousel=form_carousel))
+		elif current_user.pub:
+			resp = make_response(render_template('profile.html', pull_from=session['pull_from'], title=f'{current_user.firstName} {current_user.lastName}',
+												is_viewer=(current_user.id != profile_u.id), user=current_user, imgFile=current_user.get_imgFile(),
+												carousel=current_user.get_imgCarousel(), reservations=current_user.pub.reservations.count(),
+												form_info=form_info, form_img=form_img, form_carousel=form_carousel))
+		else:
+			resp = make_response(render_template('profile.html', pull_from=session['pull_from'], title=f'{current_user.firstName} {current_user.lastName}',
+												is_viewer=(current_user.id != profile_u.id), user=current_user, imgFile=current_user.get_imgFile(),
+												carousel=current_user.get_imgCarousel(),
+												form_info=form_info, form_img=form_img, form_carousel=form_carousel))
 		resp.headers['X-UA-Compatible'] = 'IE=Edge,chrome=1'
 		resp.headers['Cache-Control'] = 'public, max-age=0'
 		return resp
 	if current_user.confirmed:
-		form_img.about_me.data = pr_u.about_me
-		# if 'user' == session.get('pull_from'):
-		# 	form.firstName.data = pr_u.firstName
-		# 	form.lastName.data = pr_u.lastName
-		# 	form.username.data = pr_u.username
-		# 	form.email.data = pr_u.email
-		return render_template('profile.html', title=f'{current_user.firstName} {current_user.lastName}',
-							   is_viewer=(current_user.id != pr_u.id), user=pr_u, imgFile=pr_u.get_imgFile(),
-							   carousel=pr_u.get_imgCarousel(), form_img=form_img, form_carousel=form_carousel, groups=pr_u.groups.count())
-		# else:
-		# 	return render_template('errors/wip.html', title='coming soon!')
-	flash('Your profile has been temporally deactivated until you reconfirm it.', 'secondary')
-	return render_template('profile.html', title=f'{current_user.firstName} {current_user.lastName}',
-						   is_viewer=(current_user.id != pr_u.id), user=pr_u, imgFile=pr_u.get_imgFile(),
-						   carousel=pr_u.get_imgCarousel(), form_img=form_img, form_carousel=form_carousel, groups=pr_u.groups.count())
+		if profile_u.about_me:
+			form_img.about_me.data = profile_u.about_me.capitalize()
+		else:
+			form_img.about_me.data = ''
+		if session['pull_from'] == 'user':
+			return render_template('profile.html', pull_from=session['pull_from'], title=f'{profile_u.firstName} {profile_u.lastName}',
+								   is_viewer=(current_user.id != profile_u.id), user=profile_u, imgFile=profile_u.get_imgFile(),
+								   carousel=profile_u.get_imgCarousel(), form_img=form_img, form_carousel=form_carousel, groups=profile_u.groups.count())
+		return render_template('profile.html', pull_from=session['pull_from'], title=f'{profile_u.firstName} {profile_u.lastName}',
+							   is_viewer=(current_user.id != profile_u.id), user=profile_u, imgFile=profile_u.get_imgFile(),
+							   carousel=profile_u.get_imgCarousel(), form_img=form_img, form_carousel=form_carousel)
+	flash('Your profile require an email confirmation to browse TeamPicks.', 'secondary')
+	return redirect(url_for('users.profile', username=current_user.username))
 
 
 @users.route('/delete/<u_id>', methods=['GET', 'POST'])
@@ -172,7 +212,9 @@ def create_group(username):
 @login_required
 def visit_pub(p_id):
 	p = Pub.query.get(p_id)
-	return render_template('pub_page.html', pub=p)
+	carousel = p.owner.get_imgCarousel()
+	grid = len(carousel)
+	return render_template('pub_page.html', pub=p, carousel=carousel, grid=grid)
 
 
 @users.route('/find-pubs', methods=['GET', 'POST'])
@@ -184,7 +226,7 @@ def search_pub():
 		if p.bookable:
 			def_pubs.append(p)
 	if request.method == 'POST':
-		p = Pub.query.filter_by(name=form.searchedItem.data).first_or_404()
+		p = Pub.query.filter_by(name=form.searchedItem.data).first()
 		return render_template('search_pub.html', form=form, def_pubs=def_pubs, query_pub=p)
 	return render_template('search_pub.html', form=form, def_pubs=def_pubs)
 
@@ -195,7 +237,7 @@ def follow(u_id):
 	u = User.query.get(u_id)
 	if not current_user.is_following(u):
 		current_user.follow(u)
-		flash(f'You are now following{u.username}', 'success')
+		flash(f'You are now following {u.username}', 'success')
 	return redirect(url_for('users.profile', username=u.username))
 
 

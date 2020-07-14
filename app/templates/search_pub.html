@@ -3,7 +3,7 @@
 {% block pagecontent %}
     <div class="container">
         <div class="row">
-            <div class="col-12 col-md-4 pl-0">
+            <div class="col-12 col-md-4 pr-0">
                 <form method="POST" action="#" class="w-100">
                     {{ form.hidden_tag() }}
                     <div class="d-flex align-items-center form-group">
@@ -15,29 +15,54 @@
         </div>
         <div class="row">
             <div class="col-4">
-                {% if query_pub %}
-                    <div class="media d-flex align-content-between mb-4">
-                        <a href="{{ url_for('users.visit_pub', p_id=query_pub.id) }}">
-                            <div class="img-profile-search shadow-lg mr-0" style="background-image: url('{{ query_pub.owner.get_imgFile() }}')"></div>
-                        </a>
-                        <div>
-                             name: {{ query_pub.name }} rating: {{ query_pub.rating }} location: {{ query_pub.owner.city }} seats available: {{ query_pub.get_availability() }} owner: {{ query_pub.owner.firstName }}
-                        </div>
-                    </div>
+                {% if request.method == 'POST' %}
+                    <div class="font-weight-bold mb-1">Results</div>
+                        {% if query_pub %}
+                            <div class="media d-flex align-content-between mb-4">
+                                <a href="{{ url_for('users.visit_pub', p_id=query_pub.id) }}">
+                                    <div class="img-profile-search shadow-lg mr-0" style="background-image: url('{{ query_pub.owner.get_imgFile() }}')"></div>
+                                </a>
+                                <div>
+                                     name: {{ query_pub.name }} rating: {{ query_pub.rating }} location: {{ query_pub.owner.city }} seats available: {{ query_pub.get_availability() }} owner: {{ query_pub.owner.firstName }}
+                                </div>
+                            </div>
+                        {% else %}
+                            <div class="my-2">
+                                <span class="text-muted text-monospace">Nothing found </span>
+                                <i class="far fa-frown"></i>
+                            </div>
+                        {% endif %}
                 {% endif %}
-                {% for p in def_pubs %}
-                    <div class="media d-flex align-content-between">
-                        <a href="{{ url_for('users.visit_pub', p_id=p.id) }}">
-                            <div class="img-profile-search shadow-lg mr-0" style="background-image: url('{{ p.owner.get_imgFile() }}')"></div>
-                        </a>
-                        <div>
-                             name: {{ p.name }} rating: {{ p.rating }} location: {{ p.owner.city }} seats available: {{ p.get_availability() }} owner: {{ p.owner.firstName }}
+                <div class="font-weight-bold mb-1">Available pubs in your city</div>
+                    {% if def_pubs.__len__() > 0 %}
+                        {% for p in def_pubs %}
+                            <div class="media">
+                                <a href="{{ url_for('users.visit_pub', p_id=p.id) }}">
+                                    <div class="img-profile-search shadow-lg mr-0" style="background-image: url('{{ p.owner.get_imgFile() }}')"></div>
+                                </a>
+                                <div>
+                                     name: {{ p.name }} rating: {{ p.rating }} location: {{ p.owner.city }} seats available: {{ p.get_availability() }} owner: {{ p.owner.firstName }}
+                                </div>
+                            </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="row">
+                            <div class="col-7 my-3">
+                                <span class="text-monospace text-muted font-weight-lighter">We tried so hard but there's nothing here.</span>
+                            </div>
+                            <div class="col-5 mt-4 ml-0">
+                                <span class="fa-stack">
+                                    <i class="fas fa-globe-europe fa-stack-2x"></i>
+                                    <i class="fas fa-satellite fa-stack-1x" data-fa-transform="up-12 right-60" style="color: cadetblue"></i>
+                                    <i class="fas fa-satellite fa-stack-1x" data-fa-transform="down-12 left-30 rotate-220" style="color: cadetblue"></i>
+                                    <i class="fas fa-map-marker fa-stack" data-fa-transform="up-20 right-40" style="color: darkred"></i>
+                                </span>
+                            </div>
                         </div>
-                    </div>
-                {% endfor %}
-            </div>
+                    {% endif %}
+                </div>
             <div class="col-8">
-                <iframe class='w-100 h-100' src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3005.5585215818014!2d16.872345815428655!3d41.12233187928933!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x1347e86790dd7269%3A0xedbb6fad510d099c!2sVia%20Matteo%20Renato%20Imbriani%2C%2070121%20Bari%20BA!5e0!3m2!1sen!2sit!4v1586018850097!5m2!1sen!2sit" width="400" height="300" frameborder="0" style="border:0;" allowfullscreen="" aria-hidden="false" tabindex="0"></iframe>
+                <iframe class='w-100 h-100' src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d22551.15162500506!2d7.635232462821528!3d45.04737381226959!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x478620b85cabc337%3A0xd97006264fbdaf1b!2sPolytechnic%20of%20Turin!5e0!3m2!1sen!2sit!4v1594720242102!5m2!1sen!2sit" width="600" height="450" frameborder="0" style="border:0;" allowfullscreen="" aria-hidden="false" tabindex="0"></iframe>
             </div>
         </div>
     </div>

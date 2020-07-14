@@ -13,7 +13,8 @@ from sqlalchemy.exc import IntegrityError, OperationalError
 
 from app import db, login_handler
 
-
+if current_app.config['ENV'] in ('development', 'testing'):
+	faker = Faker(['en_US', 'en_GB', 'zh_CN', 'fr_FR', 'es_ES', 'it_IT'])
 # DATABASE GLOBAL FUNCTIONS #
 
 
@@ -51,57 +52,69 @@ def dummy(return_obj=True, model=None, items=1, db_w_test=False, feedbacks=True)
 		errors = 0
 		start = datetime.now()
 		print('completed : |..............|')
-	rand = Faker()
 	i = 0
 	while i < items:
 		if model in ('u', 'users'):
-			itm = User(username=rand.user_name(),
-					   email=rand.email(),
-					   last_active=rand.past_date(),
-					   firstName=rand.first_name().lower(),
-					   lastName=rand.last_name().lower(),
+			itm = User(username=faker.user_name(),
+					   email=faker.email(),
+					   last_active=faker.past_date(),
+					   lastName=faker.last_name().lower(),
 					   age=randint(16, 90),
-					   sex=rand.null_boolean(),
-					   about_me=rand.text(max_nb_chars=250).lower(),
-					   city=rand.city().lower(),
+					   sex=faker.null_boolean(),
+					   country=faker.country_code(),
+					   about_me=faker.text(max_nb_chars=250).lower(),
+					   city=faker.city().lower(),
 					   hash=hash_psw('password')
 					   )
-			if rand.boolean(chance_of_getting_true=35):
+			if itm.sex == 'other':
+				itm.firstName = faker.first_name_male()
+			elif itm.sex == 'f':
+				itm.firstName = faker.first_name_female()
+			else:
+				itm.firstName = faker.first_name_male()
+			if faker.boolean(chance_of_getting_true=35):
 				itm.confirmed = True
 			model = 'users'
 		elif model in ('o', 'owners'):
-			itm = Owner(username=rand.user_name(),
-						email=rand.email(),
-						last_active=rand.past_date(),
-						firstName=rand.first_name().lower(),
-						lastName=rand.last_name().lower(),
+			itm = Owner(username=faker.user_name(),
+						email=faker.email(),
+						last_active=faker.past_date(),
+						lastName=faker.last_name().lower(),
 						age=randint(18, 90),
-						sex=rand.null_boolean(),
-						about_me=rand.text(max_nb_chars=250).lower(),
-						city=rand.city().lower(),
+						sex=faker.null_boolean(),
+						about_me=faker.text(max_nb_chars=250).lower(),
+						country=faker.country_code(),
+						city=faker.city().lower(),
 						hash=hash_psw('password'),
 						subsType=f"{randint(0, 3):02b}",
-						subsExpirationDate=rand.future_date('+90d')
+						subsExpirationDate=faker.future_date('+90d')
 						)
-			if rand.boolean(chance_of_getting_true=35):
+			if itm.sex == 'other':
+				itm.firstName = faker.first_name_male()
+			elif itm.sex == 'f':
+				itm.firstName = faker.first_name_female()
+			else:
+				itm.firstName = faker.first_name_male()
+			if faker.boolean(chance_of_getting_true=35):
 				itm.confirmed = True
-			if rand.boolean(chance_of_getting_true=70):
+			if faker.boolean(chance_of_getting_true=70):
 				pub = dummy(model='p', db_w_test=db_w_test)
 				itm.associate_pub(pub)
 			model = 'owners'
 		elif model in ('p', 'pubs'):
 			seatsMax = randint(0, 200)
-			itm = Pub(name=rand.text(max_nb_chars=25),
-					  address=rand.address(),
-					  bookable=rand.boolean(chance_of_getting_true=50),
+			itm = Pub(name=faker.text(max_nb_chars=25),
+					  address=faker.street_address().lower(),
+					  bookable=faker.boolean(chance_of_getting_true=50),
+					  phone_num=faker.phone_number(),
 					  seatsMax=seatsMax,
 					  rating=randint(0, 5),
-					  description=rand.text(max_nb_chars=500).lower())
+					  description=faker.text(max_nb_chars=500).lower())
 			if itm.bookable:
 				itm.seatsBooked = seatsMax - randint(0, seatsMax)
 			model = 'pubs'
 		elif model in ('g', 'groups'):
-			itm = Group(name=rand.sentence(nb_words=8))
+			itm = Group(name=faker.sentence(nb_words=8))
 			model = 'groups'
 		elif model == 'm' or model == 'matches':
 			print('We are sorry but this function is still under development!')
@@ -121,7 +134,7 @@ def dummy(return_obj=True, model=None, items=1, db_w_test=False, feedbacks=True)
 							u = User.query.get(randint(1, u_mass))
 							if not itm.is_following(u):
 								itm.follow(u)
-					if rand.boolean(chance_of_getting_true=60):
+					if faker.boolean(chance_of_getting_true=60):
 						# send reservations requests
 						u_mass = Owner.query.count()
 						if u_mass > 1:
@@ -129,10 +142,10 @@ def dummy(return_obj=True, model=None, items=1, db_w_test=False, feedbacks=True)
 								o = Owner.query.get(randint(1, u_mass))
 								if o.pub is not None:
 									itm.send_bookingReq(pub=o.pub, guests=randint(1, 6))
-					if rand.boolean(chance_of_getting_true=35):
+					if faker.boolean(chance_of_getting_true=35):
 						# join group
 						for _ in range(1, randint(1, 3)):
-							g = Group(name=rand.text(max_nb_chars=15))
+							g = Group(name=faker.text(max_nb_chars=15))
 							itm.join_as_admin(g)
 				if db_w_test:
 					db.session.delete(itm)
@@ -243,7 +256,8 @@ class USER:
 	lastName = db.Column(db.String(60),
 						 nullable=False)
 	age = db.Column(db.Integer)
-	sex = db.Column(db.String, default='other')
+	sex = db.Column(db.String(5), default='other')
+	country = db.Column(db.String(5))
 	profile_img = db.Column(db.String)  # stores the filename string of the img file
 	about_me = db.Column(db.Text(250))
 	city = db.Column(db.String)
@@ -276,15 +290,19 @@ class USER:
 
 	def get_imgFile(self):
 		if ('def-' in self.profile_img) or (self.profile_img == 'favicon.png'):
-			return url_for('static', filename=f'users/AVATAR/{self.profile_img}')
+			return url_for('static', filename=f'avatar/{self.profile_img}')
 		return url_for('static', filename=f'users/{self.get_file_address()}/{self.profile_img}')
 
 	def get_imgCarousel(self):
+		from app.main.methods import handle_userBin
+
 		carousel = []
+		file_bin = handle_userBin(self.get_file_address(), single_slash=True)
 		try:
-			for f in listdir(f'{current_app.config["USERS_UPLOADS_BIN"]}\{self.get_file_address()}'):
+			for f in listdir(f'{handle_userBin(self.get_file_address(), absolute_url=True)}'):
 				if 'P' not in f:
-					carousel.append(url_for('static', filename=f'users/{self.get_file_address()}/{f}'))
+					carousel.append(f'{file_bin}{f}')
+					# carousel.append(url_for('static', filename=f'users/{self.get_file_address()}/{f}'))
 			return carousel
 		except FileNotFoundError:
 			return []
@@ -470,6 +488,7 @@ class Pub(db.Model):
 						nullable=False)
 	bookable = db.Column(db.Boolean,
 						 nullable=False)
+	phone_num = db.Column(db.String(20))
 	seatsMax = db.Column(db.Integer,
 						 nullable=False)
 	seatsBooked = db.Column(db.Integer,

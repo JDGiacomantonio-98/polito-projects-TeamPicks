@@ -84,11 +84,20 @@ nav {
     border-color: transparent !important;
 }
 
-.img-profile {
+.img-profile-user {
 	border-radius: 100%;
 	border: solid 3px #FFF;
 	width: 155px;
 	height: 155px;
+	background-position: center;
+	background-size: cover;
+}
+
+.img-profile-pub {
+	border-radius: 100%;
+	border: solid 3px #FFF;
+	width: 80px;
+	height: 80px;
 	background-position: center;
 	background-size: cover;
 }

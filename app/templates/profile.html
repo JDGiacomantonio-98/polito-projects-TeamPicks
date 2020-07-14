@@ -8,7 +8,7 @@
                     <div class="col-12 col-md-5">
                         <div class="media d-flex align-content-between">
                             <div class="col-5 pl-0">
-                                <div class="img-profile shadow-lg mr-0" style="background-image: url('{{ imgFile }}')"></div>
+                                <div class="img-profile-user shadow-lg mr-0" style="background-image: url('{{ imgFile }}')"></div>
                                 {% if not is_viewer %}
                                     <form method="POST" action="#" enctype="multipart/form-data">
                                      {{ form_img.hidden_tag() }} <!--This adds CSRF (Cross-Site Injection attacks) token || it protects the app-->
@@ -56,60 +56,119 @@
                                         </div>
                                     {% endif %}
                                 {% endif %}
-                                <div class="row">
-                                    <div class="col-12">
-                                        <span>currently member of </span> {{ groups }}
-                                        {% if groups == 1 %}
-                                            <span> group</span>
-                                        {% else %}
-                                            <span> groups</span>
-                                        {% endif %}
-                                    </div>
-                                </div>
-                                <div class="row">
-                                    <div class="col-12 d-flex justify-content-between align-items-center">
-                                        <div>
-                                            <span class="font-weight-bold">followers </span> <span class="text-monospace">{{ user.followers.count() }}</span>
-                                        </div>
-                                        <div>
-                                            <span class="font-weight-bold">following </span> <span class="text-monospace">{{ user.followed.count() }}</span>
-                                        </div>
-                                        {% if is_viewer %}
-                                            {% if not current_user.is_following(user) %}
-                                                <div style="margin-right: 15px">
-                                                    <div data-toggle="tooltip" data-placement="top" title="follow {{ user.username }}">
-                                                        <a href="{{ url_for('users.follow', u_id=user.id) }}">
-                                                            <i class="fas fa-user-plus"></i>
-                                                        </a>
-                                                    </div>
-                                                </div>
-                                            {% else %}
-                                                <div style="margin-right: 15px">
-                                                    <div data-toggle="tooltip" data-placement="top" title="unfollow {{ user.username }}">
-                                                        <a href="{{ url_for('users.unfollow', u_id=user.id) }}">
-                                                            <i class="fas fa-user-minus" style="color: red"></i>
-                                                        </a>
-                                                    </div>
-                                                </div>
-                                            {% endif %}
-                                        {% endif %}
-                                    </div>
-                                    {% if is_viewer and current_user.is_followed_by(user) %}
-                                        <div class="col-12 col-lg-6">
-                                            <div>
-                                                <span class="badge badge-secondary">Following you</span>
-                                            </div>
-                                        </div>
-                                    {% endif %}
-                                </div>
-                                {% if not is_viewer %}
+                                {% if pull_from == 'user' %}
                                     <div class="row">
                                         <div class="col-12">
-                                            <span>{{ user.reservations.count() }} </span> <span> pending reservations</span>
+                                            <span>currently member of </span> {{ groups }}
+                                            {% if groups == 1 %}
+                                                <span> group</span>
+                                            {% else %}
+                                                <span> groups</span>
+                                            {% endif %}
                                         </div>
                                     </div>
-                                {% else %}
-
+                                {% endif %}
+                                {% if pull_from == 'user' %}
+                                    <div class="row">
+                                        <div class="col-12 d-flex justify-content-between align-items-center">
+                                            <div>
+                                                <span class="font-weight-bold">followers </span> <span class="text-monospace">{{ user.followers.count() }}</span>
+                                            </div>
+                                            <div>
+                                                <span class="font-weight-bold">following </span> <span class="text-monospace">{{ user.followed.count() }}</span>
+                                            </div>
+                                            {% if is_viewer %}
+                                                {% if not current_user.is_following(user) %}
+                                                    <div style="margin-right: 15px">
+                                                        <div data-toggle="tooltip" data-placement="top" title="follow {{ user.username }}">
+                                                            <a href="{{ url_for('users.follow', u_id=user.id) }}">
+                                                                <i class="fas fa-user-plus"></i>
+                                                            </a>
+                                                        </div>
+                                                    </div>
+                                                {% else %}
+                                                    <div style="margin-right: 15px">
+                                                        <div data-toggle="tooltip" data-placement="top" title="unfollow {{ user.username }}">
+                                                            <a href="{{ url_for('users.unfollow', u_id=user.id) }}">
+                                                                <i class="fas fa-user-minus" style="color: red"></i>
+                                                            </a>
+                                                        </div>
+                                                    </div>
+                                                {% endif %}
+                                            {% endif %}
+                                        </div>
+                                        {% if is_viewer and current_user.is_followed_by(user) %}
+                                            <div class="col-12 col-lg-6">
+                                                <div>
+                                                    <span class="badge badge-secondary">Following you</span>
+                                                </div>
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                {% endif %}
+                                {% if not is_viewer %}
+                                    {% if pull_from == 'user' %}
+                                        <div class="row">
+                                            <div class="col-12">
+                                                <span class="font-weight-bold">{{ reservations }} pending</span>
+                                                {% if reservations == 1 %}
+                                                    <span>reservation</span>
+                                                {% else %}
+                                                    <span>reservations</span>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                    {% elif user.pub != None %}
+                                        <div class="row">
+                                            <div class="col-12">
+                                                <span class="font-weight-bold">{{ reservations }} </span>
+                                                {% if reservations == 1 %}
+                                                    <span>reservation</span>
+                                                {% else %}
+                                                    <span>reservations</span>
+                                                {% endif %}
+                                                <span>waiting confirmation</span>
+                                                {% if reservations > 0 %}
+                                                    <i class="fas fa-exclamation-circle" data-fa-transform="up-2 right-4" style="color: darkorange; width: 16px;height: 16px"></i>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                        <div class="mt-2">Pub: {{ user.pub.name }}</div>
+                                        <div>
+                                            <span>rating :</span>
+                                            <span>
+                                                {% for s in range(0, user.pub.rating ) %}
+                                                    <i class="fas fa-star fa-sm" style="color: goldenrod"></i>
+                                                {% endfor %}
+                                                {% for s in range(0, 5 - user.pub.rating ) %}
+                                                    <i class="far fa-star fa-xs" style="color: lightslategrey"></i>
+                                                {% endfor %}
+                                            </span>
+                                            <span class="text-monospace text-muted">{{ user.pub.rating }}</span>
+                                        </div>
+                                        <div>Still <span class="font-weight-bold">{{ user.pub.get_availability() }}</span> free tables</div>
+                                    {% else %}
+                                        <div class="font-weight-bold">no pub registred yet!</div>
+                                        <a class='text-monospace' href="#">register it here!</a>
+                                    {% endif %}
+                                {% elif pull_from != 'user' %}
+                                    {% if user.pub != None %}
+                                        <div class="mt-2">Pub: {{ user.pub.name }}</div>
+                                            <div>
+                                                <span>rating :</span>
+                                                <span>
+                                                    {% for s in range(0, user.pub.rating ) %}
+                                                        <i class="fas fa-star fa-sm" style="color: goldenrod"></i>
+                                                    {% endfor %}
+                                                    {% for s in range(0, 5 - user.pub.rating ) %}
+                                                        <i class="far fa-star fa-xs" style="color: lightslategrey"></i>
+                                                    {% endfor %}
+                                                </span>
+                                                <span class="text-monospace text-muted">{{ user.pub.rating }}</span>
+                                            </div>
+                                    {% else %}
+                                        <div class="font-weight-bold">no pub registred yet!</div>
+                                    {% endif %}
                                 {% endif %}
                             </div>
                         </div>
@@ -226,9 +285,6 @@
                     </div>
                 </div>
             </div>
-        </div>
-        <div class="row py-3">
-
         </div>
 
         <!-- Remove account modal -->
