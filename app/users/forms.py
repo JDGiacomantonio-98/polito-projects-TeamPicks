@@ -21,8 +21,8 @@ class ProfileDashboardForm(FlaskForm):
 	lastName = StringField('Surname :', validators=[DataRequired(), Length(max=50)], render_kw={'class': 'form-control'})
 	username = StringField('Username :', validators=[DataRequired(), Length(min=2)], render_kw={'class': 'form-control'})
 	email = StringField('Email address :', validators=[DataRequired(), Email()], render_kw={'placeholder': 'Active email address', 'class': 'form-control'})
-	submit = SubmitField('Update info', render_kw={'class': 'btn btn-info btn-sm'})
-	delete = SubmitField('Delete account', render_kw={'type': 'button',
+	submit = SubmitField('UPDATE', render_kw={'class': 'btn btn-info btn-sm mr-1'})
+	delete = SubmitField('DELETE ACCOUNT', render_kw={'type': 'button',
 													  'data-toggle': 'modal',
 													  'data-target': '#delete-account-backdrop',
 													  'class': 'btn btn-danger btn-sm'
@@ -50,10 +50,10 @@ class ProfileDashboardForm(FlaskForm):
 
 
 class UploadProfileImgForm(FlaskForm):
-	img = FileField('update your profile image', validators=[FileAllowed(['jpeg', 'jpg', 'png'])])
+	img = FileField('update your profile image', validators=[FileAllowed(['jpeg', 'jpg', 'png'])], render_kw={'class': 'w-100'})
 	about_me = TextAreaField('About me', validators=[Length(max=250)], render_kw={'class': 'form-control',
 																				 'rows': '12'})
-	upload_img = SubmitField('upload', render_kw={'class': 'btn btn-outline-dark btn-sm'})
+	upload_img = SubmitField('upload', render_kw={'class': 'btn btn-outline-dark btn-sm w-100'})
 	modify_about_me = SubmitField('modify', render_kw={'class': 'btn btn-outline-dark btn-sm'})
 
 	def validate_about_me(self, about_me):
@@ -61,7 +61,7 @@ class UploadProfileImgForm(FlaskForm):
 
 
 class UploadProfileCarouselForm(FlaskForm):
-	images = MultipleFileField('Your best moments', validators=[FileAllowed(['jpeg', 'jpg', 'png'])])
+	images = MultipleFileField('', validators=[FileAllowed(['jpeg', 'jpg', 'png'])])
 	upload_carousel = SubmitField('upload new')
 
 	def validate_images(self, images):
@@ -92,7 +92,11 @@ class CreatePubForm(FlaskForm):
 	name = StringField('Your amazing pub name :', validators=[DataRequired(), Length(max=50)])
 	address = StringField('Street address :', validators=[DataRequired()])
 	phone_num = StringField('Phone number :', validators=[DataRequired(), Length(min=10, max=20)])
-	seats_max = IntegerField('Please select your maximum amount of seats :')
+	seats_max = IntegerField('Please select your maximum amount of seats :', validators=[DataRequired()])
 	description = TextAreaField('A brief description of your pub', render_kw={'placeholder': 'what do you do the best ? Tell it here to your customers!'})
 
 	submit = SubmitField('Create pub')
+
+	def validate_seats_max(self, seats_max):
+		if not seats_max.data.is_numeric():
+			raise ValidationError('Input a numeric value.')

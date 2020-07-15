@@ -44,7 +44,7 @@ class RegistrationForm_base(FlaskForm):
 
 
 class RegistrationForm_owner(RegistrationForm_base):
-	subsType = SelectField('Type of subscription :', validators=[DataRequired()], choices=[('free', 'Free'), ('basic', 'Basic'), ('premium', 'Premium')])
+	subs_type = SelectField('Type of subscription :', validators=[DataRequired()], choices=[('00', 'Free'), ('01', 'Basic'), ('10', 'Premium')])
 
 
 class RegistrationForm_pub(FlaskForm):

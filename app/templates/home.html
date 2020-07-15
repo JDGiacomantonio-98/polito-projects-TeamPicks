@@ -71,15 +71,27 @@
                           <a href="{{ url_for('users.visit_pub', p_id=p.id) }}">
                               <div class="border shadow-sm my-3 pb-1">
                                   <div class="row">
-                                    <div class="pl-3">
-                                        <div class="img-profile-search" style="background-image: url('{{ p.owner.get_imgFile() }}')"></div>
-                                    </div>
+                                      {% if pull_from == 'user' %}:
+                                        <div class="pl-3">
+                                            <div class="img-profile-search" style="background-image: url('{{ p.owner.get_imgFile(foreign_session=True) }}')"></div>
+                                        </div>
+                                      {% else %}
+                                          <div class="pl-3">
+                                            <div class="img-profile-search" style="background-image: url('{{ p.owner.get_imgFile() }}')"></div>
+                                        </div>
+                                      {% endif %}
                                   </div>
                                   <div class="media d-flex align-items-center px-1">
                                     <div class="col-1 d-flex justify-content-center">
-                                        <a href="{{ url_for('users.visit_pub', p_id=p.id) }}">
-                                          <div class="img-profile-nav" style="background-image: url('{{ p.owner.get_imgFile() }}')"></div>
-                                        </a>
+                                        {% if pull_from == 'user' %}
+                                            <a href="{{ url_for('users.visit_pub', p_id=p.id) }}">
+                                              <div class="img-profile-nav" style="background-image: url('{{ p.owner.get_imgFile(foreign_session=True) }}')"></div>
+                                            </a>
+                                        {% else %}
+                                            <a href="{{ url_for('users.visit_pub', p_id=p.id) }}">
+                                              <div class="img-profile-nav" style="background-image: url('{{ p.owner.get_imgFile() }}')"></div>
+                                            </a>
+                                        {% endif %}
                                     </div>
                                     <div class="col-11">
                                       <div>{{ p.name }}</div>

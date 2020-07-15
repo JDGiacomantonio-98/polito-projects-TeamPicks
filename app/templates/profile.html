@@ -34,7 +34,7 @@
                                     </form>
                                 {% endif %}
                             </div>
-                            <div class="col-7 px-0">
+                            <div class="col-7 px-0 pt-2">
                                 <div class="text-truncate font-weight-bold">
                                     <span class="mr-2">{{ user.username }}'s Profile</span>
                                     {% if user.confirmed %}
@@ -209,7 +209,7 @@
                     </div>
                     <div class="col-12 col-md-7">
                         {% if not is_viewer %}
-                            <div class="row mb-4">
+                            <div class="row mb-4 pl-2">
                                 <form method="POST" action="#" enctype="multipart/form-data">
                                     {{ form_info.hidden_tag() }} <!--This adds CSRF (Cross-Site Injection attacks) token || it protects the app-->
                                     <div class="row">
@@ -256,17 +256,22 @@
                                                 {% endif %}
                                             </div>
                                         </div>
-                                        <div class="col-12 d-flex align-items-center justify-content-between text-monospace">
+                                        <div class="col-12 d-flex align-items-center justify-content-end text-monospace">
                                             {{ form_info.submit }}
                                             {{ form_info.delete }}
                                         </div>
                                     </div>
                                 </form>
                             </div>
-                            <form class='row' method="POST" action="#" enctype="multipart/form-data">
+                            <form class='row pl-2' method="POST" action="#" enctype="multipart/form-data">
                                 {{ form_carousel.hidden_tag() }}
                                 <div class="col-3 pl-0">
-                                    <span class="font-weight-bold">{{ form_carousel.images.label }}</span>
+                                    {% if pul_from == 'user' %}
+                                        <span class="font-weight-bold">Your best moments</span>
+                                    {% else %}
+                                        <span class="font-weight-bold">Your pub images</span>
+                                    {% endif %}
+
                                 </div>
                                 <div class="col-6 pl-2">
                                     {{ form_carousel.images }}
@@ -280,14 +285,11 @@
                                 <span class="font-weight-bold mr-2">Last time active </span> {{ moment(user.get_last_active()).fromNow(refresh=True) }}
                             </div>
                         {% endif %}
-                        <div class="row border shadow mt-2 d-flex justify-content-between">
-                            {% for i in range(0,4) %}
-                                <div class="img-profile-dash shadow-lg mr-0" style="background-image: url('{{ carousel[i] }}')"></div>
-                            {% endfor %}
-                        </div>
-                        <div class="row border shadow mt-2 d-flex justify-content-between">
-                            {% for i in range(4,8) %}
-                                <div class="img-profile-dash shadow-lg mr-0" style="background-image: url('{{ carousel[i] }}')"></div>
+                        <div class="row border border-light shadow my-2 px-2 py-2 justify-content-between">
+                            {% for i in range(0,8) %}
+                                <div class="col-3 px-0 d-flex justify-content-center align-items-center">
+                                    <div class="img-profile-dash border shadow-sm mx-1 my-1" style="background-image: url('{{ carousel[i] }}')"></div>
+                                </div>
                             {% endfor %}
                         </div>
                     </div>

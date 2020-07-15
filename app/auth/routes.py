@@ -17,7 +17,7 @@ def registration(userType, accType):
 		form = RegistrationForm_base()
 	else:
 		form = RegistrationForm_owner()
-		form.subsType.data = accType   # used to auto-fill account type
+		form.subs_type.data = accType   # used to auto-fill account type
 	if request.method == 'POST':
 		if form.validate_on_submit():
 			if userType == 'user':
@@ -32,7 +32,7 @@ def registration(userType, accType):
 				)
 			else:
 				newItem = Owner(
-					subsType=form.subsType.data,
+					subs_type=form.subs_type.data,
 					city=form.city.data.lower(),
 					username=form.username.data,
 					firstName=form.firstName.data.lower(),
@@ -79,19 +79,12 @@ def login(ATTEMPTS=5):
 		if form.validate_on_submit():
 			try:
 				if session['trace']:
-					try:
-						session['log-attempt']
-					except KeyError:
-						session['log-attempt'] = 0
 					trace = session['trace'].split('%')
 					if form.credential.data in (trace[1], trace[2]):
 						query = cherryPick_user(pull_from=trace[0], u_id=trace[3])
 					else:
 						session.pop('trace')
-						try:
-							session.pop('log-attempt')
-						except KeyError:
-							session['log-attempt'] = 0
+						session['log-attempt'] = 0
 						query = find_user(form.credential.data)
 				else:
 					query = find_user(form.credential.data)
@@ -103,6 +96,11 @@ def login(ATTEMPTS=5):
 				session['pull_from'] = query[1]
 				if verify_psw(query[0].hash, form.psw.data):
 					login_user(query[0], remember=form.rememberMe.data)
+					try:
+						session.pop('trace')
+						session.pop('log-attempt')
+					except KeyError:
+						pass
 					if current_user.confirmed:
 						flash(f"Hi {query[0].username}, welcome back!", 'success')
 						nextPage = request.args.get('next')
@@ -117,14 +115,20 @@ def login(ATTEMPTS=5):
 				if ATTEMPTS - session['log-attempt'] != 0:
 					if ATTEMPTS - session['log-attempt'] <= 3:
 						flash(f'{ATTEMPTS - session["log-attempt"]} attempts remaining', 'danger')
-					flash('Login error : Invalid email or password.', 'danger')
 					session['trace'] = f'{query[1]}%{query[0].username}%{query[0].email}%{query[0].id}'
-					return render_template('login.html', title='Login page', form=form)
+					return render_template('login.html', title='Login page', form=form, error='Invalid credentials or password.')
 				lock_account(query[0])
-			flash("The provided credential are not linked to any existing account. Please try something else.", 'secondary')
-			return render_template('login.html', title='Login page', form=form)
+				if query[0].is_acc_locked():
+					session.pop('trace')
+					session.pop('log-attempt')
+				return redirect(url_for('auth.login'))
+			# flash("The provided credential are not linked to any existing account. Please try something else.", 'secondary')
+			return render_template('login.html', title='Login page', form=form, error="The provided credentials are not linked to any existing account. Please try something else.")
 		return render_template('login.html', title='Login page', form=form)
-	session.clear()
+	try:
+		session['log-attempt']
+	except KeyError:
+		session['log-attempt'] = 0
 	return render_template('login.html', title='Login page', form=form)
 
 

@@ -9,16 +9,18 @@
 {% endblock navbar %}
 
 {% block pagecontent %}
-    {{ form.name.label }}
-    {{ form.name }}
-    {{ form.address.label }}
-    {{ form.address }}
-    {{ form.phone_num.label }}
-    {{ form.phone_num}}
-    {{ form.seats_max.label }}
-    {{ form.seats_max }}
-    {{ form.description.label }}
-    {{ form.description }}
+    <form method="POST" action="#">
+        {{ form.name.label }}
+        {{ form.name }}
+        {{ form.address.label }}
+        {{ form.address }}
+        {{ form.phone_num.label }}
+        {{ form.phone_num}}
+        {{ form.seats_max.label }}
+        {{ form.seats_max }}
+        {{ form.description.label }}
+        {{ form.description }}
 
-    {{ form.submit }}
+        {{ form.submit }}
+    </form>
 {% endblock pagecontent %}

@@ -26,9 +26,15 @@
                     <div class="font-weight-bold mb-1">Results</div>
                         {% if query_pub %}
                             <div class="media d-flex align-content-between mb-4">
-                                <a href="{{ url_for('users.visit_pub', p_id=query_pub.id) }}">
-                                    <div class="img-profile-search shadow-lg mr-0" style="background-image: url('{{ query_pub.owner.get_imgFile() }}')"></div>
-                                </a>
+                                {% if pull_from == 'user' %}
+                                    <a href="{{ url_for('users.visit_pub', p_id=query_pub.id) }}">
+                                        <div class="img-profile-search shadow-lg mr-0" style="background-image: url('{{ query_pub.owner.get_imgFile(foreign_session=True) }}')"></div>
+                                    </a>
+                                {% else %}
+                                    <a href="{{ url_for('users.visit_pub', p_id=query_pub.id) }}">
+                                        <div class="img-profile-search shadow-lg mr-0" style="background-image: url('{{ query_pub.owner.get_imgFile() }}')"></div>
+                                    </a>
+                                {% endif %}
                                 <div>
                                      name: {{ query_pub.name }} rating: {{ query_pub.rating }} location: {{ query_pub.owner.city }} seats available: {{ query_pub.get_availability() }} owner: {{ query_pub.owner.firstName }}
                                 </div>
@@ -44,9 +50,15 @@
                     {% if def_pubs.__len__() > 0 %}
                         {% for p in def_pubs %}
                             <div class="media">
-                                <a href="{{ url_for('users.visit_pub', p_id=p.id) }}">
-                                    <div class="img-profile-search shadow-lg mr-0" style="background-image: url('{{ p.owner.get_imgFile() }}')"></div>
-                                </a>
+                                {% if pull_from == 'user' %}
+                                    <a href="{{ url_for('users.visit_pub', p_id=p.id) }}">
+                                        <div class="img-profile-search shadow-lg mr-0" style="background-image: url('{{ p.owner.get_imgFile(foreign_session=True) }}')"></div>
+                                    </a>
+                                {% else %}
+                                    <a href="{{ url_for('users.visit_pub', p_id=p.id) }}">
+                                        <div class="img-profile-search shadow-lg mr-0" style="background-image: url('{{ p.owner.get_imgFile() }}')"></div>
+                                    </a>
+                                {% endif %}
                                 <div>
                                      name: {{ p.name }} rating: {{ p.rating }} location: {{ p.owner.city }} seats available: {{ p.get_availability() }} owner: {{ p.owner.firstName }}
                                 </div>

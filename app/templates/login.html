@@ -12,14 +12,15 @@
                         <div class="form-row">
                             <div class="col-12 py-2">
                                 {{ form.credential(class="form-control form-control-sm") }}
-
-                                {% for error in form.credential.errors %}
-                                    <span class="small" style="color: red">{{ error }}</span>
-                                {% endfor %}
-
                             </div>
                             <div class="col-12 py-2">
                                 {{ form.psw(class="form-control form-control-sm") }}
+                                {% if error %}
+                                    <span class="small" style="color: red">{{ error }}</span>
+                                {% endif %}
+                                {% for e in form.credential.errors %}
+                                    <span class="small" style="color: red">{{ e }}</span>
+                                {% endfor %}
                             </div>
                             <div class="col-12 d-flex justify-content-between align-items-center pt-3">
                                 <div class="w-100 d-flex justify-content-between align-items-center">

@@ -140,3 +140,7 @@ img.app-logo {
     width: 120px;
     height: 120px;
 }
+
+textarea {
+  resize: none;
+}

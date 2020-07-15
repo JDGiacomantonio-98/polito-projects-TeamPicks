@@ -96,13 +96,13 @@ def profile(username):
 				return render_template('profile.html', pull_from=session['pull_from'], title=f'{current_user.firstName} {current_user.lastName}',
 									   is_viewer=(current_user.id != profile_u.id), user=current_user, imgFile=current_user.get_imgFile(),
 									   carousel=current_user.get_imgCarousel(), groups=current_user.groups.count(), form_info=form_info, form_img=form_img)
-			# if has changed something in the dashboard
+			# if something has been changed in the dashboard
 			if form_info.submit.data:
 				if form_info.validate():
 					if current_user.email != form_info.email.data:
 						current_user.confirmed = False
 						current_user.email = form_info.email.data
-						send_confirmation_email(recipient=current_user, flash_msg=True)
+						send_confirmation_email(recipient=current_user, email_update=True, flash_msg=True)
 					current_user.firstName = form_info.firstName.data
 					current_user.lastName = form_info.lastName.data
 					current_user.username = form_info.username.data
@@ -136,7 +136,7 @@ def profile(username):
 			resp = make_response(render_template('profile.html', pull_from=session['pull_from'], title=f'{current_user.firstName} {current_user.lastName}',
 												is_viewer=(current_user.id != profile_u.id), user=current_user, imgFile=current_user.get_imgFile(),
 												carousel=current_user.get_imgCarousel(), reservations=current_user.pub.reservations.count(),
-												form_info=form_info, form_img=form_img, form_carousel=form_carousel, form_delete=form_delete))
+												form_info=form_info, form_img=form_img, form_carousel=form_carousel))
 		else:
 			resp = make_response(render_template('profile.html', pull_from=session['pull_from'], title=f'{current_user.firstName} {current_user.lastName}',
 												is_viewer=(current_user.id != profile_u.id), user=current_user, imgFile=current_user.get_imgFile(),
@@ -170,7 +170,7 @@ def delete_account(u_id, ATTEMPTS=10):
 			if request.method == 'POST':
 				session['del-attempt'] += 1
 				if form.validate_on_submit():
-					rmtree(handle_userBin(current_user.get_file_address()))
+					rmtree(handle_userBin(current_user.get_file_address(), absolute_url=True))
 					db.session.delete(current_user)
 					db.session.commit()
 					logout_user()
@@ -209,10 +209,13 @@ def create_group(username):
 	return render_template('create_group.html', form=form, title='your new group', pull_from=session['pull_from'])
 
 
-@users.route('/<username>/create-new-pub')
+@users.route('/<username>/create-new-pub', methods=['GET', 'POST'])
 @login_required
 def create_pub(username):
 	if session['pull_from'] == 'user':
+		return redirect(url_for('users.home', username=current_user.username))
+	if current_user.pub:
+		flash('Your pub is already registred.')
 		return redirect(url_for('users.home', username=current_user.username))
 	form = CreatePubForm()
 	if request.method == 'POST':
@@ -223,8 +226,8 @@ def create_pub(username):
 				description=form.description.data
 				)
 		db.session.add(p)
-		db.session.commit()
 		current_user.associate_pub(p)
+		db.session.commit()
 	return render_template('create_pub.html', form=form, pull_from=session['pull_from'])
 
 
@@ -232,7 +235,10 @@ def create_pub(username):
 @login_required
 def visit_pub(p_id):
 	p = Pub.query.get(p_id)
-	carousel = p.owner.get_imgCarousel()
+	if session['pull_from'] == 'user':
+		carousel = p.owner.get_imgCarousel(foreign_session=True)
+	else:
+		carousel = p.owner.get_imgCarousel()
 	grid = len(carousel)
 	return render_template('pub_page.html', pub=p, carousel=carousel, grid=grid, pull_from=session['pull_from'])
 

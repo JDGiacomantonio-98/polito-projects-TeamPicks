@@ -1,6 +1,6 @@
 from os import path, remove, listdir, rename
 
-
+from flask import session
 from flask_login import current_user
 from PIL import Image
 
@@ -18,7 +18,10 @@ def upload_profilePic(imgFile):
 		except FileNotFoundError:
 			pass
 		fileName, fileExt = path.splitext(imgFile.filename)
-		fileName = f'P__{current_user.get_file_address()}{fileExt.lower()}'
+		if session['pull_from'] == 'user':
+			fileName = f'U__{current_user.get_file_address()}{fileExt.lower()}'
+		else:
+			fileName = f'O__{current_user.get_file_address()}{fileExt.lower()}'
 		imgFile = resize_to(imgFile, size=500)
 		imgFile.save(f'{bin_url}{fileName}')
 		return fileName

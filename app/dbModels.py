@@ -15,10 +15,11 @@ from app import db, login_handler
 
 if current_app.config['ENV'] in ('development', 'testing'):
 	faker = Faker(['en_US', 'en_GB', 'zh_CN', 'fr_FR', 'es_ES', 'it_IT'])
+
 # DATABASE GLOBAL FUNCTIONS #
 
 
-def dummy(return_obj=True, model=None, items=1, db_w_test=False, feedbacks=True):
+def dummy(return_obj=True, model=None, items=1, db_w_test=False):
 	from app.auth.methods import hash_psw
 
 	if type(return_obj) != bool:
@@ -86,7 +87,7 @@ def dummy(return_obj=True, model=None, items=1, db_w_test=False, feedbacks=True)
 						country=faker.country_code(),
 						city=faker.city().lower(),
 						hash=hash_psw('password'),
-						subsType=f"{randint(0, 3):02b}",
+						subs_type=f"{randint(0, 2):02b}",
 						subsExpirationDate=faker.future_date('+90d')
 						)
 			if itm.sex == 'other':
@@ -288,18 +289,20 @@ class USER:
 				# create Gravatar instead
 				self.profile_img = 'favicon.png'
 
-	def get_imgFile(self):
+	def get_imgFile(self, foreign_session=False):
+		from app.main.methods import handle_userBin # to avoid circular imports
+
 		if ('def-' in self.profile_img) or (self.profile_img == 'favicon.png'):
 			return url_for('static', filename=f'avatar/{self.profile_img}')
-		return url_for('static', filename=f'users/{self.get_file_address()}/{self.profile_img}')
+		return f'{handle_userBin(self.get_file_address(), single_slash=True, foreign_session=foreign_session)}{self.profile_img}'
 
-	def get_imgCarousel(self):
-		from app.main.methods import handle_userBin
+	def get_imgCarousel(self, foreign_session=False):
+		from app.main.methods import handle_userBin # to avoid circular imports
 
 		carousel = []
-		file_bin = handle_userBin(self.get_file_address(), single_slash=True)
+		file_bin = handle_userBin(self.get_file_address(), single_slash=True, foreign_session=foreign_session)
 		try:
-			for f in listdir(f'{handle_userBin(self.get_file_address(), absolute_url=True)}'):
+			for f in listdir(f'{handle_userBin(self.get_file_address(), absolute_url=True, foreign_session=foreign_session)}'):
 				if 'P' not in f:
 					carousel.append(f'{file_bin}{f}')
 					# carousel.append(url_for('static', filename=f'users/{self.get_file_address()}/{f}'))
@@ -315,7 +318,7 @@ class USER:
 
 	def is_acc_locked(self):
 		if self.acc_locked:
-			flash('Your account has been temporarly locked because the system detected a brutal attempt to delete it.\nTeampicks has been notified about that.', 'danger')
+			flash('This account has been temporarly locked because the system detected a brutal attempt to access it.\nTeampicks has been notified about that.', 'danger')
 		return self.acc_locked
 
 	def set_last_active(self):
@@ -429,9 +432,9 @@ class User(db.Model, UserMixin, USER):
 class Owner(db.Model, UserMixin, USER):
 	__tablename__ = 'owners'
 
-	subsType = db.Column(db.String,
+	subs_type = db.Column(db.String,
 						 nullable=False,
-						 default='free-acc')  # stores hex codes whose refers to different acc-subscriptions
+						 default=00)  # stores bin codes whose refers to different acc-subscriptions
 	subsExpirationDate = db.Column(db.DateTime, default=None)
 	pub = db.relationship('Pub',
 						  uselist=False,  # force a one-to-one relationship between owner and his pub
@@ -450,11 +453,12 @@ class Owner(db.Model, UserMixin, USER):
 
 	def associate_pub(self, pub):  # pub object comes from form submission
 		self.pub = pub
+		self.evaluate_subs()
 
 	def evaluate_subs(self):
 		self.evaluate_expirationDate()
 		try:
-			if self.subsType != 'free-acc':
+			if self.subs_type != '00':
 				self.pub.bookable = True
 		except AttributeError:
 			pass
@@ -507,10 +511,6 @@ class Pub(db.Model):
 								   # adds <at> parameter to Reservation model : gain complete access pub object
 								   lazy='dynamic',
 								   cascade='all, delete-orphan')
-
-	def __init__(self, **kwargs):
-		super(Pub, self).__init__(**kwargs)
-
 
 	def get_address(self):
 		return self.address

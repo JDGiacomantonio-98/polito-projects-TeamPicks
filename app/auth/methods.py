@@ -1,4 +1,4 @@
-from flask import current_app
+from flask import current_app, session
 from itsdangerous import TimedJSONWebSignatureSerializer as timedTokenizer
 
 from app import db, pswBurner
@@ -17,9 +17,13 @@ def verify_token(token, to_confirm_account=False):
 	try:
 		user_id = timedTokenizer(current_app.config['SECRET_KEY']).loads(token)['load']
 		if to_confirm_account:
-			return User.query.get(user_id), user_id  # (!) FIX HERE : what if is not an User but a Pub ?
+			if session['pull_from'] == 'user':
+				return User.query.get(user_id), user_id  # (!) FIX HERE : what if is not an User but a Pub ?
+			return Owner.query.get(user_id), user_id
 		else:
-			return User.query.get(user_id)  # (!) FIX HERE : what if is not an User but a Pub ?
+			if session['pull_from'] == 'user':
+				return User.query.get(user_id), user_id  # (!) FIX HERE : what if is not an User but a Pub ?
+			return Owner.query.get(user_id), user_id
 	except:
 		return None
 
