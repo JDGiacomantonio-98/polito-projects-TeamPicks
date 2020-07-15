@@ -1,0 +1,52 @@
+{% extends 'base_template.html' %}
+{% import 'macros.html' as macros %}
+
+{% block navbar %}
+    {% if pull_from == 'user' %}
+        {% include 'user_nav.html' %}
+    {% else %}
+        {% include 'owner_nav.html' %}
+    {% endif %}
+{% endblock navbar %}
+
+{% block pagecontent %}
+    <div class="container">
+        <div class="row">
+                {% for res in reservations %}
+                    <div class="col-3 shadow-sm">
+                        <div>
+                            reservation code : {{ res.code }}
+                        </div>
+                        {% if pull_from == 'owner' %}
+                            <div>
+                                scheduled for : {{ res.date }}
+                            </div>
+                            <div>
+                                {{ res.guests }} people
+                            </div>
+                            <div>
+                                made by {{ res.by_id }}
+                            </div>
+                        {% else %}
+                            <div>
+                                reserved at {{ res.at_id }}
+                            </div>
+                            <div>
+                                on date {{ res.date }}
+                            </div>
+                            <div>
+                                for {{ res.guests }} guests
+                            </div>
+                        {% endif %}
+                    </div>
+                {% endfor %}
+        </div>
+    </div>
+    <div class="pagination">
+        {{ macros.pagination_widget(pagination, 'users.manage_reservations', username=current_user.username) }}
+    </div>
+{% endblock pagecontent %}
+
+
+
+

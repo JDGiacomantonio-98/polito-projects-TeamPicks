@@ -41,7 +41,7 @@
             <div class="media">
                 {% if current_user.pub != None %}
                     <div class="media-body">
-                        <a class="nav-link active text-dark pl-1" href="{{ url_for('errors.error_wip', caller_route='manager-pub') }}">
+                        <a class="nav-link active text-dark pl-1" href="{{ url_for('users.manage_reservations', username=current_user.username) }}">
                             Manage your pub
                         </a>
                     </div>
@@ -74,7 +74,7 @@
             <div class="media">
                 {% if current_user.pub != None %}
                     <div class="media-body">
-                        <a class="nav-link active text-dark pl-1" href="{{ url_for('errors.error_wip', caller_route='manage-pub') }}">
+                        <a class="nav-link active text-dark pl-1" href="{{ url_for('users.manage_reservations', username=current_user.username) }}">
                             Manage your pub
                         </a>
                     </div>

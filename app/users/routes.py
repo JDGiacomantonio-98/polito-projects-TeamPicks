@@ -6,11 +6,11 @@ from flask_login import logout_user, login_required, current_user
 
 from app.users.methods import upload_profilePic, upload_carousel
 from app.auth.methods import lock_account
-from app.users.forms import ProfileDashboardForm, UploadProfileImgForm, CreateGroupForm, SearchItemsForm, DeleteAccountForm, UploadProfileCarouselForm, CreatePubForm
+from app.users.forms import ProfileDashboardForm, UploadProfileImgForm, CreateGroupForm, SearchItemsForm, DeleteAccountForm, UploadProfileCarouselForm, CreatePubForm,SendBookingRequestForm
 from app.users import users
 from app.main.methods import send_confirmation_email, handle_userBin
 from app import db
-from app.dbModels import User, Owner, Group, Pub
+from app.dbModels import User, Owner, Group, Pub, Reservation
 
 
 @users.before_app_request
@@ -89,6 +89,8 @@ def profile(username):
 			if form_img.modify_about_me.data:
 				if form_img.validate():
 					current_user.about_me = form_img.about_me.data
+					if session['pull_from'] != 'user':
+						current_user.pub.description = current_user.about_me
 					db.session.commit()
 					flash('You profile has been updated!', 'success')
 					return redirect(url_for('users.profile', username=current_user.username))
@@ -215,7 +217,7 @@ def create_pub(username):
 	if session['pull_from'] == 'user':
 		return redirect(url_for('users.home', username=current_user.username))
 	if current_user.pub:
-		flash('Your pub is already registred.')
+		flash('Your pub is already registred.', 'info')
 		return redirect(url_for('users.home', username=current_user.username))
 	form = CreatePubForm()
 	if request.method == 'POST':
@@ -231,7 +233,7 @@ def create_pub(username):
 	return render_template('create_pub.html', form=form, pull_from=session['pull_from'])
 
 
-@users.route('/pub/<int:p_id>')
+@users.route('/pub/<int:p_id>', methods=['GET', 'POST'])
 @login_required
 def visit_pub(p_id):
 	p = Pub.query.get(p_id)
@@ -240,21 +242,46 @@ def visit_pub(p_id):
 	else:
 		carousel = p.owner.get_imgCarousel()
 	grid = len(carousel)
-	return render_template('pub_page.html', pub=p, carousel=carousel, grid=grid, pull_from=session['pull_from'])
+	form = SendBookingRequestForm()
+	if request.method == 'POST':
+		if p.owner.id != current_user.id:
+			if form.validate():
+				pass
+			current_user.send_bookingReq(pub=p, guests=form.guests.data)
+			return render_template('pub_page.html', pub=p, carousel=carousel, grid=grid, pull_from=session['pull_from'], form=form)
+		flash('Did you want to book from yourself ?', 'secondary')
+		return redirect(url_for('users.visit_pub', p_id=p.id))
+	form.guests.data = '2'
+	return render_template('pub_page.html', pub=p, carousel=carousel, grid=grid, pull_from=session['pull_from'], form=form)
+
+
+@users.route('/<username>/manage-reservation/all', methods=['GET', 'POST'])
+@login_required
+def manage_reservations(username):
+	page = request.args.get('page', 1, type=int)
+	if session['pull_from'] == 'user':
+		pagination = current_user.reservations.filter_by(confirmed=False).order_by(Reservation.date.desc()).paginate(page, per_page=16, error_out=False)
+	else:
+		pagination = current_user.pub.reservations.filter_by(confirmed=False).order_by(Reservation.date.desc()).paginate(page, per_page=16, error_out=False)
+	if request.method == 'POST':
+		return
+	return render_template('booking_manager.html', reservations=pagination.items, pagination=pagination, pull_from=session['pull_from'])
 
 
 @users.route('/find-pubs', methods=['GET', 'POST'])
 @login_required
 def search_pub():
 	form = SearchItemsForm()
-	def_pubs = []
+	local_pubs = []
 	for p in Pub.query.filter(Pub.owner.has(city=current_user.city)).all():
 		if p.bookable:
-			def_pubs.append(p)
+			local_pubs.append(p)
 	if request.method == 'POST':
-		p = Pub.query.filter_by(name=form.searchedItem.data).first()
-		return render_template('search_pub.html', form=form, def_pubs=def_pubs, query_pub=p, pull_from=session['pull_from'])
-	return render_template('search_pub.html', form=form, def_pubs=def_pubs, pull_from=session['pull_from'])
+		if form.searchedItem.data:
+			p = Pub.query.filter_by(name=form.searchedItem.data).first()
+			return render_template('search_pub.html', form=form, local_pubs=local_pubs, query_pub=p, pull_from=session['pull_from'])
+		return redirect(url_for('users.search_pub'))
+	return render_template('search_pub.html', form=form, local_pubs=local_pubs, pull_from=session['pull_from'])
 
 
 @users.route('/follow/<int:u_id>')

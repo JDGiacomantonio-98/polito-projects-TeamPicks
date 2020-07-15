@@ -2,7 +2,7 @@ from flask_login import current_user
 from flask_wtf import FlaskForm, RecaptchaField
 from flask_wtf.file import FileField, FileAllowed
 from wtforms import StringField, PasswordField, SubmitField, TextAreaField, MultipleFileField, IntegerField
-from wtforms.validators import DataRequired, Length, Email, ValidationError
+from wtforms.validators import DataRequired, Length, Email, ValidationError, NumberRange
 
 from app.dbModels import User, Owner, Group
 from app.auth.methods import verify_psw
@@ -50,10 +50,10 @@ class ProfileDashboardForm(FlaskForm):
 
 
 class UploadProfileImgForm(FlaskForm):
-	img = FileField('update your profile image', validators=[FileAllowed(['jpeg', 'jpg', 'png'])], render_kw={'class': 'w-100'})
+	img = FileField('', validators=[FileAllowed(['jpeg', 'jpg', 'png'])], render_kw={'class': 'w-100'})
 	about_me = TextAreaField('About me', validators=[Length(max=250)], render_kw={'class': 'form-control',
 																				 'rows': '12'})
-	upload_img = SubmitField('upload', render_kw={'class': 'btn btn-outline-dark btn-sm w-100'})
+	upload_img = SubmitField('update', render_kw={'class': 'btn btn-outline-dark btn-sm w-100'})
 	modify_about_me = SubmitField('modify', render_kw={'class': 'btn btn-outline-dark btn-sm'})
 
 	def validate_about_me(self, about_me):
@@ -62,7 +62,7 @@ class UploadProfileImgForm(FlaskForm):
 
 class UploadProfileCarouselForm(FlaskForm):
 	images = MultipleFileField('', validators=[FileAllowed(['jpeg', 'jpg', 'png'])])
-	upload_carousel = SubmitField('upload new')
+	upload_carousel = SubmitField('upload new images')
 
 	def validate_images(self, images):
 		if len(self.images.data) > 8:
@@ -100,3 +100,15 @@ class CreatePubForm(FlaskForm):
 	def validate_seats_max(self, seats_max):
 		if not seats_max.data.is_numeric():
 			raise ValidationError('Input a numeric value.')
+
+
+class SendBookingRequestForm(FlaskForm):
+	guests = StringField('Number of guests:', validators=[DataRequired()])
+
+	send_request = SubmitField('Book here')
+
+	def validate_guests(self, guests):
+		if not guests.data.isdigit():
+			raise ValidationError('Please submit a numeric input')
+		if int(guests.data) > 16:
+			raise ValidationError('max number of guests accepted : 16')

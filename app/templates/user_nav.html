@@ -42,11 +42,11 @@
            </div>
            <div class="media">
                 <div class="media-body">
-                    <a class="nav-link active text-dark pl-1" href="{{ url_for('errors.error_wip', caller_route='booking-manager') }}">
+                    <a class="nav-link active text-dark pl-1" href="{{ url_for('users.manage_reservations', username=current_user.username ) }}">
                         Booking manager
                     </a>
                 </div>
-                <a class="align-self-center mr-3" href="{{ url_for('errors.error_wip', caller_route='booking-manager') }}">
+                <a class="align-self-center mr-3" href="{{ url_for('users.manage_reservations', username=current_user.username ) }}">
                     <i class="fas fa-calendar-check" style="color: darkslategrey; width: 20px; height: 20px"></i>
                 </a>
            </div>
@@ -74,11 +74,11 @@
             </div>
             <div class="media">
                 <div class="media-body">
-                    <a class="nav-link active text-dark" href="{{ url_for('errors.error_wip', caller_route='booking-manager') }}">
+                    <a class="nav-link active text-dark" href="{{ url_for('users.manage_reservations', username=current_user.username ) }}">
                         Booking manager
                     </a>
                 </div>
-                <a class="align-self-center mr-3" href="{{ url_for('errors.error_wip', caller_route='booking-manager') }}">
+                <a class="align-self-center mr-3" href="{{ url_for('users.manage_reservations', username=current_user.username ) }}">
                     <i class="fas fa-calendar-check" style="color: darkslategrey; width: 20px; height: 20px"></i>
                 </a>
             </div>

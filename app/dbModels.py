@@ -385,10 +385,10 @@ class User(db.Model, UserMixin, USER):
 		db.session.commit()
 
 	def send_bookingReq(self, pub, guests):
-		# information comes from form
-		if pub.is_available_for(guests):
-			tempRes = pub.cache_bookingReq(booked_by=self, guests=guests)
-			# print(f'\nQR code : {tempRes.code}\nconfirmation status : {tempRes.confirmed}')  # debug
+		# information comes from form or route
+		if pub.is_available_for(int(guests)):
+			tempRes = pub.cache_bookingReq(booked_by=self, guests=int(guests))
+			flash(f'Reservation code : {tempRes.code} -- Status : {"accepted" if tempRes.confirmed else "waiting confirmation"}', 'success')  # debug
 
 	def send_joinReq(self, group):  # group comes from query in view func
 		pass
@@ -474,11 +474,9 @@ class Owner(db.Model, UserMixin, USER):
 				self.subsExpirationDate += timedelta(weeks=4)
 
 	def confirm_pub_reservation(self, res_id):
-		# res = self.pub.reservations.query.filter_by(code=res_id).first()
-		res = self.pub.reservations.query.all()
-		print(res)
+		res = self.pub.reservations.query.get(res_id)
 		res.confirmed = True
-		print(res)
+		self.pub.book_for(res.guests)
 
 
 class Pub(db.Model):
@@ -527,7 +525,6 @@ class Pub(db.Model):
 	def notify(self, eventType, item=None):
 		# here we should notify Owner of the incoming request in order to let him accept it or not
 		# item represent notification body object
-		# print(f'Owner id : {self.owner_id}')
 		if eventType == 'new-booking':
 			pass
 
@@ -536,11 +533,10 @@ class Pub(db.Model):
 			if self.get_availability() >= guests:
 				return True
 			else:
-				# print('Impossible to schedule a reservation for that date.')
-				# print(f'Free tables : {self.get_availability()}')
+				flash(f'Impossible to schedule a reservation for that date.\nFree tables : {self.get_availability()}')
 				return False
 		else:
-			# print("This pub can not accepts reservation yet!")
+			flash("This pub can not accepts reservation on TeamPicks yet!")
 			return False
 
 	def cache_bookingReq(self, booked_by, guests):

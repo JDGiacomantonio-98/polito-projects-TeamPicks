@@ -100,21 +100,21 @@
                 {% endif %}
             </div>
         </div>
-        <div class="row">
+        <div class="row border border-light shadow px-2 py-3">
             <div class="col-6 pl-0">
                 <div class="media">
                     {% if pull_from == 'user' %}
-                        <div class="col-3 d-flex justify-content-center mt-2">
-                            <div class="img-profile-pub shadow-sm ml-2" style="background-image: url('{{ pub.owner.get_imgFile(foreign_session=True) }}')"></div>
+                        <div class="col-3 pl-0 d-flex justify-content-center mt-2">
+                            <div class="img-profile-pub shadow ml-2" style="background-image: url('{{ pub.owner.get_imgFile(foreign_session=True) }}')"></div>
                         </div>
                     {% else %}
-                        <div class="col-3 d-flex justify-content-center mt-2">
-                            <div class="img-profile-pub shadow-sm ml-2" style="background-image: url('{{ pub.owner.get_imgFile() }}')"></div>
+                        <div class="col-3 pl-0 d-flex justify-content-center mt-2">
+                            <div class="img-profile-pub shadow ml-2" style="background-image: url('{{ pub.owner.get_imgFile() }}')"></div>
                         </div>
                     {% endif %}
                     <div class="col-9">
                         <div class="font-weight-bold">
-                            {{ pub.name }}
+                            {{ pub.name.capitalize() }}
                         </div>
                         <div>
                           <span>
@@ -127,33 +127,66 @@
                           </span>
                             <span class="text-monospace text-muted">{{ pub.rating }}</span>
                         </div>
+                        <a href="#" data-toggle="tooltip" data-placement="right" title=" please act fairly">
+                            <span>review this pub</span>
+                        </a>
                         <div>
                             <i class="fas fa-map-marker-alt"></i>
-                            <span class="text-muted">{{ pub.address }}</span>
+                            <span class="text-muted">{{ pub.owner.city.capitalize() }}, {{ pub.address }}</span>
                         </div>
                         {% if pub.bookable %}
                             {% if pub.is_available_for(1) %}
-                                <span class=" badge badge-success">Available</span>
+                                <span class="badge badge-success">Available</span>
                                 <span class="font-weight-bold">{{ pub.get_availability() }}</span> <span>seats free today</span>
                             {% else %}
-                                <span class=" badge badge-danger">Full</span>
+                                <span class="badge badge-danger">Full</span>
                             {% endif %}
                         {% endif %}
                     </div>
                 </div>
             </div>
-            <div class="col-6">
-                <div>
+            <div class="col-3">
+                <div class="row">
                     <i class="fas fa-phone-alt fa-sm mr-2"></i>
                     <span>{{ pub.phone_num }}</span>
                 </div>
+                <div class="row">
+                    <i class="fas fa-phone-alt fa-sm mr-2"></i>
+                    <span>info here</span>
+                </div>
+                <div class="row">
+                    <i class="fas fa-phone-alt fa-sm mr-2"></i>
+                    <span>info here</span>
+                </div>
+            </div>
+            <div class="col-3">
+                <div class="row">
+                    <i class="fas fa-phone-alt fa-sm mr-2"></i>
+                    <span>info here</span>
+                </div>
+                <div class="row">
+                    <i class="fas fa-phone-alt fa-sm mr-2"></i>
+                    <span>info here</span>
+                </div>
+                <div class="row">
+                    <i class="fas fa-phone-alt fa-sm mr-2"></i>
+                    <span>info here</span>
+                </div>
             </div>
         <div class="row ml-1 my-3">
-            <div class="col-6 text-monospace text-muted text-justify">
+            <div class="col-6 pl-0 text-monospace text-muted text-justify">
                 {{ pub.description }}
             </div>
             <div class="col-6">
-                form booking
+                <form method="POST" action="#" enctype="multipart/form-data">
+                    <div>
+                        {{ form.guests.label }}
+                        {{ form.guests }}
+                    </div>
+                    <div>
+                        {{ form.send_request }}
+                    </div>
+                </form>
             </div>
         </div>
     </div>

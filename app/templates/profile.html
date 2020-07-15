@@ -20,9 +20,10 @@
                                 {% if not is_viewer %}
                                     <form method="POST" action="#" enctype="multipart/form-data">
                                      {{ form_img.hidden_tag() }} <!--This adds CSRF (Cross-Site Injection attacks) token || it protects the app-->
-                                        <div data-toggle="tooltip" data-placement="top" title="update your profile image">
-                                            <i class="fas fa-camera"></i>
-                                        </div>{{ form_img.img }}
+                                        <i class="fas fa-camera"></i>
+                                        <div data-toggle="tooltip" data-placement="right" title="change your profile image here">
+                                            {{ form_img.img }}
+                                        </div>
                                         {% if form_img.img.errors %}
                                             {% for e in form_img.img.errors %}
                                                 <div>
@@ -185,8 +186,12 @@
                                 <form method="POST" class='mt-2' action="#" enctype="multipart/form-data">
                                     {{ form_img.hidden_tag() }} <!--This adds CSRF (Cross-Site Injection attacks) token || it protects the app-->
                                     <div>
-                                        <span class="font-weight-bold">{{ form_img.about_me.label }}</span>
-                                        <div class='text-muted text-monospace text-justify pb-3'>
+                                        {% if pull_from == 'user' %}
+                                            <span class="font-weight-bold">{{ form_img.about_me.label }}</span>
+                                        {% else %}
+                                            <span class="font-weight-bold">Description of your pub</span>
+                                        {% endif %}
+                                        <div class='text-muted text-monospace text-justify py-2 mb-2'>
                                             {{ form_img.about_me }}
                                         </div>
                                         <div class='text-monospace'>
@@ -209,14 +214,18 @@
                     </div>
                     <div class="col-12 col-md-7">
                         {% if not is_viewer %}
-                            <div class="row mb-4 pl-2">
+                            <div class="row mb-3 pl-2">
                                 <form method="POST" action="#" enctype="multipart/form-data">
                                     {{ form_info.hidden_tag() }} <!--This adds CSRF (Cross-Site Injection attacks) token || it protects the app-->
                                     <div class="row">
-                                        <div class="col-12 d-flex align-items-center justify-content-left">
+                                        <div class="col-12 d-flex align-items-center justify-content-between">
                                             <span data-toggle="tooltip" data-placement="top" title="change your info here">
                                                 <div class="text-center h3 text-monospace" style="letter-spacing: 6px">DASHBOARD</div>
                                             </span>
+                                            <div class="text-monospace">
+                                                {{ form_info.submit }}
+                                                {{ form_info.delete }}
+                                            </div>
                                         </div>
                                             <div class="col-12 col-md-6">
                                                 <div class="form-group">
@@ -256,10 +265,6 @@
                                                 {% endif %}
                                             </div>
                                         </div>
-                                        <div class="col-12 d-flex align-items-center justify-content-end text-monospace">
-                                            {{ form_info.submit }}
-                                            {{ form_info.delete }}
-                                        </div>
                                     </div>
                                 </form>
                             </div>
@@ -271,12 +276,11 @@
                                     {% else %}
                                         <span class="font-weight-bold">Your pub images</span>
                                     {% endif %}
-
                                 </div>
                                 <div class="col-6 pl-2">
                                     {{ form_carousel.images }}
                                 </div>
-                                <div class="col-3 d-flex justify-content-end pr-0 text-monospace">
+                                <div class="col-3 d-flex justify-content-end px-0 text-monospace">
                                     {{ form_carousel.upload_carousel }}
                                 </div>
                             </form>

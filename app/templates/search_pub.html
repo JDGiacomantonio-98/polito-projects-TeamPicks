@@ -14,29 +14,62 @@
             <div class="col-12 col-md-4 pr-0">
                 <form method="POST" action="#" class="w-100">
                     {{ form.hidden_tag() }}
-                    <div class="d-flex align-items-center form-group">
+                    <div class="form-group">
                         <div class="w-100 mr-3">{{ form.searchedItem }}</div>
                     </div>
                 </form>
             </div>
         </div>
         <div class="row">
-            <div class="col-4">
+            <div class="col-4 pr-1">
                 {% if request.method == 'POST' %}
                     <div class="font-weight-bold mb-1">Results</div>
                         {% if query_pub %}
-                            <div class="media d-flex align-content-between mb-4">
-                                {% if pull_from == 'user' %}
-                                    <a href="{{ url_for('users.visit_pub', p_id=query_pub.id) }}">
-                                        <div class="img-profile-search shadow-lg mr-0" style="background-image: url('{{ query_pub.owner.get_imgFile(foreign_session=True) }}')"></div>
-                                    </a>
-                                {% else %}
-                                    <a href="{{ url_for('users.visit_pub', p_id=query_pub.id) }}">
-                                        <div class="img-profile-search shadow-lg mr-0" style="background-image: url('{{ query_pub.owner.get_imgFile() }}')"></div>
-                                    </a>
-                                {% endif %}
-                                <div>
-                                     name: {{ query_pub.name }} rating: {{ query_pub.rating }} location: {{ query_pub.owner.city }} seats available: {{ query_pub.get_availability() }} owner: {{ query_pub.owner.firstName }}
+                            <div class="media border border-light shadow-sm mb-3 py-2 px-1">
+                                <div class="col-2 pr-1 d-flex justify-content-center">
+                                    {% if pull_from == 'user' %}
+                                        <a href="{{ url_for('users.visit_pub', p_id=query_pub.id) }}">
+                                            <div class="img-profile-search shadow-sm mr-0" style="background-image: url('{{ query_pub.owner.get_imgFile(foreign_session=True) }}')"></div>
+                                        </a>
+                                    {% else %}
+                                        <a href="{{ url_for('users.visit_pub', p_id=query_pub.id) }}">
+                                            <div class="img-profile-search shadow-sm mr-0" style="background-image: url('{{ query_pub.owner.get_imgFile() }}')"></div>
+                                        </a>
+                                    {% endif %}
+                                </div>
+                                <div class="col-10 pr-1">
+                                    <div class="row pl-2 d-flex justify-content-between">
+                                        <div class="col-12">
+                                            <span>{{ query_pub.name.upper() }}</span>
+                                        </div>
+                                        <div class="col-8 pr-1">
+                                            <div class="row pl-2">
+                                                <i class="fas fa-map-marker-alt"></i>
+                                                <span>{{ query_pub.owner.city.capitalize() }}, {{ query_pub.address }}</span>
+                                            </div>
+                                            <div class="row pl-2">
+                                                {% for s in range(0, query_pub.rating ) %}
+                                                    <i class="fas fa-star fa-sm" style="color: goldenrod"></i>
+                                                {% endfor %}
+                                                {% for s in range(0, 5 - query_pub.rating ) %}
+                                                    <i class="far fa-star fa-xs" style="color: lightslategrey"></i>
+                                                {% endfor %}
+                                            </div>
+                                        </div>
+                                        <div class="col-4">
+                                            {% if query_pub.bookable %}
+                                                {% if query_pub.is_available_for(1) %}
+                                                    <div class=" badge badge-success text-monospace mb-2">Available</div>
+                                                {% else %}
+                                                    <div class=" badge badge-danger text-monospace">Full</div>
+                                                {% endif %}
+                                                <div>
+                                                    <i class="fas fa-chair"></i>
+                                                    <span class="text-monospace">{{ query_pub.get_availability() }}</span>
+                                                </div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         {% else %}
@@ -47,20 +80,52 @@
                         {% endif %}
                 {% endif %}
                 <div class="font-weight-bold mb-1">Available pubs in your city</div>
-                    {% if def_pubs.__len__() > 0 %}
-                        {% for p in def_pubs %}
-                            <div class="media">
-                                {% if pull_from == 'user' %}
-                                    <a href="{{ url_for('users.visit_pub', p_id=p.id) }}">
-                                        <div class="img-profile-search shadow-lg mr-0" style="background-image: url('{{ p.owner.get_imgFile(foreign_session=True) }}')"></div>
-                                    </a>
-                                {% else %}
-                                    <a href="{{ url_for('users.visit_pub', p_id=p.id) }}">
-                                        <div class="img-profile-search shadow-lg mr-0" style="background-image: url('{{ p.owner.get_imgFile() }}')"></div>
-                                    </a>
-                                {% endif %}
-                                <div>
-                                     name: {{ p.name }} rating: {{ p.rating }} location: {{ p.owner.city }} seats available: {{ p.get_availability() }} owner: {{ p.owner.firstName }}
+                    {% if local_pubs.__len__() > 0 %}
+                        {% for p in local_pubs %}
+                           <div class="media border border-light mb-3 py-2 px-1">
+                                <div class="col-2 pr-1 d-flex justify-content-center">
+                                    {% if pull_from == 'user' %}
+                                        <a href="{{ url_for('users.visit_pub', p_id=p.id) }}">
+                                            <div class="img-profile-search shadow mr-0" style="background-image: url('{{ p.owner.get_imgFile(foreign_session=True) }}')"></div>
+                                        </a>
+                                    {% else %}
+                                        <a href="{{ url_for('users.visit_pub', p_id=p.id) }}">
+                                            <div class="img-profile-search mr-0" style="background-image: url('{{ p.owner.get_imgFile() }}')"></div>
+                                        </a>
+                                    {% endif %}
+                                </div>
+                                <div class="col-10 pr-1">
+                                    <div class="row pl-2 d-flex justify-content-between">
+                                        <div class="col-8 pr-1">
+                                            <i class="fas fa-sign"></i>
+                                            <span>{{ p.name }}</span>
+                                            <div class="row pl-2">
+                                                <i class="fas fa-map-marker-alt"></i>
+                                                <span>{{ p.owner.city.capitalize() }}, {{ p.address }}</span>
+                                            </div>
+                                            <div class="row pl-2">
+                                                {% for s in range(0, p.rating ) %}
+                                                    <i class="fas fa-star fa-sm" style="color: goldenrod"></i>
+                                                {% endfor %}
+                                                {% for s in range(0, 5 - p.rating ) %}
+                                                    <i class="far fa-star fa-xs" style="color: lightslategrey"></i>
+                                                {% endfor %}
+                                            </div>
+                                        </div>
+                                        <div class="col-4">
+                                            {% if p.bookable %}
+                                                {% if p.is_available_for(1) %}
+                                                    <div class=" badge badge-success text-monospace mb-2">Available</div>
+                                                {% else %}
+                                                    <div class=" badge badge-danger text-monospace">Full</div>
+                                                {% endif %}
+                                                <div>
+                                                    <i class="fas fa-chair"></i>
+                                                    <span class="text-monospace">{{ p.get_availability() }}</span>
+                                                </div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         {% endfor %}
