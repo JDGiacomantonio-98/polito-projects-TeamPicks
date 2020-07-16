@@ -27,25 +27,30 @@ def home(username):
 	if current_user.username != username:
 		return redirect(url_for('users.home', username=current_user.username))
 	form = SearchItemsForm()
-	def_pubs = []
-	for p in Pub.query.filter(Pub.owner.has(city=current_user.city)).all():
-		if p.bookable:
-			def_pubs.append(p)
+	page = request.args.get('page', default=1, type=int)
+	if session['pull_from'] == 'user':
+		pub_paginate = Pub.query.filter(Pub.owner.has(city=current_user.city)).filter_by(bookable=True).paginate(page, per_page=4)
+		# paginate users groups
+	else:
+		res_paginate = Reservation.query.filter_by(at_id=current_user.pub.id).order_by(Reservation.date.asc()).paginate(page, per_page=4)
 	if request.method == 'POST':
 		if form.validate_on_submit():
 			if session['pull_from'] == 'user':
 				u = User.query.filter_by(username=form.searchedItem.data).first()
 				if u is None:
-					return render_template('home.html', form=form, title='home', def_pubs=def_pubs, u=u, pull_from=session['pull_from'])
+					return render_template('home.html', form=form, title='home', pub_paginate=pub_paginate, pubs=pub_paginate.items,
+										   u=u, pull_from=session['pull_from'])
 				session['q'] = u.id # avoids redundant queries in the profile page
 				return redirect(url_for('users.profile', username=u.username))
 			u = Owner.query.filter_by(username=form.searchedItem.data).first()
 			if u is None:
-				return render_template('home.html', form=form, title='home', def_pubs=def_pubs, u=u, pull_from=session['pull_from'])
+				return render_template('home.html', form=form, title='home', res_paginate=res_paginate, reservations=res_paginate.items, u=u, pull_from=session['pull_from'])
 			session['q'] = u.id # avoids redundant queries in the profile page
 			return redirect(url_for('users.profile', username=u.username))
 		return redirect(url_for('users.home', username=current_user.username))
-	return render_template('home.html', form=form, title='home', def_pubs=def_pubs, pull_from=session['pull_from'])
+	if session['pull_from'] == 'user':
+		return render_template('home.html', form=form, title='home', pub_paginate=pub_paginate, pubs=pub_paginate.items, pull_from=session['pull_from'])
+	return render_template('home.html', form=form, title='home', res_paginate=res_paginate, reservations=res_paginate.items)
 
 
 @users.route('/<username>/profile-dashboard', methods=['GET', 'POST'])
@@ -260,7 +265,7 @@ def visit_pub(p_id):
 def manage_reservations(username):
 	page = request.args.get('page', 1, type=int)
 	if session['pull_from'] == 'user':
-		pagination = current_user.reservations.filter_by(confirmed=False).order_by(Reservation.date.desc()).paginate(page, per_page=16, error_out=False)
+		pagination = current_user.reservations.filter_by(confirmed=False).order_by(Reservation.date.desc()).paginate(page, per_page=4, error_out=False)
 	else:
 		pagination = current_user.pub.reservations.filter_by(confirmed=False).order_by(Reservation.date.desc()).paginate(page, per_page=16, error_out=False)
 	if request.method == 'POST':

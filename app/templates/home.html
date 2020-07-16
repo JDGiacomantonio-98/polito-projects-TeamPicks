@@ -101,66 +101,93 @@
                     </div>
                     <div class="card-body px-2 pt-2">
                         {% if pull_from == 'user' %}
-                          {% for p in def_pubs %}
-                              <a href="{{ url_for('users.visit_pub', p_id=p.id) }}">
-                                          <div class="border shadow-sm my-3 pb-1">
-                                      <div class="row">
-                                          {% if pull_from == 'user' %}
-                                            <div class="pl-3">
-                                                <div class="img-profile-search" style="background-image: url('{{ p.owner.get_imgFile(foreign_session=True) }}')"></div>
-                                            </div>
-                                          {% else %}
-                                              <div class="pl-3">
-                                                <div class="img-profile-search" style="background-image: url('{{ p.owner.get_imgFile() }}')"></div>
-                                            </div>
-                                          {% endif %}
-                                      </div>
-                                      <div class="media d-flex align-items-center px-1">
-                                        <div class="col-1 d-flex justify-content-center">
+                            <div class="col-12 d-flex align-items-center">
+                                {{ macros.pagination_widget(pub_paginate, 'users.home', username=current_user.username) }}
+                            </div>
+                            {% for p in pubs %}
+                                <a href="{{ url_for('users.visit_pub', p_id=p.id) }}">
+                                    <div class="border shadow-sm my-3 pb-1">
+                                        <div class="row">
                                             {% if pull_from == 'user' %}
-                                                <a href="{{ url_for('users.visit_pub', p_id=p.id) }}">
-                                                  <div class="img-profile-nav" style="background-image: url('{{ p.owner.get_imgFile(foreign_session=True) }}')"></div>
-                                                </a>
+                                                <div class="pl-3">
+                                                    <div class="img-profile-search" style="background-image: url('{{ p.owner.get_imgFile(foreign_session=True) }}')"></div>
+                                                </div>
                                             {% else %}
-                                                <a href="{{ url_for('users.visit_pub', p_id=p.id) }}">
-                                                  <div class="img-profile-nav" style="background-image: url('{{ p.owner.get_imgFile() }}')"></div>
-                                                </a>
+                                                <div class="pl-3">
+                                                    <div class="img-profile-search" style="background-image: url('{{ p.owner.get_imgFile() }}')"></div>
+                                                </div>
                                             {% endif %}
                                         </div>
-                                        <div class="col-11">
-                                          <div>{{ p.name }}</div>
-                                            <div class="row">
-                                                <div class="col-6 pr-0">
-                                                    <div>
-                                                      <span>
-                                                        {% for s in range(0, p.rating ) %}
-                                                            <i class="fas fa-star fa-sm" style="color: goldenrod"></i>
-                                                        {% endfor %}
-                                                        {% for s in range(0, 5 - p.rating ) %}
-                                                            <i class="far fa-star fa-xs" style="color: lightslategrey"></i>
-                                                        {% endfor %}
-                                                      </span>
-                                                    </div>
-                                                </div>
-                                                <div class="col-6">
-                                                    {% if p.bookable %}
-                                                        <div class="text-monospace font-weight-light">
-                                                            {% if p.is_available_for(1) %}
-                                                                <span class="badge badge-success">Available</span>
-                                                            {% else %}
-                                                                <span class="badge badge-danger">full</span>
-                                                            {% endif %}
+                                        <div class="media d-flex align-items-center px-1">
+                                            <div class="col-1 d-flex justify-content-center">
+                                                {% if pull_from == 'user' %}
+                                                    <a href="{{ url_for('users.visit_pub', p_id=p.id) }}">
+                                                      <div class="img-profile-nav" style="background-image: url('{{ p.owner.get_imgFile(foreign_session=True) }}')"></div>
+                                                    </a>
+                                                {% else %}
+                                                    <a href="{{ url_for('users.visit_pub', p_id=p.id) }}">
+                                                      <div class="img-profile-nav" style="background-image: url('{{ p.owner.get_imgFile() }}')"></div>
+                                                    </a>
+                                                {% endif %}
+                                            </div>
+                                            <div class="col-11">
+                                                <div>{{ p.name }}</div>
+                                                <div class="row">
+                                                    <div class="col-6 pr-0">
+                                                        <div>
+                                                            <span>
+                                                            {% for s in range(0, p.rating ) %}
+                                                                <i class="fas fa-star fa-sm" style="color: goldenrod"></i>
+                                                            {% endfor %}
+                                                            {% for s in range(0, 5 - p.rating ) %}
+                                                                <i class="far fa-star fa-xs" style="color: lightslategrey"></i>
+                                                            {% endfor %}
+                                                          </span>
                                                         </div>
-                                                    {% endif %}
+                                                    </div>
+                                                    <div class="col-6">
+                                                        {% if p.bookable %}
+                                                            <div class="text-monospace font-weight-light">
+                                                                {% if p.is_available_for(1) %}
+                                                                    <span class="badge badge-success">Available</span>
+                                                                {% else %}
+                                                                    <span class="badge badge-danger">full</span>
+                                                                {% endif %}
+                                                            </div>
+                                                        {% endif %}
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>
+                                      </div>
+                                  </a>
+                            {% endfor %}
+                        {% else %}
+                            <div class="col-12 d-flex align-items-center">
+                                {{ macros.pagination_widget(res_paginate, 'users.home', username=current_user.username) }}
+                            </div>
+                            {% for res in reservations %}
+                                <a class='disabled' href="#">
+                                  <div class="border shadow-sm my-2 pb-1">
+                                      <div class="media d-flex align-items-center">
+                                        <div class="col-9 px-1">
+                                            <div class="col-12">
+                                              reservation id: {{ res.code }}
+                                            </div>
+                                            <div class="col-12">
+                                                date: {{ res.date }}
+                                            </div>
+                                            <div class="col-12">
+                                                guests: {{ res.guests }}
+                                            </div>
+                                        </div>
+                                          <div class="col-3 px-0 d-flex justify-content-start">
+                                              <div class="img-profile-search mr-2" style="background-image: url('{{ url_for('static', filename='app-icons/QR-mockup-teampicks.svg') }}')"></div>
+                                          </div>
                                     </div>
                                   </div>
                               </a>
-                          {% endfor %}
-                        {% else %}
-                            reservations a lot of reservations here
+                            {% endfor %}
                         {% endif %}
                   </div>
                     <div class="card-footer d-flex justify-content-center">
