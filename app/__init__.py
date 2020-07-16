@@ -62,6 +62,16 @@ def db_reset(config_key):
 	print("\nSUCCESS : all data have been dropped.")
 
 
+@click.command(name='populate', help='Populate database with dummy units.')
+@click.argument('items', default='50')
+@with_appcontext
+def populate(items):
+	from devkit import create_userbase
+
+	create_userbase(int(items))
+	print("\ndone.")
+
+
 def create_app(config=None, db_only=False):
 	app = Flask(__name__)
 	try:
@@ -102,5 +112,6 @@ def create_app(config=None, db_only=False):
 
 		app.cli.add_command(db_build)
 		app.cli.add_command(db_reset)
+		app.cli.add_command(populate)
 
 	return app

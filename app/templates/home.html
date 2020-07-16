@@ -163,16 +163,18 @@
                                   </a>
                             {% endfor %}
                         {% else %}
-                            <div class="col-12 d-flex align-items-center">
-                                {{ macros.pagination_widget(res_paginate, 'users.home', username=current_user.username) }}
-                            </div>
+                            {% if reservations %}
+                                <div class="col-12 d-flex align-items-center">
+                                    {{ macros.pagination_widget(res_paginate, 'users.home', username=current_user.username) }}
+                                </div>
+                            {% endif %}
                             {% for res in reservations %}
                                 <a class='disabled' href="#">
                                   <div class="border shadow-sm my-2 pb-1">
                                       <div class="media d-flex align-items-center">
                                         <div class="col-9 px-1">
                                             <div class="col-12">
-                                              reservation id: {{ res.code }}
+                                              reservation id: {{ res.id }}
                                             </div>
                                             <div class="col-12">
                                                 date: {{ res.date }}

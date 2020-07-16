@@ -96,6 +96,11 @@ def dummy(return_obj=True, model=None, items=1, db_w_test=False):
 				itm.firstName = faker.first_name_female()
 			else:
 				itm.firstName = faker.first_name_male()
+			if faker.boolean(chance_of_getting_true=45):	# assign owner.city = some user.city randomly picked
+				u_mass = User.query.count()
+				if u_mass > 1:
+					u = User.query.get(randint(1, u_mass))
+					itm.city = u.city
 			if faker.boolean(chance_of_getting_true=35):
 				itm.confirmed = True
 			if faker.boolean(chance_of_getting_true=70):
@@ -141,8 +146,8 @@ def dummy(return_obj=True, model=None, items=1, db_w_test=False):
 						if u_mass > 1:
 							for _ in range(1, randint(1, 7)):
 								o = Owner.query.get(randint(1, u_mass))
-								if o.pub is not None:
-									itm.send_bookingReq(pub=o.pub, guests=randint(1, 6))
+								if o.pub:
+									itm.send_bookingReq(pub=o.pub, guests=randint(1, 6), is_dummy=True)
 					if faker.boolean(chance_of_getting_true=35):
 						# join group
 						for _ in range(1, randint(1, 3)):
@@ -199,12 +204,13 @@ class Reservation(db.Model):
 	"""association table to solve users-to-pubs many-to-many relationship"""
 	__tablename__ = 'reservations'
 
-	code = db.Column(db.Integer,  # need to figure out how QR code can be stored
+	id = db.Column(db.Integer,  # need to figure out how QR code can be stored
 					 primary_key=True,
 					 index=True)
 	date = db.Column(db.DateTime, default=datetime.now(), index=True)  # reservation timestamp
 	guests = db.Column(db.Integer)  # number of people within the reservation
 	confirmed = db.Column(db.Boolean, default=False, index=True)  # pub owner confirmation of the reservation
+	queued = db.Column(db.Boolean, default=False, index=True)  # true if reservation is staged waiting for pub availability
 	by_id = db.Column(db.Integer, db.ForeignKey('users.id'), index=True, nullable=False)  # user.id foreignKey
 	at_id = db.Column(db.Integer, db.ForeignKey('pubs.id'), index=True, nullable=False)  # pub.id foreignKey
 
@@ -384,11 +390,14 @@ class User(db.Model, UserMixin, USER):
 		db.session.add(Subscription(group=group, member=self, role=role))
 		db.session.commit()
 
-	def send_bookingReq(self, pub, guests):
+	def send_bookingReq(self, pub, guests, is_dummy=False):
 		# information comes from form or route
 		if pub.is_available_for(int(guests)):
 			tempRes = pub.cache_bookingReq(booked_by=self, guests=int(guests))
-			flash(f'Reservation code : {tempRes.code} -- Status : {"accepted" if tempRes.confirmed else "waiting confirmation"}', 'success')  # debug
+			if not is_dummy:
+				flash(f'Reservation code : {tempRes.id} -- Status : {"accepted" if tempRes.confirmed else "waiting confirmation"}', f'{"success" if tempRes.confirmed else "warning"}')
+		elif not is_dummy:
+			flash(f'Reservation status : rejected due to no availability for {guests} today', 'danger')
 
 	def send_joinReq(self, group):  # group comes from query in view func
 		pass
@@ -528,15 +537,15 @@ class Pub(db.Model):
 		if eventType == 'new-booking':
 			pass
 
-	def is_available_for(self, guests):
+	def is_available_for(self, guests, is_dummy=False):
 		if self.bookable:
 			if self.get_availability() >= guests:
 				return True
 			else:
-				flash(f'Impossible to schedule a reservation for that date.\nFree tables : {self.get_availability()}')
 				return False
 		else:
-			flash("This pub can not accepts reservation on TeamPicks yet!")
+			if not is_dummy:
+				flash("This pub can not accepts reservation on TeamPicks yet!", 'danger')
 			return False
 
 	def cache_bookingReq(self, booked_by, guests):

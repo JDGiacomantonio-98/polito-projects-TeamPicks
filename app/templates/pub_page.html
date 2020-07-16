@@ -127,9 +127,11 @@
                           </span>
                             <span class="text-monospace text-muted">{{ pub.rating }}</span>
                         </div>
-                        <a href="#" data-toggle="tooltip" data-placement="right" title=" please act fairly">
-                            <span>review this pub</span>
-                        </a>
+                        {% if pull_from == 'user' %}
+                            <a href="#" data-toggle="tooltip" data-placement="right" title=" please act fairly">
+                                <span>review this pub</span>
+                            </a>
+                        {% endif %}
                         <div>
                             <i class="fas fa-map-marker-alt"></i>
                             <span class="text-muted">{{ pub.owner.city.capitalize() }}, {{ pub.address }}</span>

@@ -73,14 +73,16 @@
         <script src='/static/js/bootstrap-4.4.1-dist/bootstrap.min.js'></script>
         <script src='/static/js/fontawesome-web/all.min.js'></script>
         <script src='/static/js/moment.min.js'></script>
-        {% block scripts %}
-            {{ moment.include_moment(no_js=True) }}
-        {% endblock %}
         <script type="text/javascript">
                 $(function () {
                   $('[data-toggle="tooltip"]').tooltip()
                 })
         </script>
+        {% block scripts_global %}
+            {{ moment.include_moment(no_js=True) }}
+        {% endblock %}
+        {% block scrips_private %}
+        {% endblock scrips_private %}
     </body>
     <footer>
         <hr>

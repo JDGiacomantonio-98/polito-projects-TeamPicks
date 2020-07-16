@@ -32,7 +32,8 @@ def home(username):
 		pub_paginate = Pub.query.filter(Pub.owner.has(city=current_user.city)).filter_by(bookable=True).paginate(page, per_page=4)
 		# paginate users groups
 	else:
-		res_paginate = Reservation.query.filter_by(at_id=current_user.pub.id).order_by(Reservation.date.asc()).paginate(page, per_page=4)
+		if current_user.pub:
+			res_paginate = Reservation.query.filter_by(at_id=current_user.pub.id).order_by(Reservation.date.asc()).paginate(page, per_page=4)
 	if request.method == 'POST':
 		if form.validate_on_submit():
 			if session['pull_from'] == 'user':
@@ -50,7 +51,9 @@ def home(username):
 		return redirect(url_for('users.home', username=current_user.username))
 	if session['pull_from'] == 'user':
 		return render_template('home.html', form=form, title='home', pub_paginate=pub_paginate, pubs=pub_paginate.items, pull_from=session['pull_from'])
-	return render_template('home.html', form=form, title='home', res_paginate=res_paginate, reservations=res_paginate.items)
+	if current_user.pub:
+		return render_template('home.html', form=form, title='home', res_paginate=res_paginate, reservations=res_paginate.items)
+	return render_template('home.html', form=form, title='home')
 
 
 @users.route('/<username>/profile-dashboard', methods=['GET', 'POST'])
@@ -262,15 +265,34 @@ def visit_pub(p_id):
 
 @users.route('/<username>/manage-reservation/all', methods=['GET', 'POST'])
 @login_required
-def manage_reservations(username):
+def open_reservations_dashboard(username):
 	page = request.args.get('page', 1, type=int)
 	if session['pull_from'] == 'user':
 		pagination = current_user.reservations.filter_by(confirmed=False).order_by(Reservation.date.desc()).paginate(page, per_page=4, error_out=False)
 	else:
-		pagination = current_user.pub.reservations.filter_by(confirmed=False).order_by(Reservation.date.desc()).paginate(page, per_page=16, error_out=False)
-	if request.method == 'POST':
-		return
+		pagination = current_user.pub.reservations.filter_by(confirmed=False).order_by(Reservation.date.desc()).paginate(page, per_page=12, error_out=False)
 	return render_template('booking_manager.html', reservations=pagination.items, pagination=pagination, pull_from=session['pull_from'])
+
+
+@users.route('/<username>/delete-reservation/<int:res_id>')
+@login_required
+def delete_reservation(username, res_id):
+	db.session.delete(Reservation.query.get(res_id))
+	db.session.commit()
+	return redirect(url_for('users.open_reservations_dashboard', username=username))
+
+
+@users.route('/<username>/accept-reservation/<int:res_id>')
+@login_required
+def accept_reservation(username, res_id):
+	r = Reservation.query.get(res_id)
+	r.confirmed = True
+	if current_user.pub.is_available_for(r.guests):
+		current_user.pub.book_for(r.guests)
+	else:
+		r.queued = True
+	db.session.commit()
+	return redirect(url_for('users.open_reservations_dashboard', username=username))
 
 
 @users.route('/find-pubs', methods=['GET', 'POST'])

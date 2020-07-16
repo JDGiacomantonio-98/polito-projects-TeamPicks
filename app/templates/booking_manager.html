@@ -16,34 +16,48 @@
                 <div class="col-3 px-1">
                     <div class="border shadow-sm my-3 pb-1">
                       <div class="media d-flex align-items-center">
-                        <div class="col-9 px-1">
-                            <div class="col-12">
-                                reservation id: {{ res.code }}
+                        <div class="row">
+                            <div class="col-9 px-1">
+                                <div class="col-12">
+                                    reservation id: {{ res.id }}
+                                </div>
+                                {% if pull_from == 'owner' %}
+                                    <div class="col-12">
+                                        scheduled for : {{ res.date }}
+                                    </div>
+                                    <div class="col-12">
+                                        {{ res.guests }} people
+                                    </div>
+                                    <div class="col-12">
+                                        made by {{ res.by_id }}
+                                    </div>
+                                {% else %}
+                                    <div class="col-12">
+                                        reserved at {{ res.at_id }}
+                                    </div>
+                                    <div class="col-12">
+                                        on date {{ res.date }}
+                                    </div>
+                                    <div class="col-12">
+                                        for {{ res.guests }} guests
+                                    </div>
+                                {% endif %}
                             </div>
-                            {% if pull_from == 'owner' %}
-                                <div class="col-12">
-                                    scheduled for : {{ res.date }}
-                                </div>
-                                <div class="col-12">
-                                    {{ res.guests }} people
-                                </div>
-                                <div class="col-12">
-                                    made by {{ res.by_id }}
-                                </div>
-                            {% else %}
-                                <div class="col-12">
-                                    reserved at {{ res.at_id }}
-                                </div>
-                                <div class="col-12">
-                                    on date {{ res.date }}
-                                </div>
-                                <div class="col-12">
-                                    for {{ res.guests }} guests
-                                </div>
-                            {% endif %}
+                              <div class="col-3 px-0 d-flex justify-content-start">
+                                  <div class="img-profile-search mr-2" style="background-image: url('{{ url_for('static', filename='app-icons/QR-mockup-teampicks.svg') }}')"></div>
+                              </div>
                         </div>
-                          <div class="col-3 px-0 d-flex justify-content-start">
-                              <div class="img-profile-search mr-2" style="background-image: url('{{ url_for('static', filename='app-icons/QR-mockup-teampicks.svg') }}')"></div>
+                        {% if pull_from != 'user' %}
+                          <div class="row">
+                              <div class="col-12">
+                                  <a href="{{ url_for('users.accept_reservation', username=current_user.username, res_id=res.id) }}">accept</a>
+                              </div>
+                          </div>
+                        {% endif %}
+                          <div class="row">
+                              <div class="col-12">
+                                  <a href="{{ url_for('users.delete_reservation', username=current_user.username, res_id=res.id) }}">delete</a>
+                              </div>
                           </div>
                       </div>
                     </div>
@@ -51,10 +65,18 @@
             {% endfor %}
         </div>
         <div class="row">
-            {{ macros.pagination_widget(pagination, 'users.manage_reservations', username=current_user.username) }}
+            {{ macros.pagination_widget(pagination, 'users.open_reservations_dashboard', username=current_user.username) }}
         </div>
     </div>
 {% endblock pagecontent %}
+
+{% block scrips_private %}
+    <script>
+        document.getElementById("test").addEventListener("click", function(event){
+          event.preventDefault()
+        });
+    </script>
+{% endblock scrips_private %}
 
 
 
