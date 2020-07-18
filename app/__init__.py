@@ -69,7 +69,7 @@ def populate(items):
 	from devkit import create_userbase
 
 	create_userbase(int(items))
-	print("\ndone.")
+	print("done.")
 
 
 def create_app(config=None, db_only=False):

@@ -16,7 +16,7 @@ virtual environment. To do this, run this command in your terminal:
 
 otherwise, if python3 is the only version you use of the interpreter, run the following command instead:
 
-	    (1*) $ python -m venv venv
+	   (1*)  $ python -m venv venv
 
 The former commands will create a folder called 'venv' inside your current working directory. 'venv' will host all
 TeamPicks dependencies without messing up with (or damaging) your machine global python interpreter.
@@ -32,6 +32,7 @@ You can now run the following commands to complete the procedure and automatical
 		then:
 		(3)    (venv) $ pip install -r requirements/req-common.txt
 		(4)    (venv) $ pip install -r requirements/req-dev.txt
+		(5)     set-up a .env file (read how in the section below)
 
 You are ready to go! (we hope)
 
@@ -69,12 +70,47 @@ following commands in your terminal :
 
 ***********************************************************************************************************************|
 
+
+== THE DOT-ENV FILE ========================================================================================================|
+
+If you have a look at "config.py" file you will notice that config attributes are passed to the app object in an apparently
+self-referential way. Where are the real config values? To answer this question we introduce you to the ".env" file. Nothing
+"we" created but something very useful to host app-config constants in the system environment. This prevents you to:
+
+1) manually type them in the terminal every time you set-up a new machine to work with TeamPicks
+2) to expose sensitive data into hard-coded values (e.g. Email provider credentials, SECRET_KEY value - remembering you
+	that this latter one is used to encrypt post requests in your flask app) when sharing config files or, in general, to
+	expose them in the first place.
+
+You can set-up a .env file yourself simply creating a new text files where you specify which key is equal to what.
+
+		<CONFIG_KEY>=<config_key value>
+
+Use the following as an example :
+
+{{ example-file: .env }}----------------------------
+SECRET_KEY=very_difficult_cats_to_find
+SQLALCHEMY_DATABASE_URI=<relative URI of db>
+MAIL_SERVER =smtp.googlemail.com
+MAIL_USERNAME=<email_provider_login_credentials>
+MAIL_PASSWORD=no_one_will_guess_that
+FLASKY_ADMIN=app_admin@email.com
+FLASK_ENV=development
+USERS_UPLOADS_BIN=\static\users
+PUBS_UPLOADS_BIN=\static\pubs
+
+{{ end_file}}---------------------------------------
+
+The ".flaskenv" is another example of a valid .env file structure.
+***********************************************************************************************************************|
+
+
 == DUMMY POPULATE DATABASES ===========================================================================================|
 
 The TeamPicks project comes bundled with a very handy developers' toolkit : check it out in the "devkit.py" file.
 
-Here you find the create_userbase() func. This is the way to quickly (and automatically) populate a brand new local database
-(e.g. sqlite). Of course this step is crucial in order to let the developer (you) to fully understand how TeamPicks work
+Here you find the create_userbase() func. This is an engine to quickly (and automatically) populate a brand new local
+database (e.g. sqlite). Of course this step is crucial in order to let the developer (you) to fully understand how TeamPicks work
 right now and what still has to be done. create_userbase() directly invoke the dummy() func. This latter one is exactly
 where new user/owner/pub/groups and so on gets created. Even if more advanced configurations can be used, the basic
 use-case for create_userbase() func is as follow:
@@ -83,6 +119,14 @@ use-case for create_userbase() func is as follow:
 		(venv) $ from devkit import create_userbase
 		(venv) $ create_userbase(items=int("int_of_target_user_population"))
 
+If you are even lazier, the new straightfoward "populate" CLI (command-line-interface) flask command has been added to the
+app object. This will populate for you all your existing databases (after all connection tests have passed) with a number of
+new dummy items, set by default to 50 units. of course, this latter one can be overwritten accordingly to tastes and needs.
+Using "populate" is really straight-forward:
+
+		  (1) $ flask shell
+		  (2) $ flask populate <items>
+
 Done! Now start the flask server and browse the app taking the role of one of this puppies by logging in with the following
 credentials:
 
@@ -90,8 +134,8 @@ credentials:
 		password ->     "password"
 
 Of course nothing prevents you to create your own account on the platform.
-
 ***********************************************************************************************************************|
+
 
 == CLI COMMANDS =======================================================================================================|
 To quickly create new db files capable of plugging-in correctly with all config profiles, the following click commands are
@@ -103,7 +147,6 @@ available :
 If not specified, commands will print a menu where to choose which config profile to load.
 Use 'env' argument in order to let < reset > and < build > commands look in sys environment variables for config profile to
 load.
-
 ************************************************************************************************************************|
 
 

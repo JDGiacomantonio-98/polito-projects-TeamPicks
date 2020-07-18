@@ -31,10 +31,11 @@ def create_userbase(items=None, test_db=False):
 	from app.dbModels import dummy
 
 	userbase = {
-		'user': 'u',
-		'owner': 'o'
+		'owner': 'o',
+		'user': 'u'
 	}
 
+	set_roles()
 	if not test_db:
 		if items is None:
 			items = (input('Please select how many object will the userbase be composed of :\t'))

@@ -299,16 +299,17 @@ def accept_reservation(username, res_id):
 @login_required
 def search_pub():
 	form = SearchItemsForm()
-	local_pubs = []
-	for p in Pub.query.filter(Pub.owner.has(city=current_user.city)).all():
-		if p.bookable:
-			local_pubs.append(p)
+	# local_pubs = []
+	# for p in Pub.query.filter(Pub.owner.has(city=current_user.city)).all():
+	# 	if p.bookable:
+	# 		local_pubs.append(p)
+	pubs = Pub.query.filter(Pub.owner.has(city=current_user.city)).all()
 	if request.method == 'POST':
 		if form.searchedItem.data:
 			p = Pub.query.filter_by(name=form.searchedItem.data).first()
-			return render_template('search_pub.html', form=form, local_pubs=local_pubs, query_pub=p, pull_from=session['pull_from'])
+			return render_template('search_pub.html', form=form, local_pubs=pubs, query_pub=p, pull_from=session['pull_from'])
 		return redirect(url_for('users.search_pub'))
-	return render_template('search_pub.html', form=form, local_pubs=local_pubs, pull_from=session['pull_from'])
+	return render_template('search_pub.html', form=form, local_pubs=pubs, pull_from=session['pull_from'])
 
 
 @users.route('/follow/<int:u_id>')

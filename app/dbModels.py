@@ -73,8 +73,13 @@ def dummy(return_obj=True, model=None, items=1, db_w_test=False):
 				itm.firstName = faker.first_name_female()
 			else:
 				itm.firstName = faker.first_name_male()
-			if faker.boolean(chance_of_getting_true=35):
-				itm.confirmed = True
+			if faker.boolean(chance_of_getting_true=60):	# assign user.city = some owner.city randomly picked
+				u_mass = Owner.query.filter(Owner.pub!=None).all()
+				if len(u_mass) > 1:
+					for u in u_mass:
+						if faker.boolean(chance_of_getting_true=50):
+							u.city = itm.city
+							itm.confirmed = True
 			model = 'users'
 		elif model in ('o', 'owners'):
 			itm = Owner(username=faker.user_name(),
@@ -96,11 +101,6 @@ def dummy(return_obj=True, model=None, items=1, db_w_test=False):
 				itm.firstName = faker.first_name_female()
 			else:
 				itm.firstName = faker.first_name_male()
-			if faker.boolean(chance_of_getting_true=45):	# assign owner.city = some user.city randomly picked
-				u_mass = User.query.count()
-				if u_mass > 1:
-					u = User.query.get(randint(1, u_mass))
-					itm.city = u.city
 			if faker.boolean(chance_of_getting_true=35):
 				itm.confirmed = True
 			if faker.boolean(chance_of_getting_true=70):
@@ -131,8 +131,7 @@ def dummy(return_obj=True, model=None, items=1, db_w_test=False):
 		if not return_obj:
 			db.session.add(itm)
 			try:
-				db.session.commit()
-				if model == 'users':
+				if model == 'users': # i > 0 prevents SQLAlchemy to raise an Error due to no users to query
 					u_mass = User.query.count()
 					if u_mass > 1:
 						for _ in range(1, randint(1, u_mass)):
@@ -154,8 +153,9 @@ def dummy(return_obj=True, model=None, items=1, db_w_test=False):
 							g = Group(name=faker.text(max_nb_chars=15))
 							itm.join_as_admin(g)
 				if db_w_test:
-					db.session.delete(itm)
 					db.session.commit()
+					db.session.delete(itm)
+				db.session.commit()
 				i += 1
 			except IntegrityError:
 				db.session.rollback()
@@ -166,9 +166,7 @@ def dummy(return_obj=True, model=None, items=1, db_w_test=False):
 				if db_w_test:
 					raise RuntimeError
 				else:
-					return e
-			except BaseException:
-				raise RuntimeError
+					return print(e)
 			if feedbacks:
 				try:
 					print(progress[round((i / items), 2)])
@@ -230,6 +228,7 @@ class Subscription(db.Model):
 
 class Follow(db.Model):
 	__tablename__ = 'follows'
+
 	follower_id = db.Column(db.Integer, db.ForeignKey('users.id'), primary_key=True)
 	following_id = db.Column(db.Integer, db.ForeignKey('users.id'), primary_key=True)
 	since_when = db.Column(db.DateTime, default=datetime.utcnow())
@@ -386,13 +385,12 @@ class User(db.Model, UserMixin, USER):
 
 	def join_as_admin(self, group):
 		role = G_Role.query.filter_by(role='admin').first()
-		# print(role.id)
 		db.session.add(Subscription(group=group, member=self, role=role))
 		db.session.commit()
 
 	def send_bookingReq(self, pub, guests, is_dummy=False):
 		# information comes from form or route
-		if pub.is_available_for(int(guests)):
+		if pub.is_available_for(int(guests), is_dummy=is_dummy):
 			tempRes = pub.cache_bookingReq(booked_by=self, guests=int(guests))
 			if not is_dummy:
 				flash(f'Reservation code : {tempRes.id} -- Status : {"accepted" if tempRes.confirmed else "waiting confirmation"}', f'{"success" if tempRes.confirmed else "warning"}')
