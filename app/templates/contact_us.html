@@ -1,5 +1,15 @@
 {% extends'base_template.html' %}
 
+{% block navbar %}
+    {% if pull_from == 'user' %}
+        {% include 'user_nav.html' %}
+    {% else %}
+        {% include 'owner_nav.html' %}
+    {% endif %}
+{% endblock navbar %}
+
 {% block pagecontent %}
-    <img src="/static/helpPage-example.jpg" alt="">
+    <div class="container">
+        <img src="/static/helpPage-example.jpg" alt="">
+    </div>
 {% endblock %}

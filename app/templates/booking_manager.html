@@ -12,100 +12,107 @@
 {% block pagecontent %}
     <div class="container">
         {% if reservations.__len__() > 0 %}
+            {% if pagination.pages > 1 %}
+                <div class="row justify-content-center">
+                    {{ macros.pagination_widget(pagination, 'users.open_reservations_dashboard', username=current_user.username) }}
+                </div>
+            {% endif %}
             <div class="row">
                 {% for res in reservations %}
                     <div class="col-12 col-lg-4 my-2 shadow-sm border border-light">
-                          <div class="row no-gutters">
-                              <div class="col-12 col-lg-7">
-                                <ul class="list-inline">
+                      <div class="row no-gutters">
+                          <div class="col-12 col-lg-7">
+                            <ul class="list-inline">
+                                <li class="list-inline-item">
+                                    <span class="font-weight-bold">reservation n. </span> <span class="text-monospace">{{ res.id }}</span>
+                                </li>
+                                {% if pull_from == 'owner' %}
                                     <li class="list-inline-item">
-                                        reservation id: {{ res.id }}
+                                        <span class="font-weight-bold">scheduled for :</span>
+                                        <div class="text-monospace">{{ moment(res.date).format('LLL') }}</div>
                                     </li>
-                                    {% if pull_from == 'owner' %}
-                                        <li class="list-inline-item">
-                                            scheduled for : {{ res.date }}
-                                        </li>
-                                        <li class="list-inline-item">
-                                            {{ res.guests }} people
-                                        </li>
-                                        <li class="list-inline-item">
-                                            made by {{ res.by_id }}
-                                        </li>
-                                    {% else %}
-                                        <li class="list-inline-item">
-                                            reserved at {{ res.at_id }}
-                                        </li>
-                                        <li class="list-inline-item">
-                                            on date {{ res.date }}
-                                        </li>
-                                        <li class="list-inline-item">
-                                            for {{ res.guests }} guests
-                                        </li>
-                                    {% endif %}
-                                    {% if pull_from == 'owner' %}
-                                        <div class="mt-1 btn-group">
-                                            <a class="btn btn-sm btn-danger text-uppercase" href="{{ url_for('users.cancel_reservation', username=current_user.username, res_id=res.id) }}">deny</a>
-                                            <a class="btn btn-sm btn-primary text-uppercase" href="{{ url_for('users.accept_reservation', username=current_user.username, res_id=res.id) }}">accept</a>
-                                        </div>
-                                    {% else %}
-                                      <div class="btn-group mt-2">
-                                          <a class="btn btn-sm btn-danger text-uppercase" href="{{ url_for('users.cancel_reservation', username=current_user.username, res_id=res.id) }}">withdraw</a>
-                                          <a class="btn btn-sm btn-primary text-uppercase" data-toggle="modal" data-target="#update-reservation-backdrop" href="#">update</a>
-                                      </div>
-                                        <!-- update reservation modal -->
-                                        <div class="modal fade" id="update-reservation-backdrop" data-backdrop="static" tabindex="-1" role="dialog" aria-labelledby="staticBackdropLabel" aria-hidden="true">
-                                          <div class="modal-dialog" role="document" style="width: 25%">
-                                            <div class="modal-content">
-                                              <div class="modal-header">
-                                                  <div class="col-12 d-flex align-item-center pl-0">
-                                                      <div class="h4 mb-0">Guests</div>
-                                                      <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                                                        <span aria-hidden="true">&times;</span>
-                                                      </button>
-                                                  </div>
+                                    <li class="list-inline-item">
+                                        <span class="text-monospace font-weight-bold">{{ res.guests }}</span> people
+                                    </li>
+                                    <li class="list-inline-item">
+                                        made by {{ res.by_id }}
+                                    </li>
+                                {% else %}
+                                    <li class="list-inline-item">
+                                        <span class="font-weight-bold">reserved at :</span>
+                                        <span class="text-monospace">{{ res.at_id }}</span>
+                                    </li>
+                                    <li class="list-inline-item">
+                                        <span class="font-weight-bold">on date :</span>
+                                        <div class="text-monospace">{{ moment(res.date).format('LLL') }}</div>
+                                    </li>
+                                    <li class="list-inline-item">
+                                        for {{ res.guests }} guests
+                                    </li>
+                                {% endif %}
+                                {% if pull_from == 'owner' %}
+                                    <div class="mt-1 btn-group">
+                                        <a class="btn btn-sm btn-danger text-uppercase" href="{{ url_for('users.cancel_reservation', username=current_user.username, res_id=res.id) }}">deny</a>
+                                        <a class="btn btn-sm btn-primary text-uppercase" href="{{ url_for('users.accept_reservation', username=current_user.username, res_id=res.id) }}">accept</a>
+                                    </div>
+                                {% else %}
+                                  <div class="btn-group mt-2">
+                                      <a class="btn btn-sm btn-danger text-uppercase" href="{{ url_for('users.cancel_reservation', username=current_user.username, res_id=res.id) }}">withdraw</a>
+                                      <a class="btn btn-sm btn-primary text-uppercase" data-toggle="modal" data-target="#update-reservation-backdrop" href="#">update</a>
+                                  </div>
+                                    <!-- update reservation modal -->
+                                    <div class="modal fade" id="update-reservation-backdrop" data-backdrop="static" tabindex="-1" role="dialog" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+                                      <div class="modal-dialog" role="document" style="width: 25%">
+                                        <div class="modal-content">
+                                          <div class="modal-header">
+                                              <div class="col-12 d-flex align-item-center pl-0">
+                                                  <div class="h4 mb-0">Guests</div>
+                                                  <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                                    <span aria-hidden="true">&times;</span>
+                                                  </button>
                                               </div>
-                                              <div class="modal-body pb-1">
-                                                <div class="text-monospace">
-                                                    <div>How many of you are you now?</div>
-                                                </div>
-                                                  <div>
-                                                      input here
-                                                  </div>
-                                                <div>
-                                                  <div class="my-2 d-flex justify-content-start">
-                                                      <button type="button" class="btn btn-sm btn-outline-danger mr-2" onclick="window.location.href='{{ url_for('users.update_reservation', username=current_user.username, res_id=res.id, guests=5) }}'">
-                                                          Update
-                                                      </button>
-                                                    <button type="button" class="btn btn-sm btn-secondary" data-dismiss="modal">
-                                                        Cancel
-                                                    </button>
-                                                  </div>
-                                                </div>
-                                            </div>
                                           </div>
+                                          <div class="modal-body pb-1">
+                                            <div class="text-monospace">
+                                                <div>How many of you are you now?</div>
+                                            </div>
+                                              <form method="POST" action="#">
+                                                  {{ form.hidden_tag() }}
+                                                  {{ form.guests }}
+                                                  {{ form.update }}
+                                              </form>
+                                            <div>
+                                              <div class="my-2 d-flex justify-content-start">
+{#                                                  <button type="button" class="btn btn-sm btn-outline-danger mr-2" onclick="window.location.href='{{ url_for('users.update_reservation', username=current_user.username, res_id=res.id, guests=5) }}'">#}
+{#                                                      Update#}
+{#                                                  </button>#}
+                                                <button type="button" class="btn btn-sm btn-secondary" data-dismiss="modal">
+                                                    Cancel
+                                                </button>
+                                              </div>
+                                            </div>
                                         </div>
                                       </div>
-                                    {% endif %}
-                                </ul>
-                              </div>
-                              <div class="col-12 col-lg-5 d-flex align-items-center">
-                                <div class="img-qrcode" style="background-image: url('{{ url_for('static', filename='app-icons/QR-mockup-teampicks.svg') }}')"></div>
-                              </div>
+                                    </div>
+                                  </div>
+                                {% endif %}
+                            </ul>
                           </div>
+                          <div class="col-12 col-lg-5 d-flex align-items-center">
+                            <div class="img-qrcode" style="background-image: url('{{ url_for('static', filename='app-icons/QR-mockup-teampicks.svg') }}')"></div>
+                          </div>
+                      </div>
                     </div>
                 {% endfor %}
             </div>
         {% else %}
             <div class="text-monospace empty-reservation">
-                <i class="fas fa-water fa-10x" style="color: #0f6674"></i>
+                <!-- <i class="fas fa-water fa-10x" style="color: #0f6674"></i> -->
                 <div>
                     Nothing to show here yet!
                 </div>
             </div>
         {% endif %}
-        <div class="row">
-            {{ macros.pagination_widget(pagination, 'users.open_reservations_dashboard', username=current_user.username) }}
-        </div>
     </div>
 {% endblock pagecontent %}
 

@@ -18,9 +18,11 @@
                 <span class="sr-only">Toggle Dropdown</span>
             </button>
             <div class="dropdown-menu">
-                <a class="dropdown-item" href="{{ url_for('errors.error_wip', caller_route='news feed') }}">Action</a>
-                <a class="dropdown-item text-dark d-flex align-items-center justify-content-between" href="{{ url_for('errors.error_wip', caller_route='news feed') }}">
-                    Action <i class="far fa-comments fa-fw" style="color: green;"></i>
+                <a class="dropdown-item" href="{{ url_for('errors.error_wip', caller_route='news feed') }}">
+                    Action
+                </a>
+                <a class="dropdown-item text-dark d-flex align-items-center justify-content-between" href="{{ url_for('main.contact_us') }}">
+                    Help <i class="far fa-comments fa-fw" style="color: green;"></i>
                 </a>
                 <a class="text-dark dropdown-item d-flex align-items-center justify-content-between" href="{{ url_for('auth.logout') }}">
                     Log Out <i class="fas fa-power-off fa-fw" style="color: red;"></i>

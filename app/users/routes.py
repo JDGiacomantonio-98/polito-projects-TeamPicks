@@ -6,7 +6,7 @@ from flask_login import logout_user, login_required, current_user
 
 from app.users.methods import upload_profilePic, upload_carousel
 from app.auth.methods import lock_account
-from app.users.forms import ProfileDashboardForm, UploadProfileImgForm, CreateGroupForm, SearchItemsForm, DeleteAccountForm, UploadProfileCarouselForm, CreatePubForm, SendBookingRequestForm, ReviewPubForm
+from app.users.forms import ProfileDashboardForm, UploadProfileImgForm, CreateGroupForm, SearchItemsForm, DeleteAccountForm, UploadProfileCarouselForm, CreatePubForm, SendBookingRequestForm, UpdateBookingReqForm, ReviewPubForm, PubDashboardForm
 from app.users import users
 from app.main.methods import send_confirmation_email, handle_userBin
 from app import db
@@ -26,37 +26,51 @@ def time_tracking():
 def home(username):
 	if current_user.username != username:
 		return redirect(url_for('users.home', username=current_user.username))
-	form = SearchItemsForm()
+	form_search = SearchItemsForm()
 	page = request.args.get('page', default=1, type=int)
 	if session['pull_from'] == 'user':
 		pub_paginate = Pub.query.filter(Pub.owner.has(city=current_user.city)).filter_by(bookable=True).paginate(page, per_page=3, error_out=False)
-		# # paginate users groups
-		# friend_groups = []
-		# for f_id in Follow.get_all_followed_id(current_user):
-		# 	friend_groups.append(Group.query.filter(Group.subs.has(member_id=f_id)).first())
-		# # group_paginate = Group.query.filter(Group.subs.any(member_id=Follow.get_all_followed_id(current_user))).paginate(page, per_page=3, error_out=False)
+		# paginate users groups
+		friend_groups = []
+		friend_list = []
+		for f_id in Follow.get_all_followed_id(current_user):
+			g = Group.query.filter(Group.subs.any(member_id=f_id)).first()
+			if g:
+				friend_groups.append(g)
+				friend_list.append(f_id)
+		# group_paginate = Group.query.filter(Group.subs.any(member_id=Follow.get_all_followed_id(current_user))).paginate(page, per_page=3, error_out=False)
 	else:
 		if current_user.pub:
-			res_paginate = Reservation.query.filter_by(at_id=current_user.pub.id).filter_by(cancelled=False).order_by(Reservation.date.asc()).paginate(page, per_page=3, error_out=False)
+			form_pub_dashboard = PubDashboardForm()
+			res_paginate = Reservation.query.filter_by(at_id=current_user.pub.id).filter_by(confirmed=False).filter_by(cancelled=False).order_by(Reservation.date.asc()).paginate(page, per_page=3, error_out=False)
 	if request.method == 'POST':
-		if form.validate_on_submit():
+		if session['pull_from'] == 'owner':
+			if form_pub_dashboard.set.data:
+				if form_pub_dashboard.validate():
+					current_user.pub.set_manually_availability(form_pub_dashboard.current_availability.data)
+					db.session.commit()
+					flash(f'{current_user.pub.name} availability for today set to {current_user.pub.get_availability()}. MAX : {current_user.pub.seats_max}', 'success')
+					return redirect(url_for('users.home', username=current_user.username))
+				return render_template('home.html', form_search=form_search, title='home', carousel=current_user.get_imgCarousel(), form_pub_dashboard=form_pub_dashboard, res_paginate=res_paginate, reservations=res_paginate.items, pull_from=session['pull_from'])
+		if form_search.validate_on_submit():
 			if session['pull_from'] == 'user':
-				u = User.query.filter_by(username=form.searchedItem.data).first()
+				u = User.query.filter_by(username=form_search.searchedItem.data).first()
 				if u is None:
-					return render_template('home.html', form=form, title='home', pub_paginate=pub_paginate, pubs=pub_paginate.items, u=u, pull_from=session['pull_from'])
+					return render_template('home.html', form_search=form_search, title='home', pub_paginate=pub_paginate, pubs=pub_paginate.items, u=u, pull_from=session['pull_from'])
 				session['q'] = u.id # avoids redundant queries in the profile page
 				return redirect(url_for('users.profile', username=u.username))
-			u = Owner.query.filter_by(username=form.searchedItem.data).first()
+			u = Owner.query.filter_by(username=form_search.searchedItem.data).first()
 			if u is None:
-				return render_template('home.html', form=form, title='home', res_paginate=res_paginate, reservations=res_paginate.items, u=u, pull_from=session['pull_from'])
+				return render_template('home.html', form_search=form_search, title='home', carousel=current_user.get_imgCarousel(), form_pub_dashboard=form_pub_dashboard, res_paginate=res_paginate, reservations=res_paginate.items, u=u, pull_from=session['pull_from'])
 			session['q'] = u.id # avoids redundant queries in the profile page
 			return redirect(url_for('users.profile', username=u.username))
 		return redirect(url_for('users.home', username=current_user.username))
 	if session['pull_from'] == 'user':
-		return render_template('home.html', form=form, title='home', pub_paginate=pub_paginate, pubs=pub_paginate.items, pull_from=session['pull_from'])
+		return render_template('home.html', form_search=form_search, title='home', friend_list=friend_list, friend_groups=friend_groups, pub_paginate=pub_paginate, pubs=pub_paginate.items, pull_from=session['pull_from'])
 	if current_user.pub:
-		return render_template('home.html', form=form, title='home', res_paginate=res_paginate, reservations=res_paginate.items)
-	return render_template('home.html', form=form, title='home')
+		form_pub_dashboard.current_availability.data = current_user.pub.get_availability()
+		return render_template('home.html', form_search=form_search, form_pub_dashboard=form_pub_dashboard, title='home', carousel=current_user.get_imgCarousel(), res_paginate=res_paginate, reservations=res_paginate.items)
+	return render_template('home.html', form_search=form_search, title='home')
 
 
 @users.route('/<username>/profile-dashboard', methods=['GET', 'POST'])
@@ -126,12 +140,17 @@ def profile(username):
 				form_img.about_me.data = current_user.about_me
 				return render_template('profile.html', pull_from=session['pull_from'], title=f'{current_user.firstName} {current_user.lastName}',
 									   is_viewer=(current_user.id != profile_u.id), user=profile_u, imgFile=profile_u.get_imgFile(),
+
 									   carousel=profile_u.get_imgCarousel(), form_info=form_info, form_img=form_img, form_carousel=form_carousel, groups=profile_u.groups.count())
-			if form_carousel.upload_carousel.data:
-				if form_carousel.validate():
-					upload_carousel(form_carousel.images.data)
-					flash('You profile has been updated!', 'success')
-					return redirect(url_for('users.profile', username=current_user.username))
+			try:
+				if form_carousel.upload_carousel.data:
+					if form_carousel.validate():
+						upload_carousel(form_carousel.images.data)
+						flash('You profile has been updated!', 'success')
+						return redirect(url_for('users.profile', username=current_user.username))
+			except BaseException: # no file selected but form submitted
+				flash("Choose some images from your device first before clicking upload.", 'warning')
+				return redirect(url_for('users.profile', username=current_user.username))
 		form_info.firstName.data = capwords(current_user.firstName)
 		form_info.lastName.data = capwords(current_user.lastName)
 		form_info.username.data = current_user.username
@@ -208,22 +227,44 @@ def delete_account(u_id, ATTEMPTS=8):
 	abort(403)
 
 
+@users.route('/follow/<int:u_id>')
+@login_required
+def follow(u_id):
+	u = User.query.get(u_id)
+	if not current_user.is_following(u):
+		current_user.follow(u)
+		db.session.commit()
+		flash(f'You are now following {u.username}', 'success')
+	return redirect(url_for('users.profile', username=u.username))
+
+
+@users.route('/unfollow/<int:u_id>')
+@login_required
+def unfollow(u_id):
+	u = User.query.get(u_id)
+	if current_user.is_following(u):
+		current_user.unfollow(u)
+		db.session.commit()
+		flash(f'You are not following {u.username} anymore.', 'danger')
+	return redirect(url_for('users.profile', username=u.username))
+
+
 @users.route('/<username>/followers', methods=['GET', 'POST'])
 @login_required
 def show_followers(username):
-	followers = User.query.filter(id in Follow.get_all_following_id(current_user)).all()
-	for f_id in Follow.get_all_following_id(current_user):
+	followers = []
+	for f_id in Follow.get_all_following_id(User.query.filter_by(username=username).first()):
 		followers.append(User.query.get(f_id))
-	return render_template('profile.html', username=current_user.username)
+	return render_template('friend_list.html', list=followers)
 
 
 @users.route('/<username>/following', methods=['GET', 'POST'])
 @login_required
 def show_following(username):
-	followers = User.query.filter(id in Follow.get_all_following_id(current_user)).all()
-	for f_id in Follow.get_all_following_id(current_user):
-		followers.append(User.query.get(f_id))
-	return render_template('profile.html', username=current_user.username)
+	following = []
+	for f_id in Follow.get_all_followed_id(User.query.filter_by(username=username).first()):
+		following.append(User.query.get(f_id))
+	return render_template('friend_list.html', list=following)
 
 
 @users.route('/<username>/create-your-group', methods=['GET', 'POST'])
@@ -233,7 +274,11 @@ def create_group(username):
 	if request.method == 'POST':
 		if form.validate_on_submit():
 			if current_user.has_permission_to('CREATE-GROUP'):
-				itm = Group(name=form.name.data)
+				g = Group(name=form.name.data)
+				db.session.add(g)
+				current_user.join_as_admin(g)
+				db.session.commit()
+				return redirect(url_for('users.home', username=current_user.username))
 		else:
 			return redirect(url_for('users.create_group', username=current_user.username))
 	return render_template('create_group.html', form=form, title='your new group', pull_from=session['pull_from'])
@@ -265,10 +310,6 @@ def create_pub(username):
 @login_required
 def search_pub():
 	form = SearchItemsForm()
-	# local_pubs = []
-	# for p in Pub.query.filter(Pub.owner.has(city=current_user.city)).all():
-	# 	if p.bookable:
-	# 		local_pubs.append(p)
 	page = request.args.get('page', default=1, type=int)
 	paginate = Pub.query.filter(Pub.owner.has(city=current_user.city)).paginate(page, per_page=4, error_out=False)
 	if request.method == 'POST':
@@ -317,11 +358,13 @@ def visit_pub(p_id):
 				flash(f'Reservation code : {res.id} -- Status : {"accepted" if res.confirmed else "waiting confirmation"}', f'{"success" if res.confirmed else "warning"}')
 			else:
 				flash(f'Reservation status : rejected due to no availability for {form_booking.guests.data} today', 'danger')
-			return render_template('pub_page.html', pub=p, carousel=carousel, grid=grid, pull_from=session['pull_from'], form_review=form_review, form_booking=form_booking)
+			return render_template('pub_page.html', pub=p, carousel=carousel, grid=grid,  paginate_rev=paginate_rev, reviews=paginate_rev.items, pull_from=session['pull_from'], form_review=form_review, form_booking=form_booking)
 		flash("This pub can not accepts reservation on TeamPicks yet!", 'danger')
-		return render_template('pub_page.html', pub=p, carousel=carousel, grid=grid, pull_from=session['pull_from'], form_booking=form_booking)
+		return render_template('pub_page.html', pub=p, carousel=carousel, grid=grid,  paginate_rev=paginate_rev, reviews=paginate_rev.items, pull_from=session['pull_from'], form_review=form_review, form_booking=form_booking)
 	form_booking.guests.data = '2'
-	return render_template('pub_page.html', pub=p, carousel=carousel, grid=grid, reviews=paginate_rev.items, pull_from=session['pull_from'], form_booking=form_booking, form_review=form_review)
+	if session['pull_from'] == 'user':
+		return render_template('pub_page.html', pub=p, carousel=carousel, grid=grid, paginate_rev=paginate_rev, reviews=paginate_rev.items, pull_from=session['pull_from'], form_review=form_review, form_booking=form_booking)
+	return render_template('pub_page.html', pub=p, carousel=carousel, grid=grid, paginate_rev=paginate_rev, reviews=paginate_rev.items, pull_from=session['pull_from'], form_booking=form_booking)
 
 
 @users.route('/<username>/manage-reservation/all', methods=['GET', 'POST'])
@@ -329,13 +372,15 @@ def visit_pub(p_id):
 def open_reservations_dashboard(username):
 	page = request.args.get('page', 1, type=int)
 	if session['pull_from'] == 'user':
-		pagination = current_user.reservations.filter_by(cancelled=False).filter_by(confirmed=False).order_by(Reservation.date.desc()).paginate(page, per_page=4, error_out=False)
+		form = UpdateBookingReqForm()
+		pagination = current_user.reservations.filter_by(cancelled=False).filter_by(confirmed=False).order_by(Reservation.date.desc()).paginate(page, per_page=6, error_out=False)
+		return render_template('booking_manager.html', reservations=pagination.items, pagination=pagination, form=form, pull_from=session['pull_from'])
 	else:
 		pagination = current_user.pub.reservations.filter_by(cancelled=False).filter_by(confirmed=False).order_by(Reservation.date.desc()).paginate(page, per_page=12, error_out=False)
-	return render_template('booking_manager.html', reservations=pagination.items, pagination=pagination, pull_from=session['pull_from'])
+		return render_template('booking_manager.html', reservations=pagination.items, pagination=pagination, pull_from=session['pull_from'])
 
 
-@users.route('/<username>/update-reservation/<int:res_id>%guests<guests>')
+@users.route('/<username>/update-reservation/<int:res_id>%<guests>')
 @login_required
 def update_reservation(username, res_id, guests):
 	r = Reservation.query.get(res_id)
@@ -368,24 +413,3 @@ def accept_reservation(username, res_id):
 	db.session.commit()
 	return redirect(url_for('users.open_reservations_dashboard', username=username))
 
-
-@users.route('/follow/<int:u_id>')
-@login_required
-def follow(u_id):
-	u = User.query.get(u_id)
-	if not current_user.is_following(u):
-		current_user.follow(u)
-		db.session.commit()
-		flash(f'You are now following {u.username}', 'success')
-	return redirect(url_for('users.profile', username=u.username))
-
-
-@users.route('/unfollow/<int:u_id>')
-@login_required
-def unfollow(u_id):
-	u = User.query.get(u_id)
-	if current_user.is_following(u):
-		current_user.unfollow(u)
-		db.session.commit()
-		flash(f'You are not following {u.username} anymore.', 'danger')
-	return redirect(url_for('users.profile', username=u.username))

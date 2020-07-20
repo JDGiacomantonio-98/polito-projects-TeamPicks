@@ -1,4 +1,5 @@
 {% extends 'base_template.html' %}
+{% import 'macros.html' as macro %}
 
 {% block navbar %}
     {% if pull_from == 'user' %}
@@ -201,8 +202,8 @@
             </div>
             <div class="col-3">
                 <div class="row">
-                    <i class="fas fa-phone-alt fa-sm mr-2"></i>
-                    <span>info here</span>
+                    <i class="fas fa-wifi"></i>
+                    <span class="ml-1">Wi-Fi included</span>
                 </div>
                 <div class="row">
                     <i class="fas fa-phone-alt fa-sm mr-2"></i>
@@ -217,21 +218,26 @@
                 <div class="col-8 pr-5 text-monospace text-muted text-justify">
                     {{ pub.description }}
                 </div>
-                <div class="col-4 pl-4 border border-light shadow">
+                <div class="col-4 pl-4  py-4 border border-light shadow">
                     <form method="POST" action="#" enctype="multipart/form-data">
+                            <span>{{ form_booking.guests.label }}</span>
                         <div>
-                            {{ form_booking.guests.label }}
                             {{ form_booking.guests }}
-                        </div>
-                        <div>
                             {{ form_booking.send_request }}
                         </div>
                     </form>
                 </div>
             </div>
-            <div class="row ml-1 my-3">
-                <div class="col-12 pl-2 mb-3 h4 font-weight-bold">
-                    What others say about {{ pub.name }}
+            <div class="row mx-1 my-3 justify-content-start w-100">
+                <div class="col-12 pl-1 pr-2 d-flex justify-content-between">
+                    <div class="col-9 pl-2 mb-3 h4 font-weight-bold text-truncate">
+                        What others say about {{ pub.name }}
+                    </div>
+                    {% if paginate_rev.pages > 1 %}
+                        <div class="col-3 px-0 d-flex">
+                            {{ macro.pagination_widget(paginate_rev, 'users.visit_pub', p_id=pub.id) }}
+                        </div>
+                    {% endif %}
                 </div>
                 {% for rev in reviews %}
                     <div class="col-4 border border-light shadow-sm">

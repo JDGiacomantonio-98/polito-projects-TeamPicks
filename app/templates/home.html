@@ -14,10 +14,10 @@
         <div class="row pt-1">
             <div class="col-12 col-md-6 offset-md-3 px-1">
                 <form method="POST" action="#" class="w-100">
-                    {{ form.hidden_tag() }}
+                    {{ form_search.hidden_tag() }}
                     <div class="d-flex align-items-center form-group">
-                        <div class="w-100 mr-2">{{ form.searchedItem }}</div>
-                        <div>{{ form.submit }}</div>
+                        <div class="w-100 mr-2">{{ form_search.searchedItem }}</div>
+                        <div>{{ form_search.submit }}</div>
                     </div>
                 </form>
                 {% if request.method == 'POST' and u == None %}
@@ -70,17 +70,64 @@
                           <h4 class="my-0 font-weight-normal">Pub Dashboard</h4>
                       {% endif %}
                   </div>
-                  <div class="card-body d-flex justify-content-center">
+                  <div class="card-body">
                     {% if pull_from == 'user' %}
-                        groups a lot of groups
+                        <div class="row">
+                            {% if friend_groups.__len__() <= 8 %}
+                                {% for i in range(0, friend_groups.__len__()) %}
+                                    <div class="col-6 border border-light shadow-sm my-2 py-2">
+                                        <ul class="list-inline my-0">
+                                            <li class="list-unstyled"><span class="font-weight-bold">Group name</span></li>
+                                            <li class="list-unstyled"><div>{{ friend_groups[i].name }}</div></li>
+                                            <li class="list-unstyled"><span class="badge badge-info h-50">{{ friend_groups[i].subs.filter_by(member_id=friend_list[i]).first().get_member_username() }} is member here.</span></li>
+                                        </ul>
+                                    </div>
+                                {% endfor %}
+                            {% else %}
+                                {% for i in range(0, 8) %}
+                                    <div class="col-6 border border-light shadow-sm my-2 py-2">
+                                        <ul class="list-inline my-0">
+                                            <li class="list-unstyled"><span class="font-weight-bold">Group name</span></li>
+                                            <li class="list-unstyled"><div>{{ friend_groups[i].name }}</div></li>
+                                            <li class="list-unstyled"><span class="badge badge-info h-50">{{ friend_groups[i].subs.filter_by(member_id=friend_list[i]).first().get_member_username() }} is member here.</span></li>
+                                        </ul>
+                                    </div>
+                                {% endfor %}
+                            {% endif %}
+                        </div>
                     {% else %}
-                        pub main infos
+                        <div class="row border border-light px-2 justify-content-between">
+                            {% for i in range(0,8) %}
+                                <div class="col-3 px-0 d-flex justify-content-center align-items-center">
+                                    <div class="img-profile-dash border shadow-sm mx-1 my-1" style="background-image: url('{{ carousel[i] }}')"></div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                        <div>
+                            <form class='no-gutters mt-2' method='POST' action="#">
+                                {{ form_pub_dashboard.hidden_tag() }}
+                                <div class="row justify-content-between align-items-baseline pr-3">
+                                    <div class="col-6 text-monospace">{{ form_pub_dashboard.current_availability.label }}</div>
+                                    <div>
+                                        {{ form_pub_dashboard.current_availability }}
+                                        {{ form_pub_dashboard.set }}
+                                    </div>
+                                </div>
+                                {% if form_pub_dashboard.current_availability.errors %}
+                                    {% for e in form_pub_dashboard.current_availability.errors %}
+                                        <div>
+                                            <span style="color: red"><small>{{ e }}</small></span>
+                                        </div>
+                                    {% endfor %}
+                                {% endif %}
+                            </form>
+                        </div>
                     {% endif %}
                   </div>
                     <div class="card-footer d-flex justify-content-center">
                         {% if pull_from == 'user' %}
-                            {% if True %}
-                                <button type="button" class="btn btn-lg btn-outline-primary shadow" onclick="window.location.href='{{ url_for('users.create_group', username=current_user.username) }}'">
+                            {% if current_user.groups.count() > 1 %}
+                                <button type="button" class="btn btn-lg btn-outline-primary shadow" onclick="window.location.href='{{ url_for('errors.error_wip', caller_route='manage-your-groups') }}'">
                                     manage your groups
                                 </button>
                             {% else %}
@@ -111,9 +158,11 @@
                     </div>
                     <div class="card-body px-2 pt-2">
                         {% if pull_from == 'user' %}
-                            <div class="col-12 d-flex align-items-center">
-                                {{ macros.pagination_widget(pub_paginate, 'users.home', username=current_user.username) }}
-                            </div>
+                            {% if pub_paginate.pages > 1 %}
+                                <div class="col-12 d-flex justify-content-center">
+                                    {{ macros.pagination_widget(pub_paginate, 'users.home', username=current_user.username, small=True) }}
+                                </div>
+                            {% endif %}
                             {% for p in pubs %}
                                 <a href="{{ url_for('users.visit_pub', p_id=p.id) }}">
                                     <div class="border shadow-sm my-3 pb-1">
@@ -174,34 +223,35 @@
                             {% endfor %}
                         {% else %}
                             {% if reservations %}
-                                <div class="col-12 d-flex align-items-center">
-                                    {{ macros.pagination_widget(res_paginate, 'users.home', username=current_user.username) }}
-                                </div>
-                            {% endif %}
-                            {% for res in reservations %}
-                                <a class='disabled' href="#">
-                                  <div class="border shadow-sm my-2 pb-1">
-                                      <div class="media d-flex align-items-center">
-                                        <div class="col-9 px-1">
-                                            <div class="col-12">
-                                              reservation id: {{ res.id }}
-                                            </div>
-                                            <div class="col-12">
-                                                date: {{ res.date }}
-                                            </div>
-                                            <div class="col-12">
-                                                guests: {{ res.guests }}
-                                            </div>
-                                        </div>
-                                          <div class="col-3 px-0 d-flex justify-content-start">
-                                              <div class="img-profile-search mr-2" style="background-image: url('{{ url_for('static', filename='app-icons/QR-mockup-teampicks.svg') }}')"></div>
-                                          </div>
+                                {% if res_paginate.pages > 1 %}
+                                    <div class="col-12 d-flex justify-content-center">
+                                        {{ macros.pagination_widget(res_paginate, 'users.home', username=current_user.username, small=True) }}
                                     </div>
+                                {% endif %}
+                                {% for res in reservations %}
+                                  <div class="row no-gutters border border-light shadow-sm pl-2 pr-0 py-1">
+                                      <div class="col-12 col-lg-7">
+                                        <ul class="list-inline my-0">
+                                            <li class="list-inline-item">
+                                                <span class="font-weight-bold">reservation n. </span> <span class="text-monospace">{{ res.id }}</span>
+                                            </li>
+                                            <li class="list-inline-item">
+                                                <span class="font-weight-bold">scheduled for :</span>
+                                                <div class="text-monospace">{{ moment(res.date).format('YYYY-MM-DD') }}</div>
+                                            </li>
+                                            <li class="list-inline-item">
+                                                <span class="text-monospace font-weight-bold">{{ res.guests }}</span> people
+                                            </li>
+                                        </ul>
+                                      </div>
+                                      <div class="col-12 col-lg-5 d-flex align-items-center">
+                                        <div class="img-qrcode-home" style="background-image: url('{{ url_for('static', filename='app-icons/QR-mockup-teampicks.svg') }}')"></div>
+                                      </div>
                                   </div>
-                              </a>
-                            {% endfor %}
+                                {% endfor %}
+                            {% endif %}
                         {% endif %}
-                  </div>
+                    </div>
                     <div class="card-footer d-flex justify-content-center">
                         {% if pull_from == 'user' %}
                             <button type="button" class="btn btn-lg btn-outline-primary" onclick="window.location.href='{{ url_for('users.search_pub') }}'">
@@ -215,6 +265,6 @@
                     </div>
                 </div>
             </div>
-            </div>
         </div>
+    </div>
 {% endblock %}

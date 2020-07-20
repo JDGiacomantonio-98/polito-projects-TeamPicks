@@ -34,14 +34,14 @@ def upload_carousel(files):
 	bin_f = listdir(bin_url)
 	if len(bin_f) + len(files) > 9:
 		for i in range(len(bin_f)-1, len(bin_f) - len(files) - 2, -1):
-			if 'P' not in bin_f[i]:
+			if not (('U__' in bin_f[i]) or ('O__' in bin_f[i])):
 				try:
 					remove(f'{bin_url}{bin_f[i]}')
 				except FileNotFoundError:
 					pass
 		bin_f = listdir(bin_url)
 	for i in range(len(bin_f) - 1, -1, -1):
-		if 'P' not in bin_f[i]:
+		if not (('U__' in bin_f[i]) or ('O__' in bin_f[i])):
 			f_n = bin_f[i].split('__')
 			rename(f'{bin_url}{bin_f[i]}', f'{bin_url}{int(f_n[0])+len(files)}__{f_n[1]}')
 	i = 0

@@ -81,10 +81,10 @@ class DeleteAccountForm(FlaskForm):
 class CreateGroupForm(FlaskForm):
 	name = StringField('Name:', validators=[DataRequired(), Length(min=10, max=100)], render_kw={'placeholder': 'your group name'})
 
-	submit = SubmitField('Create it now!')
+	create_group = SubmitField('Create it now!')
 
 	def validate_name(self, name):
-		if Group.query.filter_by(name=name).first():
+		if Group.query.filter_by(name=self.name.data).first():
 			raise ValidationError('Ouch! you need to be more creative : this group already exist, choose another name.')
 
 
@@ -98,8 +98,18 @@ class CreatePubForm(FlaskForm):
 	submit = SubmitField('Create pub', render_kw={'class': 'btn btn-primary btn-sm text-uppercase'})
 
 	def validate_seats_max(self, seats_max):
-		if not seats_max.data.is_numeric():
+		if not self.seats_max.data.is_numeric():
 			raise ValidationError('Input a numeric value.')
+
+
+class PubDashboardForm(FlaskForm):
+	current_availability = StringField('Today seats availability')
+
+	set = SubmitField('Set')
+
+	def validate_current_availability(self, current_availability):
+		if current_user.pub.seats_max < int(self.current_availability.data):
+			raise ValidationError('You can not set an availability value higher than your max available seats.')
 
 
 class SendBookingRequestForm(FlaskForm):
@@ -108,9 +118,21 @@ class SendBookingRequestForm(FlaskForm):
 	send_request = SubmitField('Book here')
 
 	def validate_guests(self, guests):
-		if not guests.data.isdigit():
+		if not self.guests.data.isdigit():
 			raise ValidationError('Please submit a numeric input')
-		if int(guests.data) > 16:
+		if int(self.guests.data) > 16:
+			raise ValidationError('Ooops, max number of guests accepted : 16')
+
+
+class UpdateBookingReqForm(FlaskForm):
+	guests = StringField('', validators=[DataRequired()])
+
+	update = SubmitField('Update')
+
+	def validate_guests(self, guests):
+		if not self.guests.data.isdigit():
+			raise ValidationError('Please submit a numeric input')
+		if int(self.guests.data) > 16:
 			raise ValidationError('Ooops, max number of guests accepted : 16')
 
 

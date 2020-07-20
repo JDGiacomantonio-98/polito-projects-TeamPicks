@@ -1,0 +1,24 @@
+{% extends 'base_template.html' %}
+
+{% block navbar %}
+    {% if pull_from == 'user' %}
+        {% include 'user_nav.html' %}
+    {% else %}
+        {% include 'owner_nav.html' %}
+    {% endif %}
+{% endblock navbar %}
+
+{% block pagecontent %}
+    <div class="container">
+        <div class="row">
+            {% for u in list %}
+                <div class="col-3">
+                    <a class='d-flex justify-content-start' href="{{ url_for('users.profile', username=u.username) }}">
+                        <div class="img-profile-nav shadow mx-2" style="background-image: url('{{ u.get_imgFile() }}')"></div>
+                        <span class="text-truncate">{{ u.username }}</span>
+                    </a>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+{% endblock pagecontent %}

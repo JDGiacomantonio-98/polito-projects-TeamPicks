@@ -1,23 +1,39 @@
-{% macro pagination_widget(pagination, endpoint) %}
-    {% if pagination.pages > 1 %}
-        <div class="text-monospace">
-            <a {% if not pagination.has_prev %} class="disabled"{% endif %} href="{% if pagination.has_prev %}{{ url_for(endpoint, page = pagination.page - 1, **kwargs) }}{% else %}#{% endif %}">
+{% macro pagination_widget(pagination, endpoint, small=False) %}
+    <div class="text-monospace">
+        {% if pagination.has_prev %}
+            <a class="active" href="{% if pagination.has_prev %}{{ url_for(endpoint, page = pagination.page - 1, **kwargs) }}{% else %}#{% endif %}">
                 &laquo;
             </a>
-            {% for p in pagination.iter_pages(left_edge=1, left_current=1, right_current=2, right_edge = 2) %}
+        {% endif %}
+        {% if not small %}
+            {% for p in pagination.iter_pages(left_edge=1, left_current=0, right_current=2, right_edge = 2) %}
                 {% if p %}
                     {% if p == pagination.page %}
-                        <a class="btn btn-sm active btn-info mx-2 px-1" href="{{ url_for(endpoint, page = p, **kwargs) }}">{{ p }}</a>
+                        <a class="btn btn-sm active btn-info mx-2" href="{{ url_for(endpoint, page = p, **kwargs) }}">{{ p }}</a>
                     {% else %}
-                        <a class="btn btn-sm mx-1 px-1" href="{{ url_for(endpoint, page = p, **kwargs) }}">{{ p }}</a>
+                        <a class="btn btn-sm mx-1" href="{{ url_for(endpoint, page = p, **kwargs) }}">{{ p }}</a>
                     {% endif %}
                 {% else %}
                     <a class="disabled mx-2" href="#">&hellip;</a>
                 {% endif %}
             {% endfor %}
-            <a {% if not pagination.has_next %} class="disabled"{% endif %} href="{% if pagination.has_next %}{{ url_for(endpoint, page = pagination.page + 1, **kwargs) }}{% else %}#{% endif %}">
+        {% else %}
+            {% for p in pagination.iter_pages(left_edge=1, left_current=1, right_current=1, right_edge = 1)%}
+                {% if p %}
+                    {% if p == pagination.page %}
+                        <a class="btn btn-sm active btn-info px-1 py-0" href="{{ url_for(endpoint, page = p, **kwargs) }}">{{ p }}</a>
+                    {% else %}
+                        <a class="btn btn-sm px-1 py-0" href="{{ url_for(endpoint, page = p, **kwargs) }}">{{ p }}</a>
+                    {% endif %}
+                {% else %}
+                    <a class="disabled mx-1" href="#">&hellip;</a>
+                {% endif %}
+            {% endfor %}
+        {% endif %}
+        {% if pagination.has_next %}
+            <a  class="active" href="{{ url_for(endpoint, page = pagination.page + 1, **kwargs) }}">
                 &raquo;
             </a>
-        </div>
-    {% endif %}
+        {% endif %}
+    </div>
 {% endmacro %}

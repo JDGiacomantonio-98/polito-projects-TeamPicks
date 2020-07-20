@@ -81,10 +81,10 @@
                                     <div class="row">
                                         <div class="col-12 d-flex justify-content-between align-items-center">
                                             <div>
-                                                <span class="font-weight-bold">followers </span> <span class="text-monospace">{{ user.followers.count() }}</span>
+                                                <a class="disabled font-weight-bold" href="{{ url_for('users.show_followers', username=user.username) }}">followers </a> <span class="text-monospace">{{ user.followers.count() }}</span>
                                             </div>
                                             <div>
-                                                <span class="font-weight-bold">following </span> <span class="text-monospace">{{ user.followed.count() }}</span>
+                                                <a class="disabled font-weight-bold" href="{{ url_for('users.show_following', username=user.username) }}">following </a> <span class="text-monospace">{{ user.followed.count() }}</span>
                                             </div>
                                             {% if is_viewer %}
                                                 {% if not current_user.is_following(user) %}

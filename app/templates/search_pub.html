@@ -81,9 +81,9 @@
                         {% endif %}
                 {% endif %}
                 <div class="row">
-                    <div class="col-12 d-flex justify-content-between">
-                        <div class="font-weight-bold mb-1">Available pubs in your city</div>
-                        <div>{{ macro.pagination_widget(paginate, 'users.search_pub') }}</div>
+                    <div class="col-12 mb-1 pr-0 d-flex justify-content-between">
+                        <div class="font-weight-bold">Available pubs in your city</div>
+                        <div>{{ macro.pagination_widget(paginate, 'users.search_pub', small=True) }}</div>
                     </div>
                 </div>
                     {% if local_pubs.__len__() > 0 %}

@@ -252,6 +252,9 @@ class Subscription(db.Model):
 						nullable=False)  # user allowed actions in the group
 	member_since = db.Column(db.DateTime, default=datetime.utcnow())  # subscription timestamp
 
+	def get_member_username(self):
+		return User.query.get(self.member_id).username
+
 
 class Follow(db.Model):
 	__tablename__ = 'follows'
@@ -369,7 +372,7 @@ class USER:
 		file_bin = handle_userBin(self.get_file_address(), single_slash=True, foreign_session=foreign_session)
 		try:
 			for f in listdir(f'{handle_userBin(self.get_file_address(), absolute_url=True, foreign_session=foreign_session)}'):
-				if not(f.find('U__') or f.find('O__')):
+				if not(('U__' in f) or ('O__' in f)):
 					carousel.append(f'{file_bin}{f}')
 					# carousel.append(url_for('static', filename=f'users/{self.get_file_address()}/{f}'))
 			return carousel
@@ -380,7 +383,7 @@ class USER:
 		return timedTokenizer(current_app.config['SECRET_KEY'], expireInSec).dumps({'load': self.id}).decode('utf-8')
 
 	def has_permission_to(self, action):
-		pass
+		return True
 
 	def is_acc_locked(self):
 		if self.acc_locked:
@@ -586,6 +589,9 @@ class Pub(db.Model):
 
 	def get_description(self):
 		return self.description
+
+	def set_manually_availability(self, availability):
+		self.seats_booked = self.seats_max - int(availability)
 
 	def get_availability(self):
 		return self.seats_max - self.seats_booked
