@@ -9,18 +9,34 @@
 {% endblock navbar %}
 
 {% block pagecontent %}
-    <form method="POST" action="#">
-        {{ form.name.label }}
-        {{ form.name }}
-        {{ form.address.label }}
-        {{ form.address }}
-        {{ form.phone_num.label }}
-        {{ form.phone_num}}
-        {{ form.seats_max.label }}
-        {{ form.seats_max }}
-        {{ form.description.label }}
-        {{ form.description }}
-
-        {{ form.submit }}
-    </form>
+    <div class="h3 mb-0 text-center my-5 my-lg-3">Register you pub!</div>
+    <div class="container d-flex align-items-center" style="height: 350px">
+        <form method="POST" action="#">
+            <div class="row shadow py-4">
+                <div class="col-12 col-lg-3">
+                     <div>{{ form.name.label }}</div>
+                     <div>{{ form.name }}</div>
+                </div>
+                <div class="col-12 col-lg-3">
+                     <div>{{ form.address.label }}</div>
+                     <div>{{ form.address }}</div>
+                </div>
+                <div class="col-12 col-lg-3">
+                     <div>{{ form.phone_num.label }}</div>
+                     <div>{{ form.phone_num }}</div>
+                </div>
+                <div class="col-12 col-lg-3">
+                     <div>{{ form.seats_max.label }}</div>
+                     <div>{{ form.seats_max }}</div>
+                </div>
+                <div class="col-12 mt-4">
+                    <div>{{ form.description.label }}</div>
+                    <div>{{ form.description }}</div>
+                </div>
+                <div class="col-12 d-flex align-items-center justify-content-end mt-3">
+                    <div>{{ form.submit }}</div>
+                </div>
+            </div>
+        </form>
+    </div>
 {% endblock pagecontent %}

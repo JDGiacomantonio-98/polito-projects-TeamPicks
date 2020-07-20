@@ -53,7 +53,7 @@
                             <button type="button" class="btn btn-lg btn-outline-primary" onclick="window.location.href='{{ url_for('errors.error_wip', caller_route='news feed') }}'">
                                 browse more
                             </button>
-                        {% else %}
+                        {% elif current_user.pub %}
                             <button type="button" class="btn btn-lg btn-outline-primary" onclick="window.location.href='{{ url_for('errors.error_wip', caller_route='news feed') }}'">
                                 propose your pub
                             </button>
@@ -79,12 +79,22 @@
                   </div>
                     <div class="card-footer d-flex justify-content-center">
                         {% if pull_from == 'user' %}
-                            <button type="button" class="btn btn-lg btn-outline-primary shadow" onclick="window.location.href='{{ url_for('users.create_group', username=current_user.username) }}'">
-                                create your own
+                            {% if True %}
+                                <button type="button" class="btn btn-lg btn-outline-primary shadow" onclick="window.location.href='{{ url_for('users.create_group', username=current_user.username) }}'">
+                                    manage your groups
+                                </button>
+                            {% else %}
+                                <button type="button" class="btn btn-lg btn-outline-primary shadow" onclick="window.location.href='{{ url_for('users.create_group', username=current_user.username) }}'">
+                                    create your own
+                                </button>
+                            {% endif %}
+                        {% elif current_user.pub %}
+                            <button type="button" class="btn btn-lg btn-outline-primary shadow" onclick="window.location.href='{{ url_for('users.profile', username=current_user.username) }}'">
+                                manage pub info
                             </button>
                         {% else %}
-                            <button type="button" class="btn btn-lg btn-outline-primary shadow" onclick="window.location.href='{{ url_for('users.create_group', username=current_user.username) }}'">
-                                manage pub info
+                            <button type="button" class="btn btn-lg btn-outline-primary shadow" onclick="window.location.href='{{ url_for('users.create_pub', username=current_user.username) }}'">
+                                register your pub here
                             </button>
                         {% endif %}
                     </div>
@@ -107,18 +117,18 @@
                             {% for p in pubs %}
                                 <a href="{{ url_for('users.visit_pub', p_id=p.id) }}">
                                     <div class="border shadow-sm my-3 pb-1">
-                                        <div class="row">
+                                        <div class="row px-3">
                                             {% if pull_from == 'user' %}
-                                                <div class="pl-3">
-                                                    <div class="img-profile-search" style="background-image: url('{{ p.owner.get_imgFile(foreign_session=True) }}')"></div>
-                                                </div>
+                                                {% for i in range(3) %}
+                                                    <div class="col-4 px-0 img-profile-search" style="background-image: url('{{ p.owner.get_imgCarousel(foreign_session=True)[i] }}')"></div>
+                                                {% endfor %}
                                             {% else %}
-                                                <div class="pl-3">
-                                                    <div class="img-profile-search" style="background-image: url('{{ p.owner.get_imgFile() }}')"></div>
-                                                </div>
+                                                {% for i in range(3) %}
+                                                    <div class="img-profile-search" style="background-image: url('{{ p.owner.get_imgCarousel()[i] }}')"></div>
+                                                {% endfor %}
                                             {% endif %}
                                         </div>
-                                        <div class="media d-flex align-items-center px-1">
+                                        <div class="media d-flex align-items-center px-2">
                                             <div class="col-1 d-flex justify-content-center">
                                                 {% if pull_from == 'user' %}
                                                     <a href="{{ url_for('users.visit_pub', p_id=p.id) }}">
@@ -136,10 +146,10 @@
                                                     <div class="col-6 pr-0">
                                                         <div>
                                                             <span>
-                                                            {% for s in range(0, p.rating ) %}
+                                                            {% for s in range(0, p.compute_rating(return_rating=True) ) %}
                                                                 <i class="fas fa-star fa-sm" style="color: goldenrod"></i>
                                                             {% endfor %}
-                                                            {% for s in range(0, 5 - p.rating ) %}
+                                                            {% for s in range(0, 5 - p.compute_rating(return_rating=True) ) %}
                                                                 <i class="far fa-star fa-xs" style="color: lightslategrey"></i>
                                                             {% endfor %}
                                                           </span>
@@ -197,8 +207,8 @@
                             <button type="button" class="btn btn-lg btn-outline-primary" onclick="window.location.href='{{ url_for('users.search_pub') }}'">
                                 Find others
                             </button>
-                        {% else %}
-                            <button type="button" class="btn btn-lg btn-outline-primary" onclick="window.location.href='{{ url_for('users.search_pub') }}'">
+                        {% elif current_user.pub %}
+                            <button type="button" class="btn btn-lg btn-outline-primary" onclick="window.location.href='{{ url_for('users.open_reservations_dashboard', username=current_user.username) }}'">
                                 manage
                             </button>
                         {% endif %}

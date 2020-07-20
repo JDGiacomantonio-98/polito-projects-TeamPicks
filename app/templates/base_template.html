@@ -28,7 +28,7 @@
                 {% else %}
                     <nav class="navbar navbar-light">
                         <div class="container">
-                            <a class="navbar-brand mb-0 h1" href="{{ url_for('auth.login') }}">
+                            <a class="navbar-brand mb-0 h1" href="{{ url_for('auth.login') }}" data-toggle="tooltip" data-placement="bottom" title="Go back to the login page">
                                 <img src=" {{ url_for('static', filename='/app-icons/logo-min.png') }}" width="30" height="30" class="d-inline-block align-top" alt="Website Logo">
                                 TeamPicks
                             </a>
@@ -38,7 +38,7 @@
             {% elif title %}
                 <nav class="navbar navbar-light">
                     <div class="container">
-                        <a class="navbar-brand mb-0 h1" href="{{ url_for('main.index') }}">
+                        <a class="navbar-brand mb-0 h1" href="{{ url_for('main.index') }}" data-toggle="tooltip" data-placement="bottom" title="Go back to the landing page">
                             <img src=" {{ url_for('static', filename='/app-icons/logo-min.png') }}" width="30" height="30" class="d-inline-block align-top" alt="Website Logo">
                             TeamPicks
                         </a>
@@ -85,7 +85,6 @@
         {% endblock scrips_private %}
     </body>
     <footer>
-        <hr>
         <div class="container lead">
             <small>This website is a product of <strong>TeamPicks-Group</strong> licensed under Copyright &copy 2020 legislation.</small>
         </div>

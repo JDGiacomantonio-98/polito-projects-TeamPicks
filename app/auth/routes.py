@@ -170,9 +170,9 @@ def reset_psw(token):
 	form = ResetPswForm()
 	if request.method == 'POST':
 		if form.validate_on_submit():
-			user.hash = hash_psw(form.psw.data)
+			user[0].hash = hash_psw(form.psw.data)
 			db.session.commit()
-			flash(f"Hi {user.username}, your password has been successfully reset. Welcome back on board!", 'success')
+			flash(f"Hi {user[0].username}, your password has been successfully reset. Welcome back on board!", 'success')
 			flash('To assure security on your account we need you to login again.', 'secondary')
 			return redirect(url_for('auth.login'))
 	return render_template('psw_reset.html', title='Resetting your psw', form=form)

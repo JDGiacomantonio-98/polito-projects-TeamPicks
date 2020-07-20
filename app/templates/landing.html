@@ -4,7 +4,7 @@
     <div class="container">
         {% if request.method == 'POST' %}
             <div class="container shadow-lg p-3 mb-5 mt-3 bg-white rounded">
-                <p class="display-4">In {{ city }} already more than {{ pubs }} local activities work with us!</p>
+                <p class="display-4">In {{ city.capitalize() }} already more than <span class="font-weight-bold">{{ pubs }}</span> local activities work with us!</p>
             </div>
             <div class="row">
                 <div class="col-lg-6">

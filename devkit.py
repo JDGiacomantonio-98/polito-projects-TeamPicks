@@ -28,7 +28,12 @@ def set_env(selKey):
 
 
 def create_userbase(items=None, test_db=False):
-	from app.dbModels import dummy
+	from math import floor
+	from random import randint
+
+	from faker import Faker
+
+	from app.dbModels import dummy, Owner
 
 	userbase = {
 		'owner': 'o',
@@ -47,12 +52,23 @@ def create_userbase(items=None, test_db=False):
 				print('Input error: only a numeric value can be submitted. Try again.')
 				items = (input('Please select how many object will the userbase be composed of :\t'))
 		items = int(items)
+		cities = []
+		faker = Faker(['en_US', 'en_GB', 'zh_CN', 'fr_FR', 'es_ES', 'it_IT'])
+		K_CITY = 0.8 # a-priori known value of the population propensity to live where also others live (network externalities effect)
+		for _ in range(randint(1, ((items + 1) - floor(K_CITY*items)))):
+			cities.append(faker.city().lower())
 		for k in userbase:
-			dummy(return_obj=False, model=userbase[k], items=items)
+			if k == 'user':
+				dummy(return_obj=False, model=userbase[k], items=items, o_mass=Owner.query.count(), cities=cities)
+			else:
+				dummy(return_obj=False, model=userbase[k], items=items, cities=cities)
 	else:
 		for k in userbase:
 			try:
-				dummy(return_obj=False, model=userbase[k], db_w_test=True)
+				if k == 'user':
+					dummy(return_obj=False, model=userbase[k], o_mass=Owner.query.count(), db_w_test=test_db)
+				else:
+					dummy(return_obj=False, model=userbase[k], db_w_test=test_db)
 			except RuntimeError:
 				return None
 

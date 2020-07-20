@@ -1,12 +1,13 @@
 from datetime import datetime
 
-from flask import render_template, url_for, redirect, request
+from flask import render_template, url_for, redirect, request, flash, session, abort, current_app
 from flask_login import login_required, current_user
 
 from app.main import main
 from app.main.forms import TryAppForm
 from app.main.methods import send_confirmation_email
-from app.dbModels import Owner
+from app.dbModels import Owner, Reservation
+from app import db
 
 
 @main.route('/', methods=['GET', 'POST'])
@@ -15,7 +16,7 @@ def index():
 		form = TryAppForm()
 		if request.method == 'POST' and form.submit.data:
 			pubs = Owner.query.filter_by(city=form.city.data).count()
-			return render_template('landing.html', city=form.city.data, pubs=pubs)
+			return render_template('landing.html', city=form.city.data.lower(), pubs=pubs, title='Join us!')
 		return render_template('landing.html', form=form, time=datetime.utcnow())
 	return redirect(url_for('users.home', username=current_user.username))
 
@@ -32,9 +33,17 @@ def send_email_confirmation():
 	return redirect(url_for('users.profile', username=current_user.username))
 
 
-@main.route('/search/<query_obj>')
-def print_search_results(query_obj):
-	pass
+@main.route('/reservation-cleanup')
+def delete_reservations():
+	if current_user.email != current_app.config['FLASKY_ADMIN']:
+		flash('This page is admins reserved only.', 'warning')
+		abort(403)
+	res = Reservation.query.filter_by(cancelled=True).all()
+	for r in res:
+		db.session.delete(r)
+		db.session.commit()
+	flash(f'DONE. Reservation dropped : {len(res)}', 'danger')
+	return render_template('admin_dashboard.html', pull_from=session['pull_from'])
 
 
 @main.route('/contacts')

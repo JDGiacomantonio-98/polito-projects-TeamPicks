@@ -1,8 +1,8 @@
 from flask_login import current_user
 from flask_wtf import FlaskForm, RecaptchaField
 from flask_wtf.file import FileField, FileAllowed
-from wtforms import StringField, PasswordField, SubmitField, TextAreaField, MultipleFileField, IntegerField
-from wtforms.validators import DataRequired, Length, Email, ValidationError, NumberRange
+from wtforms import StringField, PasswordField, SubmitField, TextAreaField, MultipleFileField, IntegerField, SelectField
+from wtforms.validators import DataRequired, Length, Email, ValidationError
 
 from app.dbModels import User, Owner, Group
 from app.auth.methods import verify_psw
@@ -89,13 +89,13 @@ class CreateGroupForm(FlaskForm):
 
 
 class CreatePubForm(FlaskForm):
-	name = StringField('Your amazing pub name :', validators=[DataRequired(), Length(max=50)])
-	address = StringField('Street address :', validators=[DataRequired()])
-	phone_num = StringField('Phone number :', validators=[DataRequired(), Length(min=10, max=20)])
-	seats_max = IntegerField('Please select your maximum amount of seats :', validators=[DataRequired()])
-	description = TextAreaField('A brief description of your pub', render_kw={'placeholder': 'what do you do the best ? Tell it here to your customers!'})
+	name = StringField('Your amazing pub name :', validators=[DataRequired(), Length(max=50)], render_kw={'class': 'w-100'})
+	address = StringField('Street address :', validators=[DataRequired()], render_kw={'class': 'w-100'})
+	phone_num = StringField('Phone number :', validators=[DataRequired(), Length(min=10, max=20)], render_kw={'class': 'w-100'})
+	seats_max = IntegerField('Maximum amount of seats :', validators=[DataRequired()], render_kw={'class': 'w-100'})
+	description = TextAreaField('A brief description of your pub', render_kw={'placeholder': 'what do you do the best ? Tell it here to your customers!', 'class': 'w-100 pl-2'})
 
-	submit = SubmitField('Create pub')
+	submit = SubmitField('Create pub', render_kw={'class': 'btn btn-primary btn-sm text-uppercase'})
 
 	def validate_seats_max(self, seats_max):
 		if not seats_max.data.is_numeric():
@@ -111,4 +111,11 @@ class SendBookingRequestForm(FlaskForm):
 		if not guests.data.isdigit():
 			raise ValidationError('Please submit a numeric input')
 		if int(guests.data) > 16:
-			raise ValidationError('max number of guests accepted : 16')
+			raise ValidationError('Ooops, max number of guests accepted : 16')
+
+
+class ReviewPubForm(FlaskForm):
+	rating = SelectField('Pub rating', choices=[(0, 'terrible experience'), (1, 'not recommended'), (2, 'mediocre'), (3, 'standard'), (4, 'very good'),(5, 'excellent')])
+	review = TextAreaField('What happened :')
+
+	send_review = SubmitField('Send review')

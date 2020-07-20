@@ -1,4 +1,5 @@
 {% extends'base_template.html' %}
+{% import 'macros.html' as macro %}
 
 {% block navbar %}
     {% if pull_from == 'user' %}
@@ -21,11 +22,11 @@
             </div>
         </div>
         <div class="row">
-            <div class="col-4 pr-1">
+            <div class="col-12 col-lg-4">
                 {% if request.method == 'POST' %}
                     <div class="font-weight-bold mb-1">Results</div>
                         {% if query_pub %}
-                            <div class="media border border-light shadow-sm mb-3 py-2 px-1">
+                            <div class="row border border-light shadow-sm mb-3 py-2 px-1">
                                 <div class="col-2 pr-1 d-flex justify-content-center">
                                     {% if pull_from == 'user' %}
                                         <a href="{{ url_for('users.visit_pub', p_id=query_pub.id) }}">
@@ -39,21 +40,21 @@
                                 </div>
                                 <div class="col-10 pr-1">
                                     <div class="row pl-2 d-flex justify-content-between">
-                                        <div class="col-12">
-                                            <span>{{ query_pub.name.upper() }}</span>
-                                        </div>
                                         <div class="col-8 pr-1">
-                                            <div class="row pl-2">
-                                                <i class="fas fa-map-marker-alt"></i>
-                                                <span>{{ query_pub.owner.city.capitalize() }}, {{ query_pub.address }}</span>
+                                            <span>{{ query_pub.name }}</span>
+                                            <div class="row pl-2 align-items-center">
+                                                <i class="fas fa-map-marker-alt pr-1"></i>
+                                                <span class="text-truncate" style="width: 195px">{{ query_pub.owner.city.capitalize() }}, {{ query_pub.address }}</span>
                                             </div>
                                             <div class="row pl-2">
-                                                {% for s in range(0, query_pub.rating ) %}
+                                              <span>
+                                                {% for s in range(0, query_pub.compute_rating(return_rating=True)) %}
                                                     <i class="fas fa-star fa-sm" style="color: goldenrod"></i>
                                                 {% endfor %}
-                                                {% for s in range(0, 5 - query_pub.rating ) %}
+                                                {% for s in range(0, 5 - query_pub.compute_rating(return_rating=True)) %}
                                                     <i class="far fa-star fa-xs" style="color: lightslategrey"></i>
                                                 {% endfor %}
+                                              </span>
                                             </div>
                                         </div>
                                         <div class="col-4">
@@ -71,7 +72,7 @@
                                         </div>
                                     </div>
                                 </div>
-                            </div>
+                           </div>
                         {% else %}
                             <div class="my-2">
                                 <span class="text-muted text-monospace">Nothing found </span>
@@ -79,37 +80,43 @@
                             </div>
                         {% endif %}
                 {% endif %}
-                <div class="font-weight-bold mb-1">Available pubs in your city</div>
+                <div class="row">
+                    <div class="col-12 d-flex justify-content-between">
+                        <div class="font-weight-bold mb-1">Available pubs in your city</div>
+                        <div>{{ macro.pagination_widget(paginate, 'users.search_pub') }}</div>
+                    </div>
+                </div>
                     {% if local_pubs.__len__() > 0 %}
                         {% for p in local_pubs %}
-                           <div class="media border border-light mb-3 py-2 px-1">
+                           <div class="row border border-light shadow-sm mb-3 py-2 px-1">
                                 <div class="col-2 pr-1 d-flex justify-content-center">
                                     {% if pull_from == 'user' %}
                                         <a href="{{ url_for('users.visit_pub', p_id=p.id) }}">
-                                            <div class="img-profile-search shadow mr-0" style="background-image: url('{{ p.owner.get_imgFile(foreign_session=True) }}')"></div>
+                                            <div class="img-profile-search shadow-sm mr-0" style="background-image: url('{{ p.owner.get_imgFile(foreign_session=True) }}')"></div>
                                         </a>
                                     {% else %}
                                         <a href="{{ url_for('users.visit_pub', p_id=p.id) }}">
-                                            <div class="img-profile-search mr-0" style="background-image: url('{{ p.owner.get_imgFile() }}')"></div>
+                                            <div class="img-profile-search shadow-sm mr-0" style="background-image: url('{{ p.owner.get_imgFile() }}')"></div>
                                         </a>
                                     {% endif %}
                                 </div>
                                 <div class="col-10 pr-1">
                                     <div class="row pl-2 d-flex justify-content-between">
                                         <div class="col-8 pr-1">
-                                            <i class="fas fa-sign"></i>
                                             <span>{{ p.name }}</span>
-                                            <div class="row pl-2">
-                                                <i class="fas fa-map-marker-alt"></i>
-                                                <span>{{ p.owner.city.capitalize() }}, {{ p.address }}</span>
+                                            <div class="row pl-2 align-items-center">
+                                                <i class="fas fa-map-marker-alt pr-1"></i>
+                                                <span class="text-truncate" style="width: 195px">{{ p.owner.city.capitalize() }}, {{ p.address }}</span>
                                             </div>
                                             <div class="row pl-2">
-                                                {% for s in range(0, p.rating ) %}
+                                              <span>
+                                                {% for s in range(p.compute_rating(return_rating=True)) %}
                                                     <i class="fas fa-star fa-sm" style="color: goldenrod"></i>
                                                 {% endfor %}
-                                                {% for s in range(0, 5 - p.rating ) %}
+                                                {% for s in range(5 - p.compute_rating(return_rating=True)) %}
                                                     <i class="far fa-star fa-xs" style="color: lightslategrey"></i>
                                                 {% endfor %}
+                                              </span>
                                             </div>
                                         </div>
                                         <div class="col-4">
@@ -127,7 +134,7 @@
                                         </div>
                                     </div>
                                 </div>
-                            </div>
+                           </div>
                         {% endfor %}
                     {% else %}
                         <div class="row">
@@ -145,8 +152,8 @@
                         </div>
                     {% endif %}
                 </div>
-            <div class="col-8">
-                <iframe class='w-100 h-100' src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d22551.15162500506!2d7.635232462821528!3d45.04737381226959!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x478620b85cabc337%3A0xd97006264fbdaf1b!2sPolytechnic%20of%20Turin!5e0!3m2!1sen!2sit!4v1594720242102!5m2!1sen!2sit" width="600" height="450" frameborder="0" style="border:0;" allowfullscreen="" aria-hidden="false" tabindex="0"></iframe>
+            <div class="col-12 col-lg-8">
+                <iframe class="w-100" height="470px" src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d22551.15162500506!2d7.635232462821528!3d45.04737381226959!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x478620b85cabc337%3A0xd97006264fbdaf1b!2sPolytechnic%20of%20Turin!5e0!3m2!1sen!2sit!4v1594720242102!5m2!1sen!2sit" width="600" frameborder="0" style="border:0;" allowfullscreen="" aria-hidden="false" tabindex="0"></iframe>
             </div>
         </div>
     </div>

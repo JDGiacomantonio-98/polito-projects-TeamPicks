@@ -144,3 +144,18 @@ img.app-logo {
 textarea {
   resize: none;
 }
+
+.img-qrcode {
+	width: 100%;
+	height: 100%;
+	background-position: center;
+	background-repeat: no-repeat;
+	background-size: cover;
+}
+
+.empty-reservation {
+	height: 550px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}

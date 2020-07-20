@@ -1,6 +1,6 @@
 # DATABASE OBJECT CLASS SPECIFICATION MODULE : SQLAlchemy builds Object-Oriented Databases
 from os import listdir
-from math import ceil
+from math import floor, ceil
 from random import randint, random
 from datetime import datetime, timedelta
 from secrets import token_hex
@@ -18,8 +18,11 @@ if current_app.config['ENV'] in ('development', 'testing'):
 
 # DATABASE GLOBAL FUNCTIONS #
 
+# commits should be done for their majour part in routes and not here given that committing here can lead also to commit
+# other unwanted stuff already there in the session from previous actions.
 
-def dummy(return_obj=True, model=None, items=1, db_w_test=False):
+
+def dummy(return_obj=True, model=None, items=1, o_mass=None, db_w_test=False, cities=None):
 	from app.auth.methods import hash_psw
 
 	if type(return_obj) != bool:
@@ -56,45 +59,30 @@ def dummy(return_obj=True, model=None, items=1, db_w_test=False):
 	i = 0
 	while i < items:
 		if model in ('u', 'users'):
-			itm = User(username=faker.user_name(),
-					   email=faker.email(),
-					   last_active=faker.past_date(),
-					   lastName=faker.last_name().lower(),
-					   age=randint(16, 90),
-					   sex=faker.null_boolean(),
-					   country=faker.country_code(),
-					   about_me=faker.text(max_nb_chars=250).lower(),
-					   city=faker.city().lower(),
-					   hash=hash_psw('password')
-					   )
-			if itm.sex == 'other':
-				itm.firstName = faker.first_name_male()
-			elif itm.sex == 'f':
-				itm.firstName = faker.first_name_female()
+			if not cities:
+				itm = User(username=faker.user_name(),
+						   email=faker.email(),
+						   last_active=faker.past_date(),
+						   lastName=faker.last_name().lower(),
+						   age=randint(16, 90),
+						   sex=faker.null_boolean(),
+						   country=faker.country_code(),
+						   about_me=faker.text(max_nb_chars=250).lower(),
+						   city=faker.city().lower(),
+						   hash=hash_psw('password')
+						   )
 			else:
-				itm.firstName = faker.first_name_male()
-			if faker.boolean(chance_of_getting_true=60):	# assign user.city = some owner.city randomly picked
-				u_mass = Owner.query.filter(Owner.pub!=None).all()
-				if len(u_mass) > 1:
-					for u in u_mass:
-						if faker.boolean(chance_of_getting_true=50):
-							u.city = itm.city
-							itm.confirmed = True
-			model = 'users'
-		elif model in ('o', 'owners'):
-			itm = Owner(username=faker.user_name(),
-						email=faker.email(),
-						last_active=faker.past_date(),
-						lastName=faker.last_name().lower(),
-						age=randint(18, 90),
-						sex=faker.null_boolean(),
-						about_me=faker.text(max_nb_chars=250).lower(),
-						country=faker.country_code(),
-						city=faker.city().lower(),
-						hash=hash_psw('password'),
-						subs_type=f"{randint(0, 2):02b}",
-						subsExpirationDate=faker.future_date('+90d')
-						)
+				itm = User(username=faker.user_name(),
+						   email=faker.email(),
+						   last_active=faker.past_date(),
+						   lastName=faker.last_name().lower(),
+						   age=randint(16, 90),
+						   sex=faker.null_boolean(),
+						   country=faker.country_code(),
+						   about_me=faker.text(max_nb_chars=250).lower(),
+						   city=cities[randint(0, len(cities) - 1)],
+						   hash=hash_psw('password')
+						   )
 			if itm.sex == 'other':
 				itm.firstName = faker.first_name_male()
 			elif itm.sex == 'f':
@@ -103,18 +91,55 @@ def dummy(return_obj=True, model=None, items=1, db_w_test=False):
 				itm.firstName = faker.first_name_male()
 			if faker.boolean(chance_of_getting_true=35):
 				itm.confirmed = True
+			model = 'users'
+		elif model in ('o', 'owners'):
+			if not cities:
+				itm = Owner(username=faker.user_name(),
+							email=faker.email(),
+							last_active=faker.past_date(),
+							lastName=faker.last_name().lower(),
+							age=randint(18, 90),
+							sex=faker.null_boolean(),
+							about_me=faker.text(max_nb_chars=250).lower(),
+							country=faker.country_code(),
+							city=faker.city().lower(),
+							hash=hash_psw('password'),
+							subs_type=f"{randint(0, 2):02b}",
+							subsExpirationDate=faker.future_date('+90d')
+							)
+			else:
+				itm = Owner(username=faker.user_name(),
+							email=faker.email(),
+							last_active=faker.past_date(),
+							lastName=faker.last_name().lower(),
+							age=randint(18, 90),
+							sex=faker.null_boolean(),
+							about_me=faker.text(max_nb_chars=250).lower(),
+							country=faker.country_code(),
+							city=cities[randint(0, len(cities) - 1)],
+							hash=hash_psw('password'),
+							subs_type=f"{randint(0, 2):02b}",
+							subsExpirationDate=faker.future_date('+90d')
+							)
+			if itm.sex == 'other':
+				itm.firstName = faker.first_name_male()
+			elif itm.sex == 'f':
+				itm.firstName = faker.first_name_female()
+			else:
+				itm.firstName = faker.first_name_male()
 			if faker.boolean(chance_of_getting_true=70):
 				pub = dummy(model='p', db_w_test=db_w_test)
 				itm.associate_pub(pub)
+				itm.confirmed = True
 			model = 'owners'
 		elif model in ('p', 'pubs'):
 			seats_max = randint(0, 200)
 			itm = Pub(name=faker.text(max_nb_chars=25),
 					  address=faker.street_address().lower(),
-					  bookable=faker.boolean(chance_of_getting_true=50),
+					  bookable=faker.boolean(chance_of_getting_true=40),
 					  phone_num=faker.phone_number(),
 					  seats_max=seats_max,
-					  rating=randint(0, 5),
+					  rating=0,
 					  description=faker.text(max_nb_chars=500).lower())
 			if itm.bookable:
 				itm.seats_booked = seats_max - randint(0, seats_max)
@@ -137,16 +162,17 @@ def dummy(return_obj=True, model=None, items=1, db_w_test=False):
 						for _ in range(1, randint(1, u_mass)):
 							# follow some users
 							u = User.query.get(randint(1, u_mass))
-							if not itm.is_following(u):
+							if u and not itm.is_following(u):
 								itm.follow(u)
 					if faker.boolean(chance_of_getting_true=60):
-						# send reservations requests
-						u_mass = Owner.query.count()
-						if u_mass > 1:
+						if o_mass > 1:
+							# send reservations requests
 							for _ in range(1, randint(1, 7)):
-								o = Owner.query.get(randint(1, u_mass))
-								if o.pub:
-									itm.send_bookingReq(pub=o.pub, guests=randint(1, 6), is_dummy=True)
+								o = Owner.query.get(randint(1, o_mass))
+								if o is not None and o.pub: # check for None because it could be that the query try to get an owner id which has been deleted
+									itm.send_bookingReq(pub=o.pub, guests=randint(1, 6))
+									db.session.add(Review(pub_id=o.pub.id, reviewer=itm.username, rating=randint(0, 5), review=faker.text(max_nb_chars=200).lower()))
+									db.session.commit()
 					if faker.boolean(chance_of_getting_true=35):
 						# join group
 						for _ in range(1, randint(1, 3)):
@@ -209,6 +235,7 @@ class Reservation(db.Model):
 	guests = db.Column(db.Integer)  # number of people within the reservation
 	confirmed = db.Column(db.Boolean, default=False, index=True)  # pub owner confirmation of the reservation
 	queued = db.Column(db.Boolean, default=False, index=True)  # true if reservation is staged waiting for pub availability
+	cancelled = db.Column(db.Boolean, default=False, index=True)
 	by_id = db.Column(db.Integer, db.ForeignKey('users.id'), index=True, nullable=False)  # user.id foreignKey
 	at_id = db.Column(db.Integer, db.ForeignKey('pubs.id'), index=True, nullable=False)  # pub.id foreignKey
 
@@ -232,6 +259,40 @@ class Follow(db.Model):
 	follower_id = db.Column(db.Integer, db.ForeignKey('users.id'), primary_key=True)
 	following_id = db.Column(db.Integer, db.ForeignKey('users.id'), primary_key=True)
 	since_when = db.Column(db.DateTime, default=datetime.utcnow())
+
+	@staticmethod
+	def get_all_followed_id(user):
+		followed_ids = []
+		for f in user.followed.all():
+			followed_ids.append(f.following_id)
+		return followed_ids
+
+	@staticmethod
+	def get_all_following_id(user):
+		following_ids = []
+		for f in user.followers.all():
+			following_ids.append(f.follower_id)
+		return following_ids
+
+
+class Review(db.Model):
+	__tablename__ = 'reviews'
+
+	id = db.Column(db.Integer, primary_key=True)
+	pub_id = db.Column(db.Integer, db.ForeignKey('pubs.id'))
+	reviewer = db.Column(db.String, nullable=False)
+	rating = db.Column(db.Integer, nullable=False)
+	review = db.Column(db.String(255), nullable=False)
+
+	def get_reviewer_img(self):
+		from app.main.methods import find_user
+
+		u = find_user(self.reviewer)
+		if u[0] is not None:
+			if session['pull_from'] != u[1]:
+				return u[0].get_imgFile(foreign_session=True)
+			return u[0].get_imgFile()
+		return url_for('static', filename='avatar/favicon.png')
 
 
 class USER:
@@ -308,7 +369,7 @@ class USER:
 		file_bin = handle_userBin(self.get_file_address(), single_slash=True, foreign_session=foreign_session)
 		try:
 			for f in listdir(f'{handle_userBin(self.get_file_address(), absolute_url=True, foreign_session=foreign_session)}'):
-				if 'P' not in f:
+				if not(f.find('U__') or f.find('O__')):
 					carousel.append(f'{file_bin}{f}')
 					# carousel.append(url_for('static', filename=f'users/{self.get_file_address()}/{f}'))
 			return carousel
@@ -386,16 +447,12 @@ class User(db.Model, UserMixin, USER):
 	def join_as_admin(self, group):
 		role = G_Role.query.filter_by(role='admin').first()
 		db.session.add(Subscription(group=group, member=self, role=role))
-		db.session.commit()
 
-	def send_bookingReq(self, pub, guests, is_dummy=False):
+	def send_bookingReq(self, pub, guests):
 		# information comes from form or route
-		if pub.is_available_for(int(guests), is_dummy=is_dummy):
-			tempRes = pub.cache_bookingReq(booked_by=self, guests=int(guests))
-			if not is_dummy:
-				flash(f'Reservation code : {tempRes.id} -- Status : {"accepted" if tempRes.confirmed else "waiting confirmation"}', f'{"success" if tempRes.confirmed else "warning"}')
-		elif not is_dummy:
-			flash(f'Reservation status : rejected due to no availability for {guests} today', 'danger')
+		if pub.is_available_for(int(guests)):
+			return pub.cache_bookingReq(booked_by=self, guests=int(guests))
+		return None
 
 	def send_joinReq(self, group):  # group comes from query in view func
 		pass
@@ -407,13 +464,11 @@ class User(db.Model, UserMixin, USER):
 	def follow(self, user):
 		if not self.is_following(user):
 			db.session.add(Follow(follower=self, followed=user))
-			db.session.commit()
 
 	def unfollow(self, user):
 		f = self.is_following(user, return_follow=True)
 		if f[0]:
 			db.session.delete(f[1])
-			db.session.commit()
 
 	def is_following(self, user, return_follow=False):
 		if user.id is None:	# to prevent uncommited users to be followed by self
@@ -516,12 +571,18 @@ class Pub(db.Model):
 								   # adds <at> parameter to Reservation model : gain complete access pub object
 								   lazy='dynamic',
 								   cascade='all, delete-orphan')
+	reviews = db.relationship('Review',
+							  backref=db.backref('recipient', lazy='joined'),
+							  lazy='dynamic',
+							  cascade='all, delete-orphan')
 
 	def get_address(self):
 		return self.address
 
-	def get_rating(self):
-		return self.rating
+	def get_rating(self, integer=False):
+		if integer:
+			return floor(self.rating)
+		return round(self.rating, 1)
 
 	def get_description(self):
 		return self.description
@@ -535,28 +596,33 @@ class Pub(db.Model):
 		if eventType == 'new-booking':
 			pass
 
-	def is_available_for(self, guests, is_dummy=False):
+	def is_available_for(self, guests):
 		if self.bookable:
 			if self.get_availability() >= guests:
 				return True
-			else:
-				return False
-		else:
-			if not is_dummy:
-				flash("This pub can not accepts reservation on TeamPicks yet!", 'danger')
-			return False
+		return False
 
 	def cache_bookingReq(self, booked_by, guests):
 		tempRes = Reservation(made_by=booked_by,
 							at=self,
 							guests=guests)
 		db.session.add(tempRes)
-		db.session.commit()
 		self.notify(eventType='new-booking', item=tempRes)
 		return tempRes
 
 	def book_for(self, guests):
 		self.seats_booked += guests
+
+	def compute_rating(self, return_rating=False):
+		rev = Review.query.filter_by(pub_id=self.id).all()
+		if len(rev) > 0:
+			self.rating = 0
+			for r in rev:
+				self.rating += r.rating
+			self.rating = self.rating/len(rev)
+			db.session.commit()
+		if return_rating:
+			return self.get_rating(integer=True)
 
 
 class Group(db.Model):

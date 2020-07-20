@@ -118,19 +118,57 @@
                         </div>
                         <div>
                           <span>
-                            {% for s in range(0, pub.rating ) %}
+                            {% for s in range(pub.compute_rating(return_rating=True)) %}
                                 <i class="fas fa-star fa-sm" style="color: goldenrod"></i>
                             {% endfor %}
-                            {% for s in range(0, 5 - pub.rating ) %}
+                            {% for s in range(5 - pub.compute_rating(return_rating=True)) %}
                                 <i class="far fa-star fa-xs" style="color: lightslategrey"></i>
                             {% endfor %}
                           </span>
-                            <span class="text-monospace text-muted">{{ pub.rating }}</span>
+                            <span class="text-monospace text-muted">{{ pub.get_rating() }}</span>
                         </div>
                         {% if pull_from == 'user' %}
-                            <a href="#" data-toggle="tooltip" data-placement="right" title=" please act fairly">
-                                <span>review this pub</span>
+                            <a href="#" data-toggle="modal" data-target="#review-pub-backdrop">
+                                <span data-toggle="tooltip" data-placement="right" title=" please act fairly">review this pub</span>
                             </a>
+                            <!-- modal review pub -->
+                            <div class="modal fade" id="review-pub-backdrop" data-backdrop="static" tabindex="-1" role="dialog" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+                              <div class="modal-dialog" role="document" style="width: 25%">
+                                <div class="modal-content">
+                                  <div class="modal-header">
+                                      <div class="col-12 d-flex align-item-center pl-0">
+                                          <div class="h5 mb-0 text-monospace">REVIEW : {{ pub.name }}</div>
+                                          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                            <span aria-hidden="true">&times;</span>
+                                          </button>
+                                      </div>
+                                  </div>
+                                  <div class="modal-body pb-1 text-monospace">
+                                      <div class="col-12">
+                                          <span class="mb-1">How was your experience here?</span>
+                                          <form method="POST" action="#" enctype="multipart/form-data">
+                                              {{ form_review.hidden_tag() }}
+                                              <span class="mb-1">
+                                                  {{ form_review.rating(class='w-100') }}
+                                              </span>
+                                              <div class="mt-2">
+                                                  {{ form_review.review.label }}
+                                              </div>
+                                              <div>
+                                                  {{ form_review.review(class='w-100') }}
+                                              </div>
+                                              <div class="btn-group d-flex justify-content-between shadow-sm my-2">
+                                                  {{ form_review.send_review(class="btn btn-sm btn-light border") }}
+                                                  <button type="button" class="btn btn-sm btn-outline-danger" data-dismiss="modal">
+                                                      Cancel
+                                                  </button>
+                                              </div>
+                                          </form>
+                                      </div>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
                         {% endif %}
                         <div>
                             <i class="fas fa-map-marker-alt"></i>
@@ -175,22 +213,48 @@
                     <span>info here</span>
                 </div>
             </div>
-        <div class="row ml-1 my-3">
-            <div class="col-6 pl-0 text-monospace text-muted text-justify">
-                {{ pub.description }}
+            <div class="row pl-3 pr-4 my-3">
+                <div class="col-8 pr-5 text-monospace text-muted text-justify">
+                    {{ pub.description }}
+                </div>
+                <div class="col-4 pl-4 border border-light shadow">
+                    <form method="POST" action="#" enctype="multipart/form-data">
+                        <div>
+                            {{ form_booking.guests.label }}
+                            {{ form_booking.guests }}
+                        </div>
+                        <div>
+                            {{ form_booking.send_request }}
+                        </div>
+                    </form>
+                </div>
             </div>
-            <div class="col-6">
-                <form method="POST" action="#" enctype="multipart/form-data">
-                    <div>
-                        {{ form.guests.label }}
-                        {{ form.guests }}
+            <div class="row ml-1 my-3">
+                <div class="col-12 pl-2 mb-3 h4 font-weight-bold">
+                    What others say about {{ pub.name }}
+                </div>
+                {% for rev in reviews %}
+                    <div class="col-4 border border-light shadow-sm">
+                        <div class="row py-2 pr-5 pl-2 justify-content-between">
+                            <div class="img-profile-nav shadow ml-2" style="background-image: url('{{ rev.get_reviewer_img() }}')"></div>
+                            <span class="font-weight-bold">{{ rev.reviewer }}</span>
+                            <div>
+                                <span>
+                                    {% for s in range(rev.rating) %}
+                                        <i class="fas fa-star fa-sm" style="color: goldenrod"></i>
+                                    {% endfor %}
+                                    {% for s in range(5 - rev.rating) %}
+                                        <i class="far fa-star fa-xs" style="color: lightslategrey"></i>
+                                    {% endfor %}
+                                  </span>
+                            </div>
+                        </div>
+                        <div class="text-justify">
+                            {{ rev.review }}
+                        </div>
                     </div>
-                    <div>
-                        {{ form.send_request }}
-                    </div>
-                </form>
+                {% endfor %}
             </div>
         </div>
     </div>
-
 {% endblock pagecontent %}
