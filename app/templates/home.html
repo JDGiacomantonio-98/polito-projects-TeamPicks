@@ -95,7 +95,7 @@
                                 {% endfor %}
                             {% endif %}
                         </div>
-                    {% else %}
+                    {% elif current_user.pub %}
                         <div class="row border border-light px-2 justify-content-between">
                             {% for i in range(0,8) %}
                                 <div class="col-3 px-0 d-flex justify-content-center align-items-center">

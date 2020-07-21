@@ -302,6 +302,7 @@ def create_pub(username):
 		db.session.add(p)
 		current_user.associate_pub(p)
 		db.session.commit()
+		return redirect(url_for('users.home', username=current_user.username))
 	return render_template('create_pub.html', form=form, pull_from=session['pull_from'])
 
 
