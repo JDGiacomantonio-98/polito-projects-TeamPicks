@@ -118,8 +118,8 @@ class SendBookingRequestForm(FlaskForm):
 	send_request = SubmitField('Book here')
 
 	def validate_guests(self, guests):
-		if not self.guests.data.isdigit():
-			raise ValidationError('Please submit a numeric input')
+		# if not self.guests.data.isdigit():
+		# 	raise ValidationError('Please submit a numeric input')
 		if int(self.guests.data) > 16:
 			raise ValidationError('Ooops, max number of guests accepted : 16')
 
@@ -138,6 +138,6 @@ class UpdateBookingReqForm(FlaskForm):
 
 class ReviewPubForm(FlaskForm):
 	rating = SelectField('Pub rating', choices=[(0, 'terrible experience'), (1, 'not recommended'), (2, 'mediocre'), (3, 'standard'), (4, 'very good'),(5, 'excellent')])
-	review = TextAreaField('What happened :')
+	review = TextAreaField('What happened :', validators=[DataRequired()])
 
 	send_review = SubmitField('Send review')

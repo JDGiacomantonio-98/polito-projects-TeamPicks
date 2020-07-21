@@ -335,32 +335,41 @@ def visit_pub(p_id):
 	page = request.args.get('page', 1, type=int)
 	paginate_rev = p.reviews.paginate(page, per_page=6, error_out=False)
 	if request.method == 'POST':
-		if form_review.send_review.data:
-			if form_review.validate():
-				pass
-			db.session.add(Review(pub_id=p.id, reviewer=current_user.username, rating=form_review.rating.data, review=form_review.review.data))
-			db.session.commit()
-			return redirect(url_for('users.visit_pub', p_id=p.id))
-		if session['pull_from'] == 'owner' and p.owner.id == current_user.id:
-			flash('Did you want to book from yourself ?', 'secondary')
-			return redirect(url_for('users.visit_pub', p_id=p.id))
-		if form_booking.validate():
-			pass
-		if p.bookable:
-			res = current_user.reservations.filter_by(at_id=p.id).filter_by(cancelled=False).first()
-			if res:
-				flash(f'You already had reserved here for today.', 'secondary')
-				flash(f'Reservation code : {res.id} -- Status : {"accepted" if res.confirmed else "waiting confirmation"}', f'{"success" if res.confirmed else "warning"}')
+		if form_booking.guests.data:
+			if session['pull_from'] == 'owner' and p.owner.id == current_user.id:
+				flash('Did you want to book from yourself ?', 'secondary')
 				return redirect(url_for('users.visit_pub', p_id=p.id))
-			res = current_user.send_bookingReq(pub=p, guests=form_booking.guests.data)
-			if res is not None:
+			if form_booking.validate():
+				if p.bookable:  # i had problems with validation of string in the booking for so the following lines of code should be inside the previous if
+					res = current_user.reservations.filter_by(at_id=p.id).filter_by(cancelled=False).first()
+					if res:
+						flash(f'You already had reserved here for today.', 'secondary')
+						flash(
+							f'Reservation code : {res.id} -- Status : {"accepted" if res.confirmed else "waiting confirmation"}',
+							f'{"success" if res.confirmed else "warning"}')
+						return redirect(url_for('users.visit_pub', p_id=p.id))
+					res = current_user.send_bookingReq(pub=p, guests=form_booking.guests.data)
+					if res is not None:
+						db.session.commit()
+						flash(
+							f'Reservation code : {res.id} -- Status : {"accepted" if res.confirmed else "waiting confirmation"}',
+							f'{"success" if res.confirmed else "warning"}')
+					else:
+						flash(
+							f'Reservation status : rejected due to no availability for {form_booking.guests.data} today',
+							'danger')
+					return render_template('pub_page.html', pub=p, carousel=carousel, grid=grid,
+										   paginate_rev=paginate_rev, reviews=paginate_rev.items,
+										   pull_from=session['pull_from'], form_review=form_review,
+										   form_booking=form_booking)
+				flash("This pub can not accepts reservation on TeamPicks yet!", 'danger')
+				return render_template('pub_page.html', pub=p, carousel=carousel, grid=grid, paginate_rev=paginate_rev,
+									   reviews=paginate_rev.items, pull_from=session['pull_from'],
+									   form_review=form_review, form_booking=form_booking)
+			if session['pull_from'] == 'user' and form_review.validate_on_submit():
+				db.session.add(Review(pub_id=p.id, reviewer=current_user.username, rating=form_review.rating.data, review=form_review.review.data))
 				db.session.commit()
-				flash(f'Reservation code : {res.id} -- Status : {"accepted" if res.confirmed else "waiting confirmation"}', f'{"success" if res.confirmed else "warning"}')
-			else:
-				flash(f'Reservation status : rejected due to no availability for {form_booking.guests.data} today', 'danger')
-			return render_template('pub_page.html', pub=p, carousel=carousel, grid=grid,  paginate_rev=paginate_rev, reviews=paginate_rev.items, pull_from=session['pull_from'], form_review=form_review, form_booking=form_booking)
-		flash("This pub can not accepts reservation on TeamPicks yet!", 'danger')
-		return render_template('pub_page.html', pub=p, carousel=carousel, grid=grid,  paginate_rev=paginate_rev, reviews=paginate_rev.items, pull_from=session['pull_from'], form_review=form_review, form_booking=form_booking)
+			return redirect(url_for('users.visit_pub', p_id=p.id))
 	form_booking.guests.data = '2'
 	if session['pull_from'] == 'user':
 		return render_template('pub_page.html', pub=p, carousel=carousel, grid=grid, paginate_rev=paginate_rev, reviews=paginate_rev.items, pull_from=session['pull_from'], form_review=form_review, form_booking=form_booking)
