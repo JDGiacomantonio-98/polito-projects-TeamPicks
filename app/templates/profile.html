@@ -19,7 +19,7 @@
                                 <div class="img-profile-user shadow-lg mr-0" style="background-image: url('{{ imgFile }}')"></div>
                                 {% if not is_viewer %}
                                     <form method="POST" action="#" enctype="multipart/form-data">
-                                     {{ form_img.hidden_tag() }} <!--This adds CSRF (Cross-Site Injection attacks) token || it protects the app-->
+                                        {{ form_img.hidden_tag() }} <!--This adds CSRF (Cross-Site Injection attacks) token || it protects the app-->
                                         <i class="fas fa-camera"></i>
                                         <div data-toggle="tooltip" data-placement="right" title="change your profile image here">
                                             {{ form_img.img }}
@@ -328,9 +328,11 @@
                         </button>
                       </div>
                     </div>
+                  </div>
                 </div>
               </div>
             </div>
         {% endif %}
+
     </div>
 {% endblock pagecontent %}

@@ -218,12 +218,12 @@
                 <div class="col-8 pr-5 text-monospace text-muted text-justify">
                     {{ pub.description }}
                 </div>
-                <div class="col-4 pl-4  py-4 border border-light shadow">
+                <div class="col-4 px-4 py-4 border border-light shadow">
                     <form method="POST" action="#" enctype="multipart/form-data">
                             <span>{{ form_booking.guests.label }}</span>
                         <div>
-                            {{ form_booking.guests }}
-                            {{ form_booking.send_request }}
+                            {{ form_booking.guests(class='w-100') }}
+                            {{ form_booking.send_request(class='w-100') }}
                         </div>
                     </form>
                 </div>

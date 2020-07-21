@@ -92,7 +92,7 @@ def send_email(recipient, templatePath=None, mailTitle=None, token=None, backgro
 		mail.send(msg)
 
 
-def send_confirmation_email(recipient, email_update=False, flash_msg=False, background=True):
+def send_confirmation_email(recipient, pull_from, email_update=False, flash_msg=False, background=True):
 	if email_update:
 		msg = Message('TeamPicks Account -- EMAIL UPDATE',
 					  sender='teampicks.help@gmail.com',
@@ -101,7 +101,7 @@ def send_confirmation_email(recipient, email_update=False, flash_msg=False, back
 		msg = Message('TeamPicks Account -- ACCOUNT CONFIRMATION',
 					  sender='teampicks.help@gmail.com',
 					  recipients=[recipient.email])
-	msg.body = render_template('email-copy/confirm-registration.txt', email_update=email_update, token=recipient.create_token(), user=recipient)
+	msg.body = render_template('email-copy/confirm-registration.txt', pull_from=pull_from, email_update=email_update, token=recipient.create_token(), user=recipient)
 	if background:
 		Thread(target=send_on_thread, args=(current_app._get_current_object(), msg)).start()
 	else:

@@ -4,7 +4,7 @@ Our server were notified about an email update request from your TeamPicks accou
 {% endif %}
 To confirm your account please click on the following link:
 
-{{ url_for('auth.activate', token=token, email_update=email_update, _external=True) }}
+{{ url_for('auth.activate', token=token, pull_from=pull_from, email_update=email_update, _external=True) }}
 
 Kindly,
 The TeamPicks Staff

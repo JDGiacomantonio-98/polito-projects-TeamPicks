@@ -29,7 +29,8 @@ def show_pricing():
 @main.route('/email-confirmation')
 @login_required
 def send_email_confirmation():
-	send_confirmation_email(recipient=current_user , email_update=True)
+	send_confirmation_email(recipient=current_user, pull_from=session['pull_from'], email_update=True)
+	flash('A new confirmation email has been sent to your inbox.', 'info')
 	return redirect(url_for('users.profile', username=current_user.username))
 
 

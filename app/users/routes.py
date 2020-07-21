@@ -129,7 +129,7 @@ def profile(username):
 					if current_user.email != form_info.email.data:
 						current_user.confirmed = False
 						current_user.email = form_info.email.data
-						send_confirmation_email(recipient=current_user, email_update=True, flash_msg=True)
+						send_confirmation_email(recipient=current_user, pull_from=session['pull_from'], email_update=True, flash_msg=True)
 					current_user.firstName = form_info.firstName.data
 					current_user.lastName = form_info.lastName.data
 					current_user.username = form_info.username.data
@@ -140,7 +140,6 @@ def profile(username):
 				form_img.about_me.data = current_user.about_me
 				return render_template('profile.html', pull_from=session['pull_from'], title=f'{current_user.firstName} {current_user.lastName}',
 									   is_viewer=(current_user.id != profile_u.id), user=profile_u, imgFile=profile_u.get_imgFile(),
-
 									   carousel=profile_u.get_imgCarousel(), form_info=form_info, form_img=form_img, form_carousel=form_carousel, groups=profile_u.groups.count())
 			try:
 				if form_carousel.upload_carousel.data:

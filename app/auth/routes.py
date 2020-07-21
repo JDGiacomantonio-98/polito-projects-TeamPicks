@@ -30,6 +30,7 @@ def registration(userType, accType):
 					email=form.email.data,
 					hash=hash_psw(form.confirmPsw.data)
 				)
+				session['pull_from'] = 'user'
 			else:
 				newItem = Owner(
 					subs_type=form.subs_type.data,
@@ -40,10 +41,11 @@ def registration(userType, accType):
 					email=form.email.data,
 					hash=hash_psw(form.confirmPsw.data)
 				)
+				session['pull_from'] = 'owner'
 				newItem.evaluate_subs()
 			db.session.add(newItem)
 			db.session.commit()
-			send_confirmation_email(recipient=newItem)
+			send_confirmation_email(recipient=newItem, pull_from=session['pull_from'])
 			login_user(newItem, remember=True)
 			flash(f"Hi {form.username.data}, your profile has been successfully created but is not yet active.", 'success')
 			flash('A confirmation email has been sent to you. Open your inbox!', 'warning')
@@ -54,12 +56,13 @@ def registration(userType, accType):
 	return render_template('register.html', title='Registration page', form=form, userType=userType)
 
 
-@auth.route('/confirm-account/<token>_<email_update>')
-def activate(token, email_update):
+@auth.route('/confirm-account/<token>%<email_update>%<pull_from>')
+def activate(token, email_update, pull_from):
 	# if user comes from email confirmation link there is no current user to check
 	if (not current_user.is_anonymous) and current_user.confirmed:
 		flash('You account has already been activated.', 'secondary')
 		return redirect(url_for('users.home'))
+	session['pull_from'] = pull_from
 	u = confirm_account(token)
 	if u:
 		flash('Account confirmed successfully. Great, you are good to go now!', 'success')
@@ -108,7 +111,7 @@ def login(ATTEMPTS=5):
 							return redirect(nextPage)
 						return redirect(url_for('main.index'))
 					else:
-						send_confirmation_email(recipient=current_user)
+						send_confirmation_email(recipient=current_user, pull_from=session['pull_from'])
 						flash("Your account still require activation. Please check your email inbox.", 'warning')
 						return redirect(url_for('auth.login'))
 				session['log-attempt'] += 1
