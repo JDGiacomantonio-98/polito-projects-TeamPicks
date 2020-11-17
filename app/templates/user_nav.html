@@ -7,12 +7,10 @@
         <button class="navbar-toggler d-md-none ml-auto" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
         </button>
-
         <div class="btn-group order-md-2">
             <button type="button" class="btn btn-primary-outline btn-sm">
                 <a class="nav-link active text-dark p-0 p-md-2" href="{{ url_for('users.profile', username=current_user.username) }}">
                     <span class="px-2 d-none d-lg-inline-flex">Profile |</span>
-{#                                            <div class="img-profile-nav" style="background-image: url('{{ current_user.get_imgFile() }}')"></div>#}
                     <img class="img-profile-nav profile-thumbnail" src="{{ current_user.get_imgFile() }}" alt='user profile image'>
                 </a>
             </button>
@@ -62,9 +60,9 @@
             </div>
         </div>
         <div class="row justify-content-between d-md-flex d-none">
-            <div class="media">
-                <div class="media-body">
-                    <a class="nav-link active text-dark " href="{{ url_for('users.search_pub') }}">
+			<div class="media">
+				<div class="media-body">
+					<a class="nav-link active text-dark " href="{{ url_for('users.search_pub') }}">
                         Find Pubs
                     </a>
                 </div>
